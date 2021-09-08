@@ -300,7 +300,7 @@ import java.util.Date;
      */
     protected final static int getConversionFnid(int authoritative_type, int new_type) {
 <span class="pc bpc" id="L302" title="1 of 2 branches missed.">        if (new_type == authoritative_type) return 0;</span>
-<span class="pc bpc" id="L303" title="7 of 11 branches missed.">        switch (new_type) {</span>
+<span class="pc bpc" id="L303" title="6 of 11 branches missed.">        switch (new_type) {</span>
             case AS_TYPE.null_value:
 <span class="nc bnc" id="L305" title="All 4 branches missed.">                assert( authoritative_type == AS_TYPE.string_value );</span>
 <span class="nc" id="L306">                return from_string_conversion[AS_TYPE.null_value];</span>
@@ -308,7 +308,7 @@ import java.util.Date;
 <span class="nc bnc" id="L308" title="All 4 branches missed.">                assert( authoritative_type == AS_TYPE.string_value );</span>
 <span class="nc" id="L309">                return from_string_conversion[AS_TYPE.boolean_value];</span>
             case AS_TYPE.int_value:
-<span class="nc" id="L311">                return to_int_conversion[authoritative_type];</span>
+<span class="fc" id="L311">                return to_int_conversion[authoritative_type];</span>
             case AS_TYPE.long_value:
 <span class="fc" id="L313">                return to_long_conversion[authoritative_type];</span>
             case AS_TYPE.bigInteger_value:
@@ -490,9 +490,9 @@ import java.util.Date;
 <span class="fc" id="L490">            add_value_type(AS_TYPE.long_value);</span>
 <span class="fc" id="L491">        }</span>
         public final void addValue(double value) {
-<span class="nc" id="L493">            _double_value = value;</span>
-<span class="nc" id="L494">            add_value_type(AS_TYPE.double_value);</span>
-<span class="nc" id="L495">        }</span>
+<span class="fc" id="L493">            _double_value = value;</span>
+<span class="fc" id="L494">            add_value_type(AS_TYPE.double_value);</span>
+<span class="fc" id="L495">        }</span>
         public final void addValue(String value) {
 <span class="fc" id="L497">            _string_value = value;</span>
 <span class="fc" id="L498">            add_value_type(AS_TYPE.string_value);</span>
@@ -506,9 +506,9 @@ import java.util.Date;
 <span class="nc" id="L506">            add_value_type(AS_TYPE.decimal_value);</span>
 <span class="nc" id="L507">        }</span>
         public final void addValue(Decimal value) {
-<span class="nc" id="L509">            _decimal_value = value;</span>
-<span class="nc" id="L510">            add_value_type(AS_TYPE.decimal_value);</span>
-<span class="nc" id="L511">        }</span>
+<span class="fc" id="L509">            _decimal_value = value;</span>
+<span class="fc" id="L510">            add_value_type(AS_TYPE.decimal_value);</span>
+<span class="fc" id="L511">        }</span>
         public final void addValue(Date value) {
 <span class="nc" id="L513">            _date_value = value;</span>
 <span class="nc" id="L514">            add_value_type(AS_TYPE.date_value);</span>
@@ -609,7 +609,7 @@ import java.util.Date;
         }
 
         public final void cast(int castfnid) {
-<span class="pc bpc" id="L612" title="33 of 41 branches missed.">            switch(castfnid) {</span>
+<span class="pc bpc" id="L612" title="30 of 41 branches missed.">            switch(castfnid) {</span>
 <span class="nc" id="L613">            case FNID_FROM_STRING_TO_NULL:           fn_from_string_to_null();                break;</span>
 <span class="nc" id="L614">            case FNID_FROM_STRING_TO_BOOLEAN:        fn_from_string_to_boolean();             break;</span>
 <span class="nc" id="L615">            case FNID_FROM_STRING_TO_INT:            fn_from_string_to_int();                 break;</span>
@@ -630,12 +630,12 @@ import java.util.Date;
 <span class="nc" id="L630">            case FNID_FROM_TIMESTAMP_TO_STRING:      fn_from_timestamp_to_string();           break;</span>
 <span class="nc" id="L631">            case FNID_FROM_LONG_TO_INT:              fn_from_long_to_int();                   break;</span>
 <span class="nc" id="L632">            case FNID_FROM_BIGINTEGER_TO_INT:        fn_from_biginteger_to_int();             break;</span>
-<span class="nc" id="L633">            case FNID_FROM_DECIMAL_TO_INT:           fn_from_decimal_to_int();                break;</span>
-<span class="nc" id="L634">            case FNID_FROM_DOUBLE_TO_INT:            fn_from_double_to_int();                 break;</span>
+<span class="fc" id="L633">            case FNID_FROM_DECIMAL_TO_INT:           fn_from_decimal_to_int();                break;</span>
+<span class="fc" id="L634">            case FNID_FROM_DOUBLE_TO_INT:            fn_from_double_to_int();                 break;</span>
 <span class="fc" id="L635">            case FNID_FROM_INT_TO_LONG:              fn_from_int_to_long();                   break;</span>
 <span class="nc" id="L636">            case FNID_FROM_BIGINTEGER_TO_LONG:       fn_from_biginteger_to_long();            break;</span>
 <span class="fc" id="L637">            case FNID_FROM_DECIMAL_TO_LONG:          fn_from_decimal_to_long();               break;</span>
-<span class="nc" id="L638">            case FNID_FROM_DOUBLE_TO_LONG:           fn_from_double_to_long();                break;</span>
+<span class="fc" id="L638">            case FNID_FROM_DOUBLE_TO_LONG:           fn_from_double_to_long();                break;</span>
 <span class="fc" id="L639">            case FNID_FROM_INT_TO_BIGINTEGER:        fn_from_int_to_biginteger();             break;</span>
 <span class="fc" id="L640">            case FNID_FROM_LONG_TO_BIGINTEGER:       fn_from_long_to_biginteger();            break;</span>
 <span class="fc" id="L641">            case FNID_FROM_DECIMAL_TO_BIGINTEGER:    fn_from_decimal_to_biginteger();         break;</span>
@@ -764,23 +764,23 @@ import java.util.Date;
 <span class="nc" id="L764">            add_value_type(AS_TYPE.int_value);</span>
 <span class="nc" id="L765">        }</span>
         private final void fn_from_decimal_to_int() {
-<span class="nc bnc" id="L767" title="All 2 branches missed.">            if (min_int_decimal_value.compareTo(_decimal_value) &gt; 0</span>
-<span class="nc bnc" id="L768" title="All 2 branches missed.">             || max_int_decimal_value.compareTo(_decimal_value) &lt; 0</span>
+<span class="pc bpc" id="L767" title="1 of 2 branches missed.">            if (min_int_decimal_value.compareTo(_decimal_value) &gt; 0</span>
+<span class="pc bpc" id="L768" title="1 of 2 branches missed.">             || max_int_decimal_value.compareTo(_decimal_value) &lt; 0</span>
              ) {
 <span class="nc" id="L770">                throw new CantConvertException(&quot;BigDecimal value is too large to fit in an int&quot;);</span>
             }
-<span class="nc" id="L772">            _int_value = _decimal_value.intValue();</span>
-<span class="nc" id="L773">            add_value_type(AS_TYPE.int_value);</span>
-<span class="nc" id="L774">        }</span>
+<span class="fc" id="L772">            _int_value = _decimal_value.intValue();</span>
+<span class="fc" id="L773">            add_value_type(AS_TYPE.int_value);</span>
+<span class="fc" id="L774">        }</span>
         private final void fn_from_double_to_int() {
-<span class="nc bnc" id="L776" title="All 4 branches missed.">            if (_double_value &lt; Integer.MIN_VALUE</span>
+<span class="pc bpc" id="L776" title="2 of 4 branches missed.">            if (_double_value &lt; Integer.MIN_VALUE</span>
              || _double_value &gt; Integer.MAX_VALUE
             ) {
 <span class="nc" id="L779">                throw new CantConvertException(&quot;double is too large to fit in an int&quot;);</span>
             }
-<span class="nc" id="L781">            _int_value = (int)_double_value;</span>
-<span class="nc" id="L782">            add_value_type(AS_TYPE.int_value);</span>
-<span class="nc" id="L783">        }</span>
+<span class="fc" id="L781">            _int_value = (int)_double_value;</span>
+<span class="fc" id="L782">            add_value_type(AS_TYPE.int_value);</span>
+<span class="fc" id="L783">        }</span>
         private final void fn_from_int_to_long() {
 <span class="fc" id="L785">            _long_value = _int_value;</span>
 <span class="fc" id="L786">            add_value_type(AS_TYPE.long_value);</span>
@@ -804,14 +804,14 @@ import java.util.Date;
 <span class="fc" id="L804">            add_value_type(AS_TYPE.long_value);</span>
 <span class="fc" id="L805">        }</span>
         private final void fn_from_double_to_long() {
-<span class="nc bnc" id="L807" title="All 4 branches missed.">            if (_double_value &lt; Long.MIN_VALUE</span>
+<span class="pc bpc" id="L807" title="2 of 4 branches missed.">            if (_double_value &lt; Long.MIN_VALUE</span>
              || _double_value &gt; Long.MAX_VALUE
             ) {
 <span class="nc" id="L810">                throw new CantConvertException(&quot;double is too large to fit in a long&quot;);</span>
             }
-<span class="nc" id="L812">            _long_value = (long)_double_value;</span>
-<span class="nc" id="L813">            add_value_type(AS_TYPE.long_value);</span>
-<span class="nc" id="L814">        }</span>
+<span class="fc" id="L812">            _long_value = (long)_double_value;</span>
+<span class="fc" id="L813">            add_value_type(AS_TYPE.long_value);</span>
+<span class="fc" id="L814">        }</span>
         private final void fn_from_int_to_biginteger() {
 <span class="fc" id="L816">            _bigInteger_value = BigInteger.valueOf(_int_value);</span>
 <span class="fc" id="L817">            add_value_type(AS_TYPE.bigInteger_value);</span>

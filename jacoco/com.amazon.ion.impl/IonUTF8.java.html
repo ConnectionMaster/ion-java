@@ -378,29 +378,32 @@ import java.io.OutputStream;
     }
 
     public final static boolean needsSurrogateEncoding(int unicodeScalar) {
-<span class="fc bfc" id="L381" title="All 2 branches covered.">        return (unicodeScalar &gt; MAXIMUM_UTF16_1_CHAR_CODE_POINT);</span>
+<span class="fc bfc" id="L381" title="All 2 branches covered.">        if (unicodeScalar &gt; Character.MAX_CODE_POINT) {</span>
+<span class="fc" id="L382">            throw new IonException(&quot;Invalid encoding: encountered non-Unicode character.&quot;);</span>
+        }
+<span class="fc bfc" id="L384" title="All 2 branches covered.">        return (unicodeScalar &gt; MAXIMUM_UTF16_1_CHAR_CODE_POINT);</span>
     }
     public final static char highSurrogate(int unicodeScalar) {
-<span class="pc bpc" id="L384" title="2 of 4 branches missed.">        assert(unicodeScalar &gt; MAXIMUM_UTF16_1_CHAR_CODE_POINT);</span>
-<span class="pc bpc" id="L385" title="2 of 4 branches missed.">        assert(unicodeScalar &lt;= Character.MAX_CODE_POINT);</span>
-<span class="fc" id="L386">        int c = ((unicodeScalar - SURROGATE_OFFSET) &gt;&gt; 10);</span>
-<span class="fc" id="L387">        return (char)((c | HIGH_SURROGATE) &amp; 0xffff);</span>
+<span class="pc bpc" id="L387" title="2 of 4 branches missed.">        assert(unicodeScalar &gt; MAXIMUM_UTF16_1_CHAR_CODE_POINT);</span>
+<span class="pc bpc" id="L388" title="2 of 4 branches missed.">        assert(unicodeScalar &lt;= Character.MAX_CODE_POINT);</span>
+<span class="fc" id="L389">        int c = ((unicodeScalar - SURROGATE_OFFSET) &gt;&gt; 10);</span>
+<span class="fc" id="L390">        return (char)((c | HIGH_SURROGATE) &amp; 0xffff);</span>
     }
     public final static char lowSurrogate(int unicodeScalar) {
-<span class="pc bpc" id="L390" title="2 of 4 branches missed.">        assert(unicodeScalar &gt; MAXIMUM_UTF16_1_CHAR_CODE_POINT);</span>
-<span class="pc bpc" id="L391" title="2 of 4 branches missed.">        assert(unicodeScalar &lt;= Character.MAX_CODE_POINT);</span>
-<span class="fc" id="L392">        int c = ((unicodeScalar - SURROGATE_OFFSET) &amp; 0x3ff);</span>
-<span class="fc" id="L393">        return (char)((c | LOW_SURROGATE) &amp; 0xffff);</span>
+<span class="pc bpc" id="L393" title="2 of 4 branches missed.">        assert(unicodeScalar &gt; MAXIMUM_UTF16_1_CHAR_CODE_POINT);</span>
+<span class="pc bpc" id="L394" title="2 of 4 branches missed.">        assert(unicodeScalar &lt;= Character.MAX_CODE_POINT);</span>
+<span class="fc" id="L395">        int c = ((unicodeScalar - SURROGATE_OFFSET) &amp; 0x3ff);</span>
+<span class="fc" id="L396">        return (char)((c | LOW_SURROGATE) &amp; 0xffff);</span>
     }
     public final static int getUnicodeScalarFromSurrogates(int highSurrogate, int lowSurrogate)
     {
-<span class="pc bpc" id="L397" title="2 of 4 branches missed.">        assert(IonUTF8.isHighSurrogate(highSurrogate));</span>
-<span class="pc bpc" id="L398" title="2 of 4 branches missed.">        assert(IonUTF8.isLowSurrogate(lowSurrogate));</span>
+<span class="pc bpc" id="L400" title="2 of 4 branches missed.">        assert(IonUTF8.isHighSurrogate(highSurrogate));</span>
+<span class="pc bpc" id="L401" title="2 of 4 branches missed.">        assert(IonUTF8.isLowSurrogate(lowSurrogate));</span>
         int scalar;
-<span class="fc" id="L400">        scalar = lowSurrogate &amp; 0x3ff;</span>
-<span class="fc" id="L401">        scalar += (highSurrogate &amp; 0x3ff) &lt;&lt; 10;</span>
-<span class="fc" id="L402">        scalar += SURROGATE_OFFSET;</span>
-<span class="fc" id="L403">        return scalar;</span>
+<span class="fc" id="L403">        scalar = lowSurrogate &amp; 0x3ff;</span>
+<span class="fc" id="L404">        scalar += (highSurrogate &amp; 0x3ff) &lt;&lt; 10;</span>
+<span class="fc" id="L405">        scalar += SURROGATE_OFFSET;</span>
+<span class="fc" id="L406">        return scalar;</span>
     }
 
     public static class InvalidUnicodeCodePoint extends IonException
@@ -408,17 +411,17 @@ import java.io.OutputStream;
         private static final long serialVersionUID = -3200811216940328945L;
 
         public InvalidUnicodeCodePoint() {
-<span class="nc" id="L411">            super(&quot;invalid UTF8&quot;);</span>
-<span class="nc" id="L412">        }</span>
-        public InvalidUnicodeCodePoint(String msg) {
-<span class="nc" id="L414">            super(msg);</span>
+<span class="nc" id="L414">            super(&quot;invalid UTF8&quot;);</span>
 <span class="nc" id="L415">        }</span>
-        public InvalidUnicodeCodePoint(Exception e) {
-<span class="nc" id="L417">            super(e);</span>
+        public InvalidUnicodeCodePoint(String msg) {
+<span class="nc" id="L417">            super(msg);</span>
 <span class="nc" id="L418">        }</span>
-        public InvalidUnicodeCodePoint(String msg, Exception e) {
-<span class="nc" id="L420">            super(msg, e);</span>
+        public InvalidUnicodeCodePoint(Exception e) {
+<span class="nc" id="L420">            super(e);</span>
 <span class="nc" id="L421">        }</span>
+        public InvalidUnicodeCodePoint(String msg, Exception e) {
+<span class="nc" id="L423">            super(msg, e);</span>
+<span class="nc" id="L424">        }</span>
     }
 
 
@@ -429,144 +432,144 @@ import java.io.OutputStream;
         // instead of in a byte array as previous timing
         // of array dereferencing (circa 2009) shows it
         // to be remarkably slow.
-<span class="nc" id="L432">              private int          _expected_count = 0;</span>
-<span class="nc" id="L433">              private int          _pending_count = 0;</span>
+<span class="nc" id="L435">              private int          _expected_count = 0;</span>
+<span class="nc" id="L436">              private int          _pending_count = 0;</span>
               private int          _pending_c1;
               private int          _pending_c2;
               private int          _pending_c3;
 
-<span class="nc" id="L438">        public UTF8ToChar(Appendable charStream) {</span>
-<span class="nc" id="L439">            _char_stream = charStream;</span>
-<span class="nc" id="L440">        }</span>
+<span class="nc" id="L441">        public UTF8ToChar(Appendable charStream) {</span>
+<span class="nc" id="L442">            _char_stream = charStream;</span>
+<span class="nc" id="L443">        }</span>
         public final Appendable getAppendable() {
-<span class="nc" id="L442">            return _char_stream;</span>
+<span class="nc" id="L445">            return _char_stream;</span>
         }
 
         @Override
         public final void close() throws IOException
         {
-<span class="nc bnc" id="L448" title="All 2 branches missed.">            if (_pending_count &gt; 0) {</span>
-<span class="nc" id="L449">                throw new IOException(&quot;unfinished utf8 sequence still open&quot;);</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">            if (_pending_count &gt; 0) {</span>
+<span class="nc" id="L452">                throw new IOException(&quot;unfinished utf8 sequence still open&quot;);</span>
             }
-<span class="nc" id="L451">        }</span>
+<span class="nc" id="L454">        }</span>
 
         @Override
         public final void write(int b) throws IOException
         {
-<span class="nc" id="L456">            b = b &amp; 0xff;</span>
-<span class="nc bnc" id="L457" title="All 2 branches missed.">            if (_expected_count &gt; 0) {</span>
-<span class="nc" id="L458">                write_helper_continue(b);</span>
+<span class="nc" id="L459">            b = b &amp; 0xff;</span>
+<span class="nc bnc" id="L460" title="All 2 branches missed.">            if (_expected_count &gt; 0) {</span>
+<span class="nc" id="L461">                write_helper_continue(b);</span>
             }
-<span class="nc bnc" id="L460" title="All 2 branches missed.">            else if (b &gt; 127) {</span>
-<span class="nc bnc" id="L461" title="All 2 branches missed.">                if (!IonUTF8.isStartByte(b)) {</span>
-<span class="nc" id="L462">                    throw new IOException(&quot;invalid UTF8 sequence: byte &gt; 127 is not a UTF8 leading byte&quot;);</span>
+<span class="nc bnc" id="L463" title="All 2 branches missed.">            else if (b &gt; 127) {</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">                if (!IonUTF8.isStartByte(b)) {</span>
+<span class="nc" id="L465">                    throw new IOException(&quot;invalid UTF8 sequence: byte &gt; 127 is not a UTF8 leading byte&quot;);</span>
                 }
-<span class="nc" id="L464">                write_helper_start_sequence(b);</span>
+<span class="nc" id="L467">                write_helper_start_sequence(b);</span>
             }
             else {
-<span class="nc" id="L467">                _char_stream.append((char)b);</span>
+<span class="nc" id="L470">                _char_stream.append((char)b);</span>
             }
-<span class="nc" id="L469">        }</span>
+<span class="nc" id="L472">        }</span>
 
         @Override
         public final void write(byte[] bytes) throws IOException
         {
-<span class="nc" id="L474">            write(bytes, 0, bytes.length);</span>
-<span class="nc" id="L475">        }</span>
+<span class="nc" id="L477">            write(bytes, 0, bytes.length);</span>
+<span class="nc" id="L478">        }</span>
 
         @Override
         public final void write(byte[] bytes, int off, int len) throws IOException
         {
-<span class="nc bnc" id="L480" title="All 2 branches missed.">            for (int ii=off; ii&lt;off+len; ii++) {</span>
-<span class="nc" id="L481">                int b = bytes[ii] &amp; 0xff;</span>
-<span class="nc bnc" id="L482" title="All 4 branches missed.">                if (_pending_count == 0 &amp;&amp; b &lt; 128) {</span>
-<span class="nc" id="L483">                    _char_stream.append((char)b);</span>
+<span class="nc bnc" id="L483" title="All 2 branches missed.">            for (int ii=off; ii&lt;off+len; ii++) {</span>
+<span class="nc" id="L484">                int b = bytes[ii] &amp; 0xff;</span>
+<span class="nc bnc" id="L485" title="All 4 branches missed.">                if (_pending_count == 0 &amp;&amp; b &lt; 128) {</span>
+<span class="nc" id="L486">                    _char_stream.append((char)b);</span>
                 }
                 else {
-<span class="nc" id="L486">                    write(b);</span>
+<span class="nc" id="L489">                    write(b);</span>
                 }
             }
-<span class="nc" id="L489">        }</span>
+<span class="nc" id="L492">        }</span>
 
         private final void write_helper_start_sequence(int b) throws IOException
         {
-<span class="nc" id="L493">            _expected_count = IonUTF8.getUTF8LengthFromFirstByte(b);</span>
-<span class="nc" id="L494">            _pending_count = 1;</span>
-<span class="nc" id="L495">            _pending_c1 = b;</span>
-<span class="nc" id="L496">        }</span>
+<span class="nc" id="L496">            _expected_count = IonUTF8.getUTF8LengthFromFirstByte(b);</span>
+<span class="nc" id="L497">            _pending_count = 1;</span>
+<span class="nc" id="L498">            _pending_c1 = b;</span>
+<span class="nc" id="L499">        }</span>
         private final void write_helper_continue(int b) throws IOException
         {
-<span class="nc" id="L499">            _pending_count++;</span>
-<span class="nc bnc" id="L500" title="All 2 branches missed.">            if (_expected_count == _pending_count) {</span>
-<span class="nc" id="L501">                write_helper_write_char(b);</span>
+<span class="nc" id="L502">            _pending_count++;</span>
+<span class="nc bnc" id="L503" title="All 2 branches missed.">            if (_expected_count == _pending_count) {</span>
+<span class="nc" id="L504">                write_helper_write_char(b);</span>
             }
             else {
-<span class="nc bnc" id="L504" title="All 3 branches missed.">                switch(_pending_count) {</span>
+<span class="nc bnc" id="L507" title="All 3 branches missed.">                switch(_pending_count) {</span>
                 case 2:
-<span class="nc" id="L506">                    _pending_c2 = b;</span>
-<span class="nc" id="L507">                    break;</span>
-                case 3:
-<span class="nc" id="L509">                    _pending_c3 = b;</span>
+<span class="nc" id="L509">                    _pending_c2 = b;</span>
 <span class="nc" id="L510">                    break;</span>
+                case 3:
+<span class="nc" id="L512">                    _pending_c3 = b;</span>
+<span class="nc" id="L513">                    break;</span>
                 default:
-<span class="nc" id="L512">                    throw new IOException(&quot;invalid state for pending vs expected UTF8 bytes&quot;);</span>
+<span class="nc" id="L515">                    throw new IOException(&quot;invalid state for pending vs expected UTF8 bytes&quot;);</span>
                 }
             }
-<span class="nc" id="L515">        }</span>
+<span class="nc" id="L518">        }</span>
         private final void write_helper_write_char(int b) throws IOException
         {
             char c;
             int  s;
-<span class="nc bnc" id="L520" title="All 4 branches missed.">            switch(_pending_count) {</span>
+<span class="nc bnc" id="L523" title="All 4 branches missed.">            switch(_pending_count) {</span>
             case 2:
-<span class="nc bnc" id="L522" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(b)) {</span>
-<span class="nc" id="L523">                    throwBadContinuationByte();</span>
+<span class="nc bnc" id="L525" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(b)) {</span>
+<span class="nc" id="L526">                    throwBadContinuationByte();</span>
                 }
-<span class="nc" id="L525">                c = IonUTF8.twoByteScalar(_pending_c1, b);</span>
-<span class="nc" id="L526">                _char_stream.append(c);</span>
-<span class="nc" id="L527">                break;</span>
+<span class="nc" id="L528">                c = IonUTF8.twoByteScalar(_pending_c1, b);</span>
+<span class="nc" id="L529">                _char_stream.append(c);</span>
+<span class="nc" id="L530">                break;</span>
             case 3:
-<span class="nc bnc" id="L529" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(b)) {</span>
-<span class="nc" id="L530">                    throwBadContinuationByte();</span>
-                }
-<span class="nc bnc" id="L532" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(_pending_c2)) {</span>
+<span class="nc bnc" id="L532" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(b)) {</span>
 <span class="nc" id="L533">                    throwBadContinuationByte();</span>
                 }
-<span class="nc" id="L535">                s = IonUTF8.threeByteScalar(_pending_c1, _pending_c2, b);</span>
-<span class="nc bnc" id="L536" title="All 2 branches missed.">                if (IonUTF8.needsSurrogateEncoding(s)) {</span>
-<span class="nc" id="L537">                    _char_stream.append(IonUTF8.lowSurrogate(s));</span>
-<span class="nc" id="L538">                    _char_stream.append(IonUTF8.highSurrogate(s));</span>
+<span class="nc bnc" id="L535" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(_pending_c2)) {</span>
+<span class="nc" id="L536">                    throwBadContinuationByte();</span>
+                }
+<span class="nc" id="L538">                s = IonUTF8.threeByteScalar(_pending_c1, _pending_c2, b);</span>
+<span class="nc bnc" id="L539" title="All 2 branches missed.">                if (IonUTF8.needsSurrogateEncoding(s)) {</span>
+<span class="nc" id="L540">                    _char_stream.append(IonUTF8.lowSurrogate(s));</span>
+<span class="nc" id="L541">                    _char_stream.append(IonUTF8.highSurrogate(s));</span>
                 }
                 else {
-<span class="nc" id="L541">                    _char_stream.append((char)s);</span>
+<span class="nc" id="L544">                    _char_stream.append((char)s);</span>
                 }
-<span class="nc" id="L543">                break;</span>
+<span class="nc" id="L546">                break;</span>
             case 4:
-<span class="nc bnc" id="L545" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(b)) {</span>
-<span class="nc" id="L546">                    throwBadContinuationByte();</span>
-                }
-<span class="nc bnc" id="L548" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(_pending_c2)) {</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(b)) {</span>
 <span class="nc" id="L549">                    throwBadContinuationByte();</span>
                 }
-<span class="nc bnc" id="L551" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(_pending_c3)) {</span>
+<span class="nc bnc" id="L551" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(_pending_c2)) {</span>
 <span class="nc" id="L552">                    throwBadContinuationByte();</span>
                 }
-<span class="nc" id="L554">                s = IonUTF8.fourByteScalar(_pending_c1, _pending_c2, _pending_c3, b);</span>
-<span class="nc bnc" id="L555" title="All 2 branches missed.">                if (IonUTF8.needsSurrogateEncoding(s)) {</span>
-<span class="nc" id="L556">                    _char_stream.append(IonUTF8.lowSurrogate(s));</span>
-<span class="nc" id="L557">                    _char_stream.append(IonUTF8.highSurrogate(s));</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">                if (!IonUTF8.isContinueByteUTF8(_pending_c3)) {</span>
+<span class="nc" id="L555">                    throwBadContinuationByte();</span>
+                }
+<span class="nc" id="L557">                s = IonUTF8.fourByteScalar(_pending_c1, _pending_c2, _pending_c3, b);</span>
+<span class="nc bnc" id="L558" title="All 2 branches missed.">                if (IonUTF8.needsSurrogateEncoding(s)) {</span>
+<span class="nc" id="L559">                    _char_stream.append(IonUTF8.lowSurrogate(s));</span>
+<span class="nc" id="L560">                    _char_stream.append(IonUTF8.highSurrogate(s));</span>
                 }
                 else {
-<span class="nc" id="L560">                    _char_stream.append((char)s);</span>
+<span class="nc" id="L563">                    _char_stream.append((char)s);</span>
                 }
-<span class="nc" id="L562">                break;</span>
+<span class="nc" id="L565">                break;</span>
             default:
-<span class="nc" id="L564">                throw new IOException(&quot;invalid state for UTF8 sequence length &quot;+_pending_count);</span>
+<span class="nc" id="L567">                throw new IOException(&quot;invalid state for UTF8 sequence length &quot;+_pending_count);</span>
             }
-<span class="nc" id="L566">        }</span>
+<span class="nc" id="L569">        }</span>
         private void throwBadContinuationByte() throws IOException
         {
-<span class="nc" id="L569">            throw new IOException(&quot;continuation byte expected&quot;);</span>
+<span class="nc" id="L572">            throw new IOException(&quot;continuation byte expected&quot;);</span>
         }
     }
 }

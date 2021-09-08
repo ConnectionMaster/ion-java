@@ -150,38 +150,41 @@
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> testGetIntegerSizeIntBoundary(<strong class="jxr_keyword">int</strong> boundaryValue, <strong class="jxr_keyword">long</strong> pastBoundary)
 <a class="jxr_linenumber" name="L143" href="#L143">143</a>     {
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>         in.next();
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>         assertEquals(IntegerSize.INT, in.getIntegerSize());
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>         assertEquals(boundaryValue, in.intValue());
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>         assertEquals(IntegerSize.INT, in.getIntegerSize()); <em class="jxr_comment">// assert nothing changes until next()</em>
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>         in.next();
-<a class="jxr_linenumber" name="L149" href="#L149">149</a>         assertEquals(IntegerSize.LONG, in.getIntegerSize());
-<a class="jxr_linenumber" name="L150" href="#L150">150</a>         assertEquals(pastBoundary, in.longValue());
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <em class="jxr_comment">// It's fine if IntegerSize recommends a larger-than-necessary type, just not a smaller one.</em>
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>         assertTrue(IntegerSize.INT == in.getIntegerSize() || IntegerSize.LONG == in.getIntegerSize());
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>         assertEquals(boundaryValue, in.intValue());
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>         <em class="jxr_comment">// assert nothing changes until next()</em>
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>         assertTrue(IntegerSize.INT == in.getIntegerSize() || IntegerSize.LONG == in.getIntegerSize());
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>         in.next();
 <a class="jxr_linenumber" name="L151" href="#L151">151</a>         assertEquals(IntegerSize.LONG, in.getIntegerSize());
-<a class="jxr_linenumber" name="L152" href="#L152">152</a>     }
-<a class="jxr_linenumber" name="L153" href="#L153">153</a> 
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> testGetIntegerSizeLongBoundary(<strong class="jxr_keyword">long</strong> boundaryValue, BigInteger pastBoundary)
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>     {
-<a class="jxr_linenumber" name="L156" href="#L156">156</a>         in.next();
-<a class="jxr_linenumber" name="L157" href="#L157">157</a>         assertEquals(IntegerSize.LONG, in.getIntegerSize());
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>         assertEquals(boundaryValue, in.longValue());
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>         assertEquals(IntegerSize.LONG, in.getIntegerSize());
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>         in.next();
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>         assertEquals(IntegerSize.BIG_INTEGER, in.getIntegerSize());
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>         assertEquals(pastBoundary, in.bigIntegerValue());
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>         assertEquals(IntegerSize.BIG_INTEGER, in.getIntegerSize());
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>     }
-<a class="jxr_linenumber" name="L165" href="#L165">165</a> 
-<a class="jxr_linenumber" name="L166" href="#L166">166</a>     <strong class="jxr_keyword">private</strong> BigInteger loadBoundaries(<strong class="jxr_keyword">long</strong> boundaryValue, IntRadix intRadix)
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>     {
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>         BigInteger boundary = BigInteger.valueOf(boundaryValue);
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>         BigInteger pastBoundary = (boundaryValue &lt; 0) ? boundary.subtract(BigInteger.ONE) : boundary.add(BigInteger.ONE);
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>         String ionText = intRadix.getString(boundary) + <span class="jxr_string">" "</span> + intRadix.getString(pastBoundary);
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>         read(ionText);
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>         <strong class="jxr_keyword">return</strong> pastBoundary;
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>     }
-<a class="jxr_linenumber" name="L174" href="#L174">174</a> }
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>         assertEquals(pastBoundary, in.longValue());
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>         assertEquals(IntegerSize.LONG, in.getIntegerSize());
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>     }
+<a class="jxr_linenumber" name="L155" href="#L155">155</a> 
+<a class="jxr_linenumber" name="L156" href="#L156">156</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> testGetIntegerSizeLongBoundary(<strong class="jxr_keyword">long</strong> boundaryValue, BigInteger pastBoundary)
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>     {
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>         in.next();
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>         <em class="jxr_comment">// It's fine if IntegerSize recommends a larger-than-necessary type, just not a smaller one.</em>
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>         assertTrue(IntegerSize.LONG == in.getIntegerSize() || IntegerSize.BIG_INTEGER == in.getIntegerSize());
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>         assertEquals(boundaryValue, in.longValue());
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>         assertTrue(IntegerSize.LONG == in.getIntegerSize() || IntegerSize.BIG_INTEGER == in.getIntegerSize());
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>         in.next();
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>         assertEquals(IntegerSize.BIG_INTEGER, in.getIntegerSize());
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>         assertEquals(pastBoundary, in.bigIntegerValue());
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>         assertEquals(IntegerSize.BIG_INTEGER, in.getIntegerSize());
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>     }
+<a class="jxr_linenumber" name="L168" href="#L168">168</a> 
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>     <strong class="jxr_keyword">private</strong> BigInteger loadBoundaries(<strong class="jxr_keyword">long</strong> boundaryValue, IntRadix intRadix)
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>     {
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         BigInteger boundary = BigInteger.valueOf(boundaryValue);
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>         BigInteger pastBoundary = (boundaryValue &lt; 0) ? boundary.subtract(BigInteger.ONE) : boundary.add(BigInteger.ONE);
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         String ionText = intRadix.getString(boundary) + <span class="jxr_string">" "</span> + intRadix.getString(pastBoundary);
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>         read(ionText);
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>         <strong class="jxr_keyword">return</strong> pastBoundary;
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>     }
+<a class="jxr_linenumber" name="L177" href="#L177">177</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

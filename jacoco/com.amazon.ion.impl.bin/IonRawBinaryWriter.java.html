@@ -46,15 +46,14 @@ import com.amazon.ion.IonWriter;
 import com.amazon.ion.SymbolTable;
 import com.amazon.ion.SymbolToken;
 import com.amazon.ion.Timestamp;
+import com.amazon.ion.impl._Private_RecyclingStack;
+import com.amazon.ion.impl.bin.utf8.Utf8StringEncoder;
+import com.amazon.ion.impl.bin.utf8.Utf8StringEncoderPool;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,37 +67,37 @@ import java.util.NoSuchElementException;
 {
     /** short-hand for array of bytes--useful for static definitions. */
     private static byte[] bytes(int... vals) {
-<span class="fc" id="L71">        final byte[] octets = new byte[vals.length];</span>
+<span class="fc" id="L70">        final byte[] octets = new byte[vals.length];</span>
 
-<span class="fc bfc" id="L73" title="All 2 branches covered.">        for (int i = 0; i &lt; vals.length; i++) {</span>
-<span class="fc" id="L74">            octets[i] = (byte) vals[i];</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        for (int i = 0; i &lt; vals.length; i++) {</span>
+<span class="fc" id="L73">            octets[i] = (byte) vals[i];</span>
         }
 
-<span class="fc" id="L77">        return octets;</span>
+<span class="fc" id="L76">        return octets;</span>
     }
 
-<span class="fc" id="L80">    private static final byte[] IVM = bytes(0xE0, 0x01, 0x00, 0xEA);</span>
+<span class="fc" id="L79">    private static final byte[] IVM = bytes(0xE0, 0x01, 0x00, 0xEA);</span>
 
     private static final byte[] NULLS;
     static {
-<span class="fc" id="L84">        final IonType[] types = IonType.values();</span>
-<span class="fc" id="L85">        NULLS = new byte[types.length];</span>
+<span class="fc" id="L83">        final IonType[] types = IonType.values();</span>
+<span class="fc" id="L84">        NULLS = new byte[types.length];</span>
 
-<span class="fc" id="L87">        NULLS[NULL.ordinal()]           = (byte) 0x0F;</span>
-<span class="fc" id="L88">        NULLS[BOOL.ordinal()]           = (byte) 0x1F;</span>
-<span class="fc" id="L89">        NULLS[INT.ordinal()]            = (byte) 0x2F;</span>
-<span class="fc" id="L90">        NULLS[FLOAT.ordinal()]          = (byte) 0x4F;</span>
-<span class="fc" id="L91">        NULLS[DECIMAL.ordinal()]        = (byte) 0x5F;</span>
-<span class="fc" id="L92">        NULLS[TIMESTAMP.ordinal()]      = (byte) 0x6F;</span>
-<span class="fc" id="L93">        NULLS[SYMBOL.ordinal()]         = (byte) 0x7F;</span>
-<span class="fc" id="L94">        NULLS[STRING.ordinal()]         = (byte) 0x8F;</span>
-<span class="fc" id="L95">        NULLS[CLOB.ordinal()]           = (byte) 0x9F;</span>
-<span class="fc" id="L96">        NULLS[BLOB.ordinal()]           = (byte) 0xAF;</span>
-<span class="fc" id="L97">        NULLS[LIST.ordinal()]           = (byte) 0xBF;</span>
-<span class="fc" id="L98">        NULLS[SEXP.ordinal()]           = (byte) 0xCF;</span>
-<span class="fc" id="L99">        NULLS[STRUCT.ordinal()]         = (byte) 0xDF;</span>
+<span class="fc" id="L86">        NULLS[NULL.ordinal()]           = (byte) 0x0F;</span>
+<span class="fc" id="L87">        NULLS[BOOL.ordinal()]           = (byte) 0x1F;</span>
+<span class="fc" id="L88">        NULLS[INT.ordinal()]            = (byte) 0x2F;</span>
+<span class="fc" id="L89">        NULLS[FLOAT.ordinal()]          = (byte) 0x4F;</span>
+<span class="fc" id="L90">        NULLS[DECIMAL.ordinal()]        = (byte) 0x5F;</span>
+<span class="fc" id="L91">        NULLS[TIMESTAMP.ordinal()]      = (byte) 0x6F;</span>
+<span class="fc" id="L92">        NULLS[SYMBOL.ordinal()]         = (byte) 0x7F;</span>
+<span class="fc" id="L93">        NULLS[STRING.ordinal()]         = (byte) 0x8F;</span>
+<span class="fc" id="L94">        NULLS[CLOB.ordinal()]           = (byte) 0x9F;</span>
+<span class="fc" id="L95">        NULLS[BLOB.ordinal()]           = (byte) 0xAF;</span>
+<span class="fc" id="L96">        NULLS[LIST.ordinal()]           = (byte) 0xBF;</span>
+<span class="fc" id="L97">        NULLS[SEXP.ordinal()]           = (byte) 0xCF;</span>
+<span class="fc" id="L98">        NULLS[STRUCT.ordinal()]         = (byte) 0xDF;</span>
     }
-<span class="fc" id="L101">    private static final byte NULL_NULL = NULLS[NULL.ordinal()];</span>
+<span class="fc" id="L100">    private static final byte NULL_NULL = NULLS[NULL.ordinal()];</span>
 
     private static final byte BOOL_FALSE        = (byte) 0x10;
     private static final byte BOOL_TRUE         = (byte) 0x11;
@@ -120,76 +119,71 @@ import java.util.NoSuchElementException;
     private static final byte DECIMAL_POS_ZERO               = (byte) 0x50;
     private static final byte DECIMAL_NEGATIVE_ZERO_MANTISSA = (byte) 0x80;
 
-<span class="fc" id="L123">    private static final BigInteger BIG_INT_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);</span>
-<span class="fc" id="L124">    private static final BigInteger BIG_INT_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);</span>
+<span class="fc" id="L122">    private static final BigInteger BIG_INT_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);</span>
+<span class="fc" id="L123">    private static final BigInteger BIG_INT_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);</span>
 
     private static final byte VARINT_NEG_ZERO   = (byte) 0xC0;
 
-    // See IonRawBinaryWriter#writeString(String) for usage information.
-    static final int SMALL_STRING_SIZE = 4 * 1024;
-
-    // Reusable resources for encoding Strings as UTF-8 bytes
-<span class="fc" id="L132">    final CharsetEncoder utf8Encoder = Charset.forName(&quot;UTF-8&quot;).newEncoder();</span>
-<span class="fc" id="L133">    final ByteBuffer utf8EncodingBuffer = ByteBuffer.allocate((int) (SMALL_STRING_SIZE * utf8Encoder.maxBytesPerChar()));</span>
-<span class="fc" id="L134">    final char[] charArray = new char[SMALL_STRING_SIZE];</span>
-<span class="fc" id="L135">    final CharBuffer reusableCharBuffer = CharBuffer.wrap(charArray);</span>
+<span class="fc" id="L127">    final Utf8StringEncoder utf8StringEncoder = Utf8StringEncoderPool</span>
+<span class="fc" id="L128">            .getInstance()</span>
+<span class="fc" id="L129">            .getOrCreateUtf8Encoder();</span>
 
     private static final byte[] makeTypedPreallocatedBytes(final int typeDesc, final int length)
     {
-<span class="fc" id="L139">        final byte[] bytes = new byte[length];</span>
-<span class="fc" id="L140">        bytes[0]          = (byte) typeDesc;</span>
-<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (length &gt; 1)</span>
+<span class="fc" id="L133">        final byte[] bytes = new byte[length];</span>
+<span class="fc" id="L134">        bytes[0]          = (byte) typeDesc;</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">        if (length &gt; 1)</span>
         {
-<span class="fc" id="L143">            bytes[length - 1] = (byte) 0x80;</span>
+<span class="fc" id="L137">            bytes[length - 1] = (byte) 0x80;</span>
         }
-<span class="fc" id="L145">        return bytes;</span>
+<span class="fc" id="L139">        return bytes;</span>
     }
 
     private static byte[][] makeContainerTypedPreallocatedTable(final int length) {
-<span class="fc" id="L149">        final IonType[] types = IonType.values();</span>
-<span class="fc" id="L150">        byte[][] extendedSizes = new byte[types.length][];</span>
+<span class="fc" id="L143">        final IonType[] types = IonType.values();</span>
+<span class="fc" id="L144">        byte[][] extendedSizes = new byte[types.length][];</span>
 
 
-<span class="fc" id="L153">        extendedSizes[LIST.ordinal()]   = makeTypedPreallocatedBytes(0xBE, length);</span>
-<span class="fc" id="L154">        extendedSizes[SEXP.ordinal()]   = makeTypedPreallocatedBytes(0xCE, length);</span>
-<span class="fc" id="L155">        extendedSizes[STRUCT.ordinal()] = makeTypedPreallocatedBytes(0xDE, length);</span>
+<span class="fc" id="L147">        extendedSizes[LIST.ordinal()]   = makeTypedPreallocatedBytes(0xBE, length);</span>
+<span class="fc" id="L148">        extendedSizes[SEXP.ordinal()]   = makeTypedPreallocatedBytes(0xCE, length);</span>
+<span class="fc" id="L149">        extendedSizes[STRUCT.ordinal()] = makeTypedPreallocatedBytes(0xDE, length);</span>
 
-<span class="fc" id="L157">        return extendedSizes;</span>
+<span class="fc" id="L151">        return extendedSizes;</span>
     }
 
     /**
      * Determines how container/container-like values should be padded
      */
-<span class="fc" id="L163">    /*package*/ enum PreallocationMode</span>
+<span class="fc" id="L157">    /*package*/ enum PreallocationMode</span>
     {
         /** Allocate no length.  (forces side patching) */
-<span class="fc" id="L166">        PREALLOCATE_0(0x0000,   1)</span>
+<span class="fc" id="L160">        PREALLOCATE_0(0x0000,   1)</span>
         {
             @Override
             /*package*/ void patchLength(final WriteBuffer buffer, final long position, final long lengthValue)
             {
-<span class="nc" id="L171">                throw new IllegalStateException(&quot;Cannot patch in PREALLOCATE 0 mode&quot;);</span>
+<span class="nc" id="L165">                throw new IllegalStateException(&quot;Cannot patch in PREALLOCATE 0 mode&quot;);</span>
             }
         },
 
         /** Preallocate 1 byte of length. */
-<span class="fc" id="L176">        PREALLOCATE_1(0x007F,   2)</span>
+<span class="fc" id="L170">        PREALLOCATE_1(0x007F,   2)</span>
         {
             @Override
             /*package*/ void patchLength(final WriteBuffer buffer, long position, long lengthValue)
             {
-<span class="fc" id="L181">                buffer.writeVarUIntDirect1At(position, lengthValue);</span>
-<span class="fc" id="L182">            }</span>
+<span class="fc" id="L175">                buffer.writeVarUIntDirect1At(position, lengthValue);</span>
+<span class="fc" id="L176">            }</span>
         },
 
         /** Preallocate 2 bytes of length. */
-<span class="fc" id="L186">        PREALLOCATE_2(0x3FFF,   3)</span>
+<span class="fc" id="L180">        PREALLOCATE_2(0x3FFF,   3)</span>
         {
             @Override
             /*package*/ void patchLength(final WriteBuffer buffer, long position, long lengthValue)
             {
-<span class="fc" id="L191">                buffer.writeVarUIntDirect2At(position, lengthValue);</span>
-<span class="fc" id="L192">            }</span>
+<span class="fc" id="L185">                buffer.writeVarUIntDirect2At(position, lengthValue);</span>
+<span class="fc" id="L186">            }</span>
         }
         ;
 
@@ -199,50 +193,50 @@ import java.util.NoSuchElementException;
         private final byte[]    annotationsTypedPreallocatedBytes;
 
         private PreallocationMode(final int contentMaxLength, final int typedLength)
-<span class="fc" id="L202">        {</span>
-<span class="fc" id="L203">            this.contentMaxLength = contentMaxLength;</span>
-<span class="fc" id="L204">            this.typedLength = typedLength;</span>
-<span class="fc" id="L205">            this.containerTypedPreallocatedBytes   = makeContainerTypedPreallocatedTable(typedLength);</span>
-<span class="fc" id="L206">            this.annotationsTypedPreallocatedBytes = makeTypedPreallocatedBytes(0xEE, typedLength);</span>
-<span class="fc" id="L207">        }</span>
+<span class="fc" id="L196">        {</span>
+<span class="fc" id="L197">            this.contentMaxLength = contentMaxLength;</span>
+<span class="fc" id="L198">            this.typedLength = typedLength;</span>
+<span class="fc" id="L199">            this.containerTypedPreallocatedBytes   = makeContainerTypedPreallocatedTable(typedLength);</span>
+<span class="fc" id="L200">            this.annotationsTypedPreallocatedBytes = makeTypedPreallocatedBytes(0xEE, typedLength);</span>
+<span class="fc" id="L201">        }</span>
 
         /*package*/ abstract void patchLength(final WriteBuffer buffer, final long position, final long length);
 
         /*package*/ static PreallocationMode withPadSize(final int pad)
         {
-<span class="pc bpc" id="L213" title="3 of 4 branches missed.">            switch (pad)</span>
+<span class="pc bpc" id="L207" title="2 of 4 branches missed.">            switch (pad)</span>
             {
                 case 0:
-<span class="fc" id="L216">                    return PreallocationMode.PREALLOCATE_0;</span>
+<span class="fc" id="L210">                    return PreallocationMode.PREALLOCATE_0;</span>
                 case 1:
-<span class="nc" id="L218">                    return PreallocationMode.PREALLOCATE_1;</span>
+<span class="nc" id="L212">                    return PreallocationMode.PREALLOCATE_1;</span>
                 case 2:
-<span class="nc" id="L220">                    return PreallocationMode.PREALLOCATE_2;</span>
+<span class="fc" id="L214">                    return PreallocationMode.PREALLOCATE_2;</span>
             }
-<span class="nc" id="L222">            throw new IllegalArgumentException(&quot;No such preallocation mode for: &quot; + pad);</span>
+<span class="nc" id="L216">            throw new IllegalArgumentException(&quot;No such preallocation mode for: &quot; + pad);</span>
         }
     }
 
     private static final byte STRING_TYPE_EXTENDED_LENGTH       = (byte) 0x8E;
-<span class="fc" id="L227">    private static final byte[] STRING_TYPED_PREALLOCATED_2     = makeTypedPreallocatedBytes(0x8E, 2);</span>
-<span class="fc" id="L228">    private static final byte[] STRING_TYPED_PREALLOCATED_3     = makeTypedPreallocatedBytes(0x8E, 3);</span>
+<span class="fc" id="L221">    private static final byte[] STRING_TYPED_PREALLOCATED_2     = makeTypedPreallocatedBytes(0x8E, 2);</span>
+<span class="fc" id="L222">    private static final byte[] STRING_TYPED_PREALLOCATED_3     = makeTypedPreallocatedBytes(0x8E, 3);</span>
 
     /** Max supported annotation length specifier size supported. */
     private static final int MAX_ANNOTATION_LENGTH = 0x7F;
 
-<span class="fc" id="L233">    private enum ContainerType</span>
+<span class="fc" id="L227">    private enum ContainerType</span>
     {
-<span class="fc" id="L235">        SEQUENCE(true),</span>
-<span class="fc" id="L236">        STRUCT(true),</span>
-<span class="fc" id="L237">        VALUE(false),</span>
-<span class="fc" id="L238">        ANNOTATION(false);</span>
+<span class="fc" id="L229">        SEQUENCE(true),</span>
+<span class="fc" id="L230">        STRUCT(true),</span>
+<span class="fc" id="L231">        VALUE(false),</span>
+<span class="fc" id="L232">        ANNOTATION(false);</span>
 
         public final boolean allowedInStepOut;
 
         private ContainerType(final boolean allowedInStepOut)
-<span class="fc" id="L243">        {</span>
-<span class="fc" id="L244">            this.allowedInStepOut = allowedInStepOut;</span>
-<span class="fc" id="L245">        }</span>
+<span class="fc" id="L237">        {</span>
+<span class="fc" id="L238">            this.allowedInStepOut = allowedInStepOut;</span>
+<span class="fc" id="L239">        }</span>
     }
 
     private static class ContainerInfo
@@ -257,45 +251,45 @@ import java.util.NoSuchElementException;
         public PatchList patches;
 
         public ContainerInfo()
-<span class="fc" id="L260">        {</span>
-<span class="fc" id="L261">            type = null;</span>
-<span class="fc" id="L262">            position = -1;</span>
-<span class="fc" id="L263">            length = -1;</span>
-<span class="fc" id="L264">            patches = null;</span>
-<span class="fc" id="L265">        }</span>
+<span class="fc" id="L254">        {</span>
+<span class="fc" id="L255">            type = null;</span>
+<span class="fc" id="L256">            position = -1;</span>
+<span class="fc" id="L257">            length = -1;</span>
+<span class="fc" id="L258">            patches = null;</span>
+<span class="fc" id="L259">        }</span>
 
         public void appendPatch(final PatchPoint patch)
         {
-<span class="fc bfc" id="L269" title="All 2 branches covered.">            if (patches == null)</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">            if (patches == null)</span>
             {
-<span class="fc" id="L271">                patches = new PatchList();</span>
+<span class="fc" id="L265">                patches = new PatchList();</span>
             }
-<span class="fc" id="L273">            patches.append(patch);</span>
-<span class="fc" id="L274">        }</span>
+<span class="fc" id="L267">            patches.append(patch);</span>
+<span class="fc" id="L268">        }</span>
 
         public void extendPatches(final PatchList newPatches)
         {
-<span class="pc bpc" id="L278" title="1 of 2 branches missed.">            if (patches == null)</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">            if (patches == null)</span>
             {
-<span class="nc" id="L280">                patches = newPatches;</span>
+<span class="nc" id="L274">                patches = newPatches;</span>
             }
             else
             {
-<span class="fc" id="L284">                patches.extend(newPatches);</span>
+<span class="fc" id="L278">                patches.extend(newPatches);</span>
             }
-<span class="fc" id="L286">        }</span>
+<span class="fc" id="L280">        }</span>
 
         public void initialize(final ContainerType type, final long offset) {
-<span class="fc" id="L289">            this.type = type;</span>
-<span class="fc" id="L290">            this.position = offset;</span>
-<span class="fc" id="L291">            this.patches = null;</span>
-<span class="fc" id="L292">            this.length = 0;</span>
-<span class="fc" id="L293">        }</span>
+<span class="fc" id="L283">            this.type = type;</span>
+<span class="fc" id="L284">            this.position = offset;</span>
+<span class="fc" id="L285">            this.patches = null;</span>
+<span class="fc" id="L286">            this.length = 0;</span>
+<span class="fc" id="L287">        }</span>
 
         @Override
         public String toString()
         {
-<span class="nc" id="L298">            return &quot;(CI &quot; + type + &quot; pos:&quot; + position + &quot; len:&quot; + length + &quot;)&quot;;</span>
+<span class="nc" id="L292">            return &quot;(CI &quot; + type + &quot; pos:&quot; + position + &quot; len:&quot; + length + &quot;)&quot;;</span>
         }
     }
 
@@ -311,17 +305,17 @@ import java.util.NoSuchElementException;
         public final int patchLength;
 
         public PatchPoint(final long oldPosition, final int oldLength, final long patchPosition, final int patchLength)
-<span class="fc" id="L314">        {</span>
-<span class="fc" id="L315">            this.oldPosition = oldPosition;</span>
-<span class="fc" id="L316">            this.oldLength = oldLength;</span>
-<span class="fc" id="L317">            this.patchPosition = patchPosition;</span>
-<span class="fc" id="L318">            this.patchLength = patchLength;</span>
-<span class="fc" id="L319">        }</span>
+<span class="fc" id="L308">        {</span>
+<span class="fc" id="L309">            this.oldPosition = oldPosition;</span>
+<span class="fc" id="L310">            this.oldLength = oldLength;</span>
+<span class="fc" id="L311">            this.patchPosition = patchPosition;</span>
+<span class="fc" id="L312">            this.patchLength = patchLength;</span>
+<span class="fc" id="L313">        }</span>
 
         @Override
         public String toString()
         {
-<span class="nc" id="L324">            return &quot;(PP old::(&quot; + oldPosition + &quot; &quot; + oldLength + &quot;) patch::(&quot; + patchPosition + &quot; &quot; + patchLength + &quot;)&quot;;</span>
+<span class="nc" id="L318">            return &quot;(PP old::(&quot; + oldPosition + &quot; &quot; + oldLength + &quot;) patch::(&quot; + patchPosition + &quot; &quot; + patchLength + &quot;)&quot;;</span>
         }
     }
 
@@ -336,117 +330,117 @@ import java.util.NoSuchElementException;
             public Node next;
 
             public Node(final PatchPoint value)
-<span class="fc" id="L339">            {</span>
-<span class="fc" id="L340">                this.value = value;</span>
-<span class="fc" id="L341">            }</span>
+<span class="fc" id="L333">            {</span>
+<span class="fc" id="L334">                this.value = value;</span>
+<span class="fc" id="L335">            }</span>
         }
         private Node head;
         private Node tail;
 
         public PatchList()
-<span class="fc" id="L347">        {</span>
-<span class="fc" id="L348">            head = null;</span>
-<span class="fc" id="L349">            tail = null;</span>
-<span class="fc" id="L350">        }</span>
+<span class="fc" id="L341">        {</span>
+<span class="fc" id="L342">            head = null;</span>
+<span class="fc" id="L343">            tail = null;</span>
+<span class="fc" id="L344">        }</span>
 
         public boolean isEmpty()
         {
-<span class="pc bpc" id="L354" title="1 of 4 branches missed.">            return head == null &amp;&amp; tail == null;</span>
+<span class="pc bpc" id="L348" title="1 of 4 branches missed.">            return head == null &amp;&amp; tail == null;</span>
         }
 
         public void clear()
         {
-<span class="fc" id="L359">            head = null;</span>
-<span class="fc" id="L360">            tail = null;</span>
-<span class="fc" id="L361">        }</span>
+<span class="fc" id="L353">            head = null;</span>
+<span class="fc" id="L354">            tail = null;</span>
+<span class="fc" id="L355">        }</span>
 
         public void append(final PatchPoint patch)
         {
-<span class="fc" id="L365">            final Node node = new Node(patch);</span>
-<span class="fc bfc" id="L366" title="All 2 branches covered.">            if (head == null)</span>
+<span class="fc" id="L359">            final Node node = new Node(patch);</span>
+<span class="fc bfc" id="L360" title="All 2 branches covered.">            if (head == null)</span>
             {
-<span class="fc" id="L368">                head = node;</span>
-<span class="fc" id="L369">                tail = node;</span>
+<span class="fc" id="L362">                head = node;</span>
+<span class="fc" id="L363">                tail = node;</span>
             }
             else
             {
-<span class="fc" id="L373">                tail.next = node;</span>
-<span class="fc" id="L374">                tail = node;</span>
+<span class="fc" id="L367">                tail.next = node;</span>
+<span class="fc" id="L368">                tail = node;</span>
             }
-<span class="fc" id="L376">        }</span>
+<span class="fc" id="L370">        }</span>
 
         public void extend(final PatchList end)
         {
-<span class="pc bpc" id="L380" title="1 of 2 branches missed.">            if (end != null)</span>
+<span class="pc bpc" id="L374" title="1 of 2 branches missed.">            if (end != null)</span>
             {
-<span class="pc bpc" id="L382" title="1 of 2 branches missed.">                if (head == null)</span>
+<span class="pc bpc" id="L376" title="1 of 2 branches missed.">                if (head == null)</span>
                 {
-<span class="nc bnc" id="L384" title="All 2 branches missed.">                    if (end.head != null)</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">                    if (end.head != null)</span>
                     {
-<span class="nc" id="L386">                        head = end.head;</span>
-<span class="nc" id="L387">                        tail = end.tail;</span>
+<span class="nc" id="L380">                        head = end.head;</span>
+<span class="nc" id="L381">                        tail = end.tail;</span>
                     }
                 }
                 else
                 {
-<span class="fc" id="L392">                    tail.next = end.head;</span>
-<span class="fc" id="L393">                    tail = end.tail;</span>
+<span class="fc" id="L386">                    tail.next = end.head;</span>
+<span class="fc" id="L387">                    tail = end.tail;</span>
                 }
             }
-<span class="fc" id="L396">        }</span>
+<span class="fc" id="L390">        }</span>
 
         public PatchPoint truncate(final long oldPosition)
         {
-<span class="fc" id="L400">            Node prev = null;</span>
-<span class="fc" id="L401">            Node curr = head;</span>
-<span class="fc bfc" id="L402" title="All 2 branches covered.">            while (curr != null)</span>
+<span class="fc" id="L394">            Node prev = null;</span>
+<span class="fc" id="L395">            Node curr = head;</span>
+<span class="fc bfc" id="L396" title="All 2 branches covered.">            while (curr != null)</span>
             {
-<span class="fc" id="L404">                final PatchPoint patch = curr.value;</span>
-<span class="fc bfc" id="L405" title="All 2 branches covered.">                if (patch.oldPosition &gt;= oldPosition)</span>
+<span class="fc" id="L398">                final PatchPoint patch = curr.value;</span>
+<span class="fc bfc" id="L399" title="All 2 branches covered.">                if (patch.oldPosition &gt;= oldPosition)</span>
                 {
-<span class="fc" id="L407">                    tail = prev;</span>
-<span class="fc bfc" id="L408" title="All 2 branches covered.">                    if (tail == null)</span>
+<span class="fc" id="L401">                    tail = prev;</span>
+<span class="fc bfc" id="L402" title="All 2 branches covered.">                    if (tail == null)</span>
                     {
-<span class="fc" id="L410">                        head = null;</span>
+<span class="fc" id="L404">                        head = null;</span>
                     }
                     else
                     {
-<span class="fc" id="L414">                        tail.next = null;</span>
+<span class="fc" id="L408">                        tail.next = null;</span>
                     }
-<span class="fc" id="L416">                    return patch;</span>
+<span class="fc" id="L410">                    return patch;</span>
                 }
 
-<span class="fc" id="L419">                prev = curr;</span>
-<span class="fc" id="L420">                curr = curr.next;</span>
-<span class="fc" id="L421">            }</span>
-<span class="fc" id="L422">            return null;</span>
+<span class="fc" id="L413">                prev = curr;</span>
+<span class="fc" id="L414">                curr = curr.next;</span>
+<span class="fc" id="L415">            }</span>
+<span class="fc" id="L416">            return null;</span>
         }
 
         public Iterator&lt;PatchPoint&gt; iterator()
         {
-<span class="fc" id="L427">            return new Iterator&lt;PatchPoint&gt;()</span>
-<span class="fc" id="L428">            {</span>
-<span class="fc" id="L429">                Node curr = head;</span>
+<span class="fc" id="L421">            return new Iterator&lt;PatchPoint&gt;()</span>
+<span class="fc" id="L422">            {</span>
+<span class="fc" id="L423">                Node curr = head;</span>
 
                 public boolean hasNext()
                 {
-<span class="fc bfc" id="L433" title="All 2 branches covered.">                    return curr != null;</span>
+<span class="fc bfc" id="L427" title="All 2 branches covered.">                    return curr != null;</span>
                 }
 
                 public PatchPoint next()
                 {
-<span class="pc bpc" id="L438" title="1 of 2 branches missed.">                    if (!hasNext())</span>
+<span class="pc bpc" id="L432" title="1 of 2 branches missed.">                    if (!hasNext())</span>
                     {
-<span class="nc" id="L440">                        throw new NoSuchElementException();</span>
+<span class="nc" id="L434">                        throw new NoSuchElementException();</span>
                     }
-<span class="fc" id="L442">                    final PatchPoint value = curr.value;</span>
-<span class="fc" id="L443">                    curr = curr.next;</span>
-<span class="fc" id="L444">                    return value;</span>
+<span class="fc" id="L436">                    final PatchPoint value = curr.value;</span>
+<span class="fc" id="L437">                    curr = curr.next;</span>
+<span class="fc" id="L438">                    return value;</span>
                 }
 
                 public void remove()
                 {
-<span class="nc" id="L449">                    throw new UnsupportedOperationException();</span>
+<span class="nc" id="L443">                    throw new UnsupportedOperationException();</span>
                 }
             };
         }
@@ -454,112 +448,28 @@ import java.util.NoSuchElementException;
         @Override
         public String toString()
         {
-<span class="nc" id="L457">            final StringBuilder buf = new StringBuilder();</span>
-<span class="nc" id="L458">            buf.append(&quot;(PATCHES&quot;);</span>
-<span class="nc bnc" id="L459" title="All 2 branches missed.">            for (final PatchPoint patch : this)</span>
+<span class="nc" id="L451">            final StringBuilder buf = new StringBuilder();</span>
+<span class="nc" id="L452">            buf.append(&quot;(PATCHES&quot;);</span>
+<span class="nc bnc" id="L453" title="All 2 branches missed.">            for (final PatchPoint patch : this)</span>
             {
-<span class="nc" id="L461">                buf.append(&quot; &quot;);</span>
-<span class="nc" id="L462">                buf.append(patch);</span>
-<span class="nc" id="L463">            }</span>
-<span class="nc" id="L464">            buf.append(&quot;)&quot;);</span>
-<span class="nc" id="L465">            return buf.toString();</span>
+<span class="nc" id="L455">                buf.append(&quot; &quot;);</span>
+<span class="nc" id="L456">                buf.append(patch);</span>
+<span class="nc" id="L457">            }</span>
+<span class="nc" id="L458">            buf.append(&quot;)&quot;);</span>
+<span class="nc" id="L459">            return buf.toString();</span>
         }
     }
 
-<span class="fc" id="L469">    /*package*/ enum StreamCloseMode</span>
+<span class="fc" id="L463">    /*package*/ enum StreamCloseMode</span>
     {
-<span class="fc" id="L471">        NO_CLOSE,</span>
-<span class="fc" id="L472">        CLOSE</span>
+<span class="fc" id="L465">        NO_CLOSE,</span>
+<span class="fc" id="L466">        CLOSE</span>
     }
 
-<span class="fc" id="L475">    /*package*/ enum StreamFlushMode</span>
+<span class="fc" id="L469">    /*package*/ enum StreamFlushMode</span>
     {
-<span class="fc" id="L477">        NO_FLUSH,</span>
-<span class="fc" id="L478">        FLUSH</span>
-    }
-
-    /**
-     * A stack whose elements are recycled. This can be useful when the stack needs to grow and shrink
-     * frequently and has a predictable maximum depth.
-     * @param &lt;T&gt; the type of elements stored.
-     */
-    private static final class RecyclingStack&lt;T&gt; {
-
-        /**
-         * Factory for new stack elements.
-         * @param &lt;T&gt; the type of element.
-         */
-        public interface ElementFactory&lt;T&gt; {
-
-            /**
-             * @return a new instance.
-             */
-            T newElement();
-        }
-
-        private final List&lt;T&gt; elements;
-        private final ElementFactory&lt;T&gt; elementFactory;
-        private int currentIndex;
-        private T top;
-
-        /**
-         * @param initialCapacity the initial capacity of the underlying collection.
-         * @param elementFactory the factory used to create a new element on {@link #push()} when the stack has
-         *                       not previously grown to the new depth.
-         */
-<span class="fc" id="L510">        public RecyclingStack(int initialCapacity, ElementFactory&lt;T&gt; elementFactory) {</span>
-<span class="fc" id="L511">            elements = new ArrayList&lt;T&gt;(initialCapacity);</span>
-<span class="fc" id="L512">            this.elementFactory = elementFactory;</span>
-<span class="fc" id="L513">            currentIndex = -1;</span>
-<span class="fc" id="L514">            top = null;</span>
-<span class="fc" id="L515">        }</span>
-
-        /**
-         * Pushes an element onto the top of the stack, instantiating a new element only if the stack has not
-         * previously grown to the new depth.
-         * @return the element at the top of the stack after the push. This element must be initialized by the caller.
-         */
-        public T push() {
-<span class="fc" id="L523">            currentIndex++;</span>
-<span class="fc bfc" id="L524" title="All 2 branches covered.">            if (currentIndex &gt;= elements.size()) {</span>
-<span class="fc" id="L525">                top = elementFactory.newElement();</span>
-<span class="fc" id="L526">                elements.add(top);</span>
-            }  else {
-<span class="fc" id="L528">                top = elements.get(currentIndex);</span>
-            }
-<span class="fc" id="L530">            return top;</span>
-        }
-
-        /**
-         * @return the element at the top of the stack, or null if the stack is empty.
-         */
-        public T peek() {
-<span class="fc" id="L537">            return top;</span>
-        }
-
-        /**
-         * Pops an element from the stack, retaining a reference to the element so that it can be reused the
-         * next time the stack grows to the element's depth.
-         * @return the element that was at the top of the stack before the pop, or null if the stack was empty.
-         */
-        public T pop() {
-<span class="fc" id="L546">            T popped = top;</span>
-<span class="fc" id="L547">            currentIndex--;</span>
-<span class="fc bfc" id="L548" title="All 2 branches covered.">            if (currentIndex &gt;= 0) {</span>
-<span class="fc" id="L549">                top = elements.get(currentIndex);</span>
-            } else {
-<span class="fc" id="L551">                top = null;</span>
-<span class="fc" id="L552">                currentIndex = -1;</span>
-            }
-<span class="fc" id="L554">            return popped;</span>
-        }
-
-        /**
-         * @return true if the stack is empty; otherwise, false.
-         */
-        public boolean isEmpty() {
-<span class="fc bfc" id="L561" title="All 2 branches covered.">            return top == null;</span>
-        }
+<span class="fc" id="L471">        NO_FLUSH,</span>
+<span class="fc" id="L472">        FLUSH</span>
     }
 
     private static final int SID_UNASSIGNED = -1;
@@ -573,7 +483,7 @@ import java.util.NoSuchElementException;
     private final WriteBuffer                   buffer;
     private final WriteBuffer                   patchBuffer;
     private final PatchList                     patchPoints;
-    private final RecyclingStack&lt;ContainerInfo&gt; containers;
+    private final _Private_RecyclingStack&lt;ContainerInfo&gt; containers;
     private int                                 depth;
     private boolean                             hasWrittenValuesSinceFinished;
     private boolean                             hasWrittenValuesSinceConstructed;
@@ -595,435 +505,435 @@ import java.util.NoSuchElementException;
                                    final boolean isFloatBinary32Enabled)
                                    throws IOException
     {
-<span class="fc" id="L598">        super(optimization);</span>
+<span class="fc" id="L508">        super(optimization);</span>
 
-<span class="fc bfc" id="L600" title="All 2 branches covered.">        if (out == null) { throw new NullPointerException(); }</span>
+<span class="fc bfc" id="L510" title="All 2 branches covered.">        if (out == null) { throw new NullPointerException(); }</span>
 
-<span class="fc" id="L602">        this.allocator         = provider.vendAllocator(blockSize);</span>
-<span class="fc" id="L603">        this.out               = out;</span>
-<span class="fc" id="L604">        this.streamCloseMode   = streamCloseMode;</span>
-<span class="fc" id="L605">        this.streamFlushMode   = streamFlushMode;</span>
-<span class="fc" id="L606">        this.preallocationMode = preallocationMode;</span>
-<span class="fc" id="L607">        this.isFloatBinary32Enabled = isFloatBinary32Enabled;</span>
-<span class="fc" id="L608">        this.buffer            = new WriteBuffer(allocator);</span>
-<span class="fc" id="L609">        this.patchBuffer       = new WriteBuffer(allocator);</span>
-<span class="fc" id="L610">        this.patchPoints       = new PatchList();</span>
-<span class="fc" id="L611">        this.containers        = new RecyclingStack&lt;ContainerInfo&gt;(</span>
+<span class="fc" id="L512">        this.allocator         = provider.vendAllocator(blockSize);</span>
+<span class="fc" id="L513">        this.out               = out;</span>
+<span class="fc" id="L514">        this.streamCloseMode   = streamCloseMode;</span>
+<span class="fc" id="L515">        this.streamFlushMode   = streamFlushMode;</span>
+<span class="fc" id="L516">        this.preallocationMode = preallocationMode;</span>
+<span class="fc" id="L517">        this.isFloatBinary32Enabled = isFloatBinary32Enabled;</span>
+<span class="fc" id="L518">        this.buffer            = new WriteBuffer(allocator);</span>
+<span class="fc" id="L519">        this.patchBuffer       = new WriteBuffer(allocator);</span>
+<span class="fc" id="L520">        this.patchPoints       = new PatchList();</span>
+<span class="fc" id="L521">        this.containers        = new _Private_RecyclingStack&lt;ContainerInfo&gt;(</span>
             10,
-<span class="fc" id="L613">            new RecyclingStack.ElementFactory&lt;ContainerInfo&gt;() {</span>
+<span class="fc" id="L523">            new _Private_RecyclingStack.ElementFactory&lt;ContainerInfo&gt;() {</span>
                 public ContainerInfo newElement() {
-<span class="fc" id="L615">                    return new ContainerInfo();</span>
+<span class="fc" id="L525">                    return new ContainerInfo();</span>
                 }
             }
         );
-<span class="fc" id="L619">        this.depth                            = 0;</span>
-<span class="fc" id="L620">        this.hasWrittenValuesSinceFinished    = false;</span>
-<span class="fc" id="L621">        this.hasWrittenValuesSinceConstructed = false;</span>
+<span class="fc" id="L529">        this.depth                            = 0;</span>
+<span class="fc" id="L530">        this.hasWrittenValuesSinceFinished    = false;</span>
+<span class="fc" id="L531">        this.hasWrittenValuesSinceConstructed = false;</span>
 
-<span class="fc" id="L623">        this.currentFieldSid                  = SID_UNASSIGNED;</span>
-<span class="fc" id="L624">        this.currentAnnotationSids            = new ArrayList&lt;Integer&gt;();</span>
-<span class="fc" id="L625">        this.hasTopLevelSymbolTableAnnotation = false;</span>
+<span class="fc" id="L533">        this.currentFieldSid                  = SID_UNASSIGNED;</span>
+<span class="fc" id="L534">        this.currentAnnotationSids            = new ArrayList&lt;Integer&gt;();</span>
+<span class="fc" id="L535">        this.hasTopLevelSymbolTableAnnotation = false;</span>
 
-<span class="fc" id="L627">        this.closed = false;</span>
-<span class="fc" id="L628">    }</span>
+<span class="fc" id="L537">        this.closed = false;</span>
+<span class="fc" id="L538">    }</span>
 
     /** Always returns {@link Symbols#systemSymbolTable()}. */
     public SymbolTable getSymbolTable()
     {
-<span class="nc" id="L633">        return Symbols.systemSymbolTable();</span>
+<span class="nc" id="L543">        return Symbols.systemSymbolTable();</span>
     }
 
     // Current Value Meta
 
     public void setFieldName(final String name)
     {
-<span class="nc" id="L640">        throw new UnsupportedOperationException(&quot;Cannot set field name on a low-level binary writer via string&quot;);</span>
+<span class="nc" id="L550">        throw new UnsupportedOperationException(&quot;Cannot set field name on a low-level binary writer via string&quot;);</span>
     }
 
     public void setFieldNameSymbol(final SymbolToken name)
     {
-<span class="fc" id="L645">        setFieldNameSymbol(name.getSid());</span>
-<span class="fc" id="L646">    }</span>
+<span class="fc" id="L555">        setFieldNameSymbol(name.getSid());</span>
+<span class="fc" id="L556">    }</span>
 
     public void setFieldNameSymbol(int sid)
     {
-<span class="fc bfc" id="L650" title="All 2 branches covered.">        if (!isInStruct())</span>
+<span class="fc bfc" id="L560" title="All 2 branches covered.">        if (!isInStruct())</span>
         {
-<span class="fc" id="L652">            throw new IonException(&quot;Cannot set field name outside of struct context&quot;);</span>
+<span class="fc" id="L562">            throw new IonException(&quot;Cannot set field name outside of struct context&quot;);</span>
         }
-<span class="fc" id="L654">        currentFieldSid = sid;</span>
-<span class="fc" id="L655">    }</span>
+<span class="fc" id="L564">        currentFieldSid = sid;</span>
+<span class="fc" id="L565">    }</span>
 
     public void setTypeAnnotations(final String... annotations)
     {
-<span class="nc" id="L659">        throw new UnsupportedOperationException(&quot;Cannot set annotations on a low-level binary writer via string&quot;);</span>
+<span class="nc" id="L569">        throw new UnsupportedOperationException(&quot;Cannot set annotations on a low-level binary writer via string&quot;);</span>
     }
 
     private void clearAnnotations()
     {
-<span class="fc" id="L664">        currentAnnotationSids.clear();</span>
-<span class="fc" id="L665">        hasTopLevelSymbolTableAnnotation = false;</span>
-<span class="fc" id="L666">    }</span>
+<span class="fc" id="L574">        currentAnnotationSids.clear();</span>
+<span class="fc" id="L575">        hasTopLevelSymbolTableAnnotation = false;</span>
+<span class="fc" id="L576">    }</span>
 
     public void setTypeAnnotationSymbols(final SymbolToken... annotations)
     {
-<span class="fc" id="L670">        clearAnnotations();</span>
-<span class="fc bfc" id="L671" title="All 2 branches covered.">        if (annotations != null)</span>
+<span class="fc" id="L580">        clearAnnotations();</span>
+<span class="fc bfc" id="L581" title="All 2 branches covered.">        if (annotations != null)</span>
         {
-<span class="fc bfc" id="L673" title="All 2 branches covered.">            for (final SymbolToken annotation : annotations)</span>
+<span class="fc bfc" id="L583" title="All 2 branches covered.">            for (final SymbolToken annotation : annotations)</span>
             {
-<span class="fc" id="L675">                addTypeAnnotationSymbol(annotation.getSid());</span>
+<span class="fc" id="L585">                addTypeAnnotationSymbol(annotation.getSid());</span>
             }
         }
-<span class="fc" id="L678">    }</span>
+<span class="fc" id="L588">    }</span>
 
     public void setTypeAnnotationSymbols(int... sids)
     {
-<span class="fc" id="L682">        clearAnnotations();</span>
-<span class="pc bpc" id="L683" title="1 of 2 branches missed.">        if (sids != null)</span>
+<span class="fc" id="L592">        clearAnnotations();</span>
+<span class="pc bpc" id="L593" title="1 of 2 branches missed.">        if (sids != null)</span>
         {
-<span class="fc bfc" id="L685" title="All 2 branches covered.">            for (final int sid : sids)</span>
+<span class="fc bfc" id="L595" title="All 2 branches covered.">            for (final int sid : sids)</span>
             {
-<span class="fc" id="L687">                addTypeAnnotationSymbol(sid);</span>
+<span class="fc" id="L597">                addTypeAnnotationSymbol(sid);</span>
             }
         }
-<span class="fc" id="L690">    }</span>
+<span class="fc" id="L600">    }</span>
 
     public void addTypeAnnotation(final String annotation)
     {
-<span class="nc" id="L694">        throw new UnsupportedOperationException(&quot;Cannot add annotations on a low-level binary writer via string&quot;);</span>
+<span class="nc" id="L604">        throw new UnsupportedOperationException(&quot;Cannot add annotations on a low-level binary writer via string&quot;);</span>
     }
 
     // Additional Current State Meta
 
     /*package*/ void addTypeAnnotationSymbol(final SymbolToken annotation)
     {
-<span class="fc" id="L701">        addTypeAnnotationSymbol(annotation.getSid());</span>
+<span class="fc" id="L611">        addTypeAnnotationSymbol(annotation.getSid());</span>
 
-<span class="fc" id="L703">    }</span>
+<span class="fc" id="L613">    }</span>
 
     public void addTypeAnnotationSymbol(int sid)
     {
-<span class="fc bfc" id="L707" title="All 4 branches covered.">        if (depth == 0 &amp;&amp; sid == ION_SYMBOL_TABLE_SID)</span>
+<span class="fc bfc" id="L617" title="All 4 branches covered.">        if (depth == 0 &amp;&amp; sid == ION_SYMBOL_TABLE_SID)</span>
         {
-<span class="fc" id="L709">            hasTopLevelSymbolTableAnnotation = true;</span>
+<span class="fc" id="L619">            hasTopLevelSymbolTableAnnotation = true;</span>
         }
-<span class="fc" id="L711">        currentAnnotationSids.add(sid);</span>
-<span class="fc" id="L712">    }</span>
+<span class="fc" id="L621">        currentAnnotationSids.add(sid);</span>
+<span class="fc" id="L622">    }</span>
 
     /*package*/ boolean hasAnnotations()
     {
-<span class="fc bfc" id="L716" title="All 2 branches covered.">        return !currentAnnotationSids.isEmpty();</span>
+<span class="fc bfc" id="L626" title="All 2 branches covered.">        return !currentAnnotationSids.isEmpty();</span>
     }
 
     /** Returns true if a value has been written since construction or {@link #finish()}. */
     /*package*/ boolean hasWrittenValuesSinceFinished()
     {
-<span class="fc" id="L722">        return hasWrittenValuesSinceFinished;</span>
+<span class="fc" id="L632">        return hasWrittenValuesSinceFinished;</span>
     }
 
     /** Returns true if a value has been written since the writer was constructed. */
     /*package*/ boolean hasWrittenValuesSinceConstructed()
     {
-<span class="nc" id="L728">        return hasWrittenValuesSinceConstructed;</span>
+<span class="nc" id="L638">        return hasWrittenValuesSinceConstructed;</span>
     }
 
     /*package*/ boolean hasTopLevelSymbolTableAnnotation()
     {
-<span class="fc" id="L733">        return hasTopLevelSymbolTableAnnotation;</span>
+<span class="fc" id="L643">        return hasTopLevelSymbolTableAnnotation;</span>
     }
 
     /*package*/ int getFieldId()
     {
-<span class="fc" id="L738">        return currentFieldSid;</span>
+<span class="fc" id="L648">        return currentFieldSid;</span>
     }
 
     // Compatibility with Implementation Writer Interface
 
     public IonCatalog getCatalog()
     {
-<span class="nc" id="L745">        throw new UnsupportedOperationException();</span>
+<span class="nc" id="L655">        throw new UnsupportedOperationException();</span>
     }
 
     public boolean isFieldNameSet()
     {
-<span class="fc bfc" id="L750" title="All 2 branches covered.">        return currentFieldSid &gt; SID_UNASSIGNED;</span>
+<span class="fc bfc" id="L660" title="All 2 branches covered.">        return currentFieldSid &gt; SID_UNASSIGNED;</span>
     }
 
     public void writeIonVersionMarker() throws IOException
     {
-<span class="fc" id="L755">        buffer.writeBytes(IVM);</span>
-<span class="fc" id="L756">    }</span>
+<span class="fc" id="L665">        buffer.writeBytes(IVM);</span>
+<span class="fc" id="L666">    }</span>
 
     public int getDepth()
     {
-<span class="fc" id="L760">        return depth;</span>
+<span class="fc" id="L670">        return depth;</span>
     }
 
     // Low-Level Writing
 
     private void updateLength(long length)
     {
-<span class="fc bfc" id="L767" title="All 2 branches covered.">        if (containers.isEmpty())</span>
+<span class="fc bfc" id="L677" title="All 2 branches covered.">        if (containers.isEmpty())</span>
         {
-<span class="fc" id="L769">            return;</span>
+<span class="fc" id="L679">            return;</span>
         }
 
-<span class="fc" id="L772">        containers.peek().length += length;</span>
-<span class="fc" id="L773">    }</span>
+<span class="fc" id="L682">        containers.peek().length += length;</span>
+<span class="fc" id="L683">    }</span>
 
     private void pushContainer(final ContainerType type)
     {
         // XXX we push before writing the type of container
-<span class="fc" id="L778">        containers.push().initialize(type, buffer.position() + 1);</span>
-<span class="fc" id="L779">    }</span>
+<span class="fc" id="L688">        containers.push().initialize(type, buffer.position() + 1);</span>
+<span class="fc" id="L689">    }</span>
 
     private void addPatchPoint(final long position, final int oldLength, final long value)
     {
         // record the size in a patch buffer
-<span class="fc" id="L784">        final long patchPosition = patchBuffer.position();</span>
-<span class="fc" id="L785">        final int patchLength = patchBuffer.writeVarUInt(value);</span>
-<span class="fc" id="L786">        final PatchPoint patch = new PatchPoint(position, oldLength, patchPosition, patchLength);</span>
-<span class="fc bfc" id="L787" title="All 2 branches covered.">        if (containers.isEmpty())</span>
+<span class="fc" id="L694">        final long patchPosition = patchBuffer.position();</span>
+<span class="fc" id="L695">        final int patchLength = patchBuffer.writeVarUInt(value);</span>
+<span class="fc" id="L696">        final PatchPoint patch = new PatchPoint(position, oldLength, patchPosition, patchLength);</span>
+<span class="fc bfc" id="L697" title="All 2 branches covered.">        if (containers.isEmpty())</span>
         {
             // not nested, just append to the root list
-<span class="fc" id="L790">            patchPoints.append(patch);</span>
+<span class="fc" id="L700">            patchPoints.append(patch);</span>
         }
         else
         {
             // nested, apply it to the current container
-<span class="fc" id="L795">            containers.peek().appendPatch(patch);</span>
+<span class="fc" id="L705">            containers.peek().appendPatch(patch);</span>
         }
-<span class="fc" id="L797">        updateLength(patchLength - oldLength);</span>
-<span class="fc" id="L798">    }</span>
+<span class="fc" id="L707">        updateLength(patchLength - oldLength);</span>
+<span class="fc" id="L708">    }</span>
 
     private void extendPatchPoints(final PatchList patches)
     {
-<span class="fc bfc" id="L802" title="All 2 branches covered.">        if (containers.isEmpty())</span>
+<span class="fc bfc" id="L712" title="All 2 branches covered.">        if (containers.isEmpty())</span>
         {
             // not nested, extend root list
-<span class="fc" id="L805">            patchPoints.extend(patches);</span>
+<span class="fc" id="L715">            patchPoints.extend(patches);</span>
         }
         else
         {
             // nested, apply it to the current container
-<span class="fc" id="L810">            containers.peek().extendPatches(patches);</span>
+<span class="fc" id="L720">            containers.peek().extendPatches(patches);</span>
         }
-<span class="fc" id="L812">    }</span>
+<span class="fc" id="L722">    }</span>
 
     private ContainerInfo popContainer()
     {
-<span class="fc" id="L816">        final ContainerInfo current = containers.pop();</span>
-<span class="pc bpc" id="L817" title="1 of 2 branches missed.">        if (current == null)</span>
+<span class="fc" id="L726">        final ContainerInfo current = containers.pop();</span>
+<span class="pc bpc" id="L727" title="1 of 2 branches missed.">        if (current == null)</span>
         {
-<span class="nc" id="L819">            throw new IllegalStateException(&quot;Tried to pop container state without said container&quot;);</span>
+<span class="nc" id="L729">            throw new IllegalStateException(&quot;Tried to pop container state without said container&quot;);</span>
         }
 
         // only patch for real containers and annotations -- we use VALUE for tracking only
-<span class="fc" id="L823">        final long length = current.length;</span>
-<span class="fc bfc" id="L824" title="All 2 branches covered.">        if (current.type != ContainerType.VALUE)</span>
+<span class="fc" id="L733">        final long length = current.length;</span>
+<span class="fc bfc" id="L734" title="All 2 branches covered.">        if (current.type != ContainerType.VALUE)</span>
         {
             // patch in the length
-<span class="fc" id="L827">            final long position = current.position;</span>
-<span class="fc bfc" id="L828" title="All 4 branches covered.">            if (current.length &lt;= preallocationMode.contentMaxLength &amp;&amp; preallocationMode != PreallocationMode.PREALLOCATE_0)</span>
+<span class="fc" id="L737">            final long position = current.position;</span>
+<span class="fc bfc" id="L738" title="All 4 branches covered.">            if (current.length &lt;= preallocationMode.contentMaxLength &amp;&amp; preallocationMode != PreallocationMode.PREALLOCATE_0)</span>
             {
-<span class="fc" id="L830">                preallocationMode.patchLength(buffer, position, length);</span>
+<span class="fc" id="L740">                preallocationMode.patchLength(buffer, position, length);</span>
             }
             else
             {
                 // side patch
-<span class="pc bpc" id="L835" title="1 of 4 branches missed.">                if (current.length &lt;= 0xD &amp;&amp; preallocationMode == PreallocationMode.PREALLOCATE_0)</span>
+<span class="pc bpc" id="L745" title="1 of 4 branches missed.">                if (current.length &lt;= 0xD &amp;&amp; preallocationMode == PreallocationMode.PREALLOCATE_0)</span>
                 {
                     // XXX if we're not using padding we can get here and optimize the length a little without side patching!
-<span class="fc" id="L838">                    final long typePosition = position - 1;</span>
-<span class="fc" id="L839">                    final long type = (buffer.getUInt8At(typePosition) &amp; 0xF0) | current.length;</span>
-<span class="fc" id="L840">                    buffer.writeUInt8At(typePosition, type);</span>
-<span class="fc" id="L841">                }</span>
+<span class="fc" id="L748">                    final long typePosition = position - 1;</span>
+<span class="fc" id="L749">                    final long type = (buffer.getUInt8At(typePosition) &amp; 0xF0) | current.length;</span>
+<span class="fc" id="L750">                    buffer.writeUInt8At(typePosition, type);</span>
+<span class="fc" id="L751">                }</span>
                 else
                 {
-<span class="fc" id="L844">                    addPatchPoint(position, preallocationMode.typedLength - 1, length);</span>
+<span class="fc" id="L754">                    addPatchPoint(position, preallocationMode.typedLength - 1, length);</span>
                 }
             }
         }
-<span class="fc bfc" id="L848" title="All 2 branches covered.">        if (current.patches != null)</span>
+<span class="fc bfc" id="L758" title="All 2 branches covered.">        if (current.patches != null)</span>
         {
             // at this point, we've appended our patch points upward, lets make sure we get
             // our child patch points in
-<span class="fc" id="L852">            extendPatchPoints(current.patches);</span>
+<span class="fc" id="L762">            extendPatchPoints(current.patches);</span>
         }
 
         // make sure to record length upward
-<span class="fc" id="L856">        updateLength(length);</span>
-<span class="fc" id="L857">        return current;</span>
+<span class="fc" id="L766">        updateLength(length);</span>
+<span class="fc" id="L767">        return current;</span>
     }
 
     private void writeVarUInt(final long value)
     {
-<span class="pc bpc" id="L862" title="1 of 2 branches missed.">        if (value &lt; 0)</span>
+<span class="pc bpc" id="L772" title="1 of 2 branches missed.">        if (value &lt; 0)</span>
         {
-<span class="nc" id="L864">            throw new IonException(&quot;Cannot write negative value as unsigned&quot;);</span>
+<span class="nc" id="L774">            throw new IonException(&quot;Cannot write negative value as unsigned&quot;);</span>
         }
-<span class="fc" id="L866">        final int len = buffer.writeVarUInt(value);</span>
-<span class="fc" id="L867">        updateLength(len);</span>
-<span class="fc" id="L868">    }</span>
+<span class="fc" id="L776">        final int len = buffer.writeVarUInt(value);</span>
+<span class="fc" id="L777">        updateLength(len);</span>
+<span class="fc" id="L778">    }</span>
 
     private void writeVarInt(final long value)
     {
-<span class="fc" id="L872">        final int len = buffer.writeVarInt(value);</span>
-<span class="fc" id="L873">        updateLength(len);</span>
-<span class="fc" id="L874">    }</span>
+<span class="fc" id="L782">        final int len = buffer.writeVarInt(value);</span>
+<span class="fc" id="L783">        updateLength(len);</span>
+<span class="fc" id="L784">    }</span>
 
     private static void checkSid(int sid)
     {
-<span class="fc bfc" id="L878" title="All 2 branches covered.">        if (sid &lt; 0)</span>
+<span class="fc bfc" id="L788" title="All 2 branches covered.">        if (sid &lt; 0)</span>
         {
-<span class="fc" id="L880">            throw new IllegalArgumentException(&quot;Invalid symbol with SID: &quot; + sid);</span>
+<span class="fc" id="L790">            throw new IllegalArgumentException(&quot;Invalid symbol with SID: &quot; + sid);</span>
         }
-<span class="fc" id="L882">    }</span>
+<span class="fc" id="L792">    }</span>
 
     /** prepare to write values with field name and annotations. */
     private void prepareValue()
     {
-<span class="fc bfc" id="L887" title="All 4 branches covered.">        if (isInStruct() &amp;&amp; currentFieldSid &lt;= SID_UNASSIGNED)</span>
+<span class="fc bfc" id="L797" title="All 4 branches covered.">        if (isInStruct() &amp;&amp; currentFieldSid &lt;= SID_UNASSIGNED)</span>
         {
-<span class="fc" id="L889">            throw new IllegalStateException(&quot;IonWriter.setFieldName() must be called before writing a value into a struct.&quot;);</span>
+<span class="fc" id="L799">            throw new IllegalStateException(&quot;IonWriter.setFieldName() must be called before writing a value into a struct.&quot;);</span>
         }
-<span class="fc bfc" id="L891" title="All 2 branches covered.">        if (currentFieldSid &gt; SID_UNASSIGNED)</span>
+<span class="fc bfc" id="L801" title="All 2 branches covered.">        if (currentFieldSid &gt; SID_UNASSIGNED)</span>
         {
-<span class="fc" id="L893">            checkSid(currentFieldSid);</span>
-<span class="fc" id="L894">            writeVarUInt(currentFieldSid);</span>
+<span class="fc" id="L803">            checkSid(currentFieldSid);</span>
+<span class="fc" id="L804">            writeVarUInt(currentFieldSid);</span>
 
             // clear out field name
-<span class="fc" id="L897">            currentFieldSid = SID_UNASSIGNED;</span>
+<span class="fc" id="L807">            currentFieldSid = SID_UNASSIGNED;</span>
         }
-<span class="fc bfc" id="L899" title="All 2 branches covered.">        if (!currentAnnotationSids.isEmpty())</span>
+<span class="fc bfc" id="L809" title="All 2 branches covered.">        if (!currentAnnotationSids.isEmpty())</span>
         {
             // we have to push a container context for annotations
-<span class="fc" id="L902">            updateLength(preallocationMode.typedLength);</span>
-<span class="fc" id="L903">            pushContainer(ContainerType.ANNOTATION);</span>
-<span class="fc" id="L904">            buffer.writeBytes(preallocationMode.annotationsTypedPreallocatedBytes);</span>
+<span class="fc" id="L812">            updateLength(preallocationMode.typedLength);</span>
+<span class="fc" id="L813">            pushContainer(ContainerType.ANNOTATION);</span>
+<span class="fc" id="L814">            buffer.writeBytes(preallocationMode.annotationsTypedPreallocatedBytes);</span>
 
-<span class="fc" id="L906">            final long annotationsLengthPosition = buffer.position();</span>
-<span class="fc" id="L907">            buffer.writeVarUInt(0L);</span>
-<span class="fc" id="L908">            int annotationsLength = 0;</span>
-<span class="fc bfc" id="L909" title="All 2 branches covered.">            for (final int symbol : currentAnnotationSids)</span>
+<span class="fc" id="L816">            final long annotationsLengthPosition = buffer.position();</span>
+<span class="fc" id="L817">            buffer.writeVarUInt(0L);</span>
+<span class="fc" id="L818">            int annotationsLength = 0;</span>
+<span class="fc bfc" id="L819" title="All 2 branches covered.">            for (final int symbol : currentAnnotationSids)</span>
             {
-<span class="fc" id="L911">                checkSid(symbol);</span>
-<span class="fc" id="L912">                final int symbolLength = buffer.writeVarUInt(symbol);</span>
-<span class="fc" id="L913">                annotationsLength += symbolLength;</span>
-<span class="fc" id="L914">            }</span>
-<span class="pc bpc" id="L915" title="1 of 2 branches missed.">            if (annotationsLength &gt; MAX_ANNOTATION_LENGTH)</span>
+<span class="fc" id="L821">                checkSid(symbol);</span>
+<span class="fc" id="L822">                final int symbolLength = buffer.writeVarUInt(symbol);</span>
+<span class="fc" id="L823">                annotationsLength += symbolLength;</span>
+<span class="fc" id="L824">            }</span>
+<span class="pc bpc" id="L825" title="1 of 2 branches missed.">            if (annotationsLength &gt; MAX_ANNOTATION_LENGTH)</span>
             {
                 // TODO deal with side patching if we want to support &gt; 32 4-byte symbols annotations... seems excessive
-<span class="nc" id="L918">                throw new IonException(&quot;Annotations too large: &quot; + currentAnnotationSids);</span>
+<span class="nc" id="L828">                throw new IonException(&quot;Annotations too large: &quot; + currentAnnotationSids);</span>
             }
 
             // update the annotations size
-<span class="fc" id="L922">            updateLength(/*length specifier*/ 1 + annotationsLength);</span>
+<span class="fc" id="L832">            updateLength(/*length specifier*/ 1 + annotationsLength);</span>
             // patch the annotations length
-<span class="fc" id="L924">            buffer.writeVarUIntDirect1At(annotationsLengthPosition, annotationsLength);</span>
+<span class="fc" id="L834">            buffer.writeVarUIntDirect1At(annotationsLengthPosition, annotationsLength);</span>
 
             // clear out annotations
-<span class="fc" id="L927">            currentAnnotationSids.clear();</span>
-<span class="fc" id="L928">            hasTopLevelSymbolTableAnnotation = false;</span>
+<span class="fc" id="L837">            currentAnnotationSids.clear();</span>
+<span class="fc" id="L838">            hasTopLevelSymbolTableAnnotation = false;</span>
         }
-<span class="fc" id="L930">    }</span>
+<span class="fc" id="L840">    }</span>
 
     /** Closes out annotations. */
     private void finishValue()
     {
-<span class="fc bfc" id="L935" title="All 4 branches covered.">        if (!containers.isEmpty() &amp;&amp; containers.peek().type == ContainerType.ANNOTATION)</span>
+<span class="fc bfc" id="L845" title="All 4 branches covered.">        if (!containers.isEmpty() &amp;&amp; containers.peek().type == ContainerType.ANNOTATION)</span>
         {
             // close out and patch the length
-<span class="fc" id="L938">            popContainer();</span>
+<span class="fc" id="L848">            popContainer();</span>
         }
-<span class="fc" id="L940">        hasWrittenValuesSinceFinished = true;</span>
-<span class="fc" id="L941">        hasWrittenValuesSinceConstructed = true;</span>
-<span class="fc" id="L942">    }</span>
+<span class="fc" id="L850">        hasWrittenValuesSinceFinished = true;</span>
+<span class="fc" id="L851">        hasWrittenValuesSinceConstructed = true;</span>
+<span class="fc" id="L852">    }</span>
 
     // Container Manipulation
 
     public void stepIn(final IonType containerType) throws IOException
     {
-<span class="pc bpc" id="L948" title="1 of 2 branches missed.">        if (!isContainer(containerType))</span>
+<span class="pc bpc" id="L858" title="1 of 2 branches missed.">        if (!isContainer(containerType))</span>
         {
-<span class="nc" id="L950">            throw new IonException(&quot;Cannot step into &quot; + containerType);</span>
+<span class="nc" id="L860">            throw new IonException(&quot;Cannot step into &quot; + containerType);</span>
         }
-<span class="fc" id="L952">        prepareValue();</span>
-<span class="fc" id="L953">        updateLength(preallocationMode.typedLength);</span>
-<span class="fc bfc" id="L954" title="All 2 branches covered.">        pushContainer(containerType == STRUCT ? ContainerType.STRUCT : ContainerType.SEQUENCE);</span>
-<span class="fc" id="L955">        depth++;</span>
-<span class="fc" id="L956">        buffer.writeBytes(preallocationMode.containerTypedPreallocatedBytes[containerType.ordinal()]);</span>
-<span class="fc" id="L957">    }</span>
+<span class="fc" id="L862">        prepareValue();</span>
+<span class="fc" id="L863">        updateLength(preallocationMode.typedLength);</span>
+<span class="fc bfc" id="L864" title="All 2 branches covered.">        pushContainer(containerType == STRUCT ? ContainerType.STRUCT : ContainerType.SEQUENCE);</span>
+<span class="fc" id="L865">        depth++;</span>
+<span class="fc" id="L866">        buffer.writeBytes(preallocationMode.containerTypedPreallocatedBytes[containerType.ordinal()]);</span>
+<span class="fc" id="L867">    }</span>
 
     public void stepOut() throws IOException
     {
-<span class="pc bpc" id="L961" title="1 of 2 branches missed.">        if (currentFieldSid &gt; SID_UNASSIGNED)</span>
+<span class="pc bpc" id="L871" title="1 of 2 branches missed.">        if (currentFieldSid &gt; SID_UNASSIGNED)</span>
         {
-<span class="nc" id="L963">            throw new IonException(&quot;Cannot step out with field name set&quot;);</span>
+<span class="nc" id="L873">            throw new IonException(&quot;Cannot step out with field name set&quot;);</span>
         }
-<span class="pc bpc" id="L965" title="1 of 2 branches missed.">        if (!currentAnnotationSids.isEmpty())</span>
+<span class="pc bpc" id="L875" title="1 of 2 branches missed.">        if (!currentAnnotationSids.isEmpty())</span>
         {
-<span class="nc" id="L967">            throw new IonException(&quot;Cannot step out with field name set&quot;);</span>
+<span class="nc" id="L877">            throw new IonException(&quot;Cannot step out with field name set&quot;);</span>
         }
-<span class="pc bpc" id="L969" title="2 of 4 branches missed.">        if (containers.isEmpty() || !containers.peek().type.allowedInStepOut)</span>
+<span class="pc bpc" id="L879" title="2 of 4 branches missed.">        if (containers.isEmpty() || !containers.peek().type.allowedInStepOut)</span>
         {
-<span class="nc" id="L971">            throw new IonException(&quot;Cannot step out when not in container&quot;);</span>
+<span class="nc" id="L881">            throw new IonException(&quot;Cannot step out when not in container&quot;);</span>
         }
         // close out the container
-<span class="fc" id="L974">        popContainer();</span>
-<span class="fc" id="L975">        depth--;</span>
+<span class="fc" id="L884">        popContainer();</span>
+<span class="fc" id="L885">        depth--;</span>
         // close out the annotations if any
-<span class="fc" id="L977">        finishValue();</span>
-<span class="fc" id="L978">    }</span>
+<span class="fc" id="L887">        finishValue();</span>
+<span class="fc" id="L888">    }</span>
 
     public boolean isInStruct()
     {
-<span class="fc bfc" id="L982" title="All 4 branches covered.">        return !containers.isEmpty() &amp;&amp; containers.peek().type == ContainerType.STRUCT;</span>
+<span class="fc bfc" id="L892" title="All 4 branches covered.">        return !containers.isEmpty() &amp;&amp; containers.peek().type == ContainerType.STRUCT;</span>
     }
 
     // Write Value Methods
 
     public void writeNull() throws IOException
     {
-<span class="fc" id="L989">        prepareValue();</span>
-<span class="fc" id="L990">        updateLength(1);</span>
-<span class="fc" id="L991">        buffer.writeByte(NULL_NULL);</span>
-<span class="fc" id="L992">        finishValue();</span>
-<span class="fc" id="L993">    }</span>
+<span class="fc" id="L899">        prepareValue();</span>
+<span class="fc" id="L900">        updateLength(1);</span>
+<span class="fc" id="L901">        buffer.writeByte(NULL_NULL);</span>
+<span class="fc" id="L902">        finishValue();</span>
+<span class="fc" id="L903">    }</span>
 
     public void writeNull(final IonType type) throws IOException
     {
-<span class="fc" id="L997">        byte data = NULL_NULL;</span>
-<span class="pc bpc" id="L998" title="1 of 2 branches missed.">        if (type != null)</span>
+<span class="fc" id="L907">        byte data = NULL_NULL;</span>
+<span class="pc bpc" id="L908" title="1 of 2 branches missed.">        if (type != null)</span>
         {
-<span class="fc" id="L1000">            data = NULLS[type.ordinal()];</span>
-<span class="pc bpc" id="L1001" title="1 of 2 branches missed.">            if (data == 0)</span>
+<span class="fc" id="L910">            data = NULLS[type.ordinal()];</span>
+<span class="pc bpc" id="L911" title="1 of 2 branches missed.">            if (data == 0)</span>
             {
-<span class="nc" id="L1003">                throw new IllegalArgumentException(&quot;Cannot write a null for: &quot; + type);</span>
+<span class="nc" id="L913">                throw new IllegalArgumentException(&quot;Cannot write a null for: &quot; + type);</span>
             }
         }
 
-<span class="fc" id="L1007">        prepareValue();</span>
-<span class="fc" id="L1008">        updateLength(1);</span>
-<span class="fc" id="L1009">        buffer.writeByte(data);</span>
-<span class="fc" id="L1010">        finishValue();</span>
-<span class="fc" id="L1011">    }</span>
+<span class="fc" id="L917">        prepareValue();</span>
+<span class="fc" id="L918">        updateLength(1);</span>
+<span class="fc" id="L919">        buffer.writeByte(data);</span>
+<span class="fc" id="L920">        finishValue();</span>
+<span class="fc" id="L921">    }</span>
 
     public void writeBool(final boolean value) throws IOException
     {
-<span class="fc" id="L1015">        prepareValue();</span>
-<span class="fc" id="L1016">        updateLength(1);</span>
-<span class="fc bfc" id="L1017" title="All 2 branches covered.">        if (value)</span>
+<span class="fc" id="L925">        prepareValue();</span>
+<span class="fc" id="L926">        updateLength(1);</span>
+<span class="fc bfc" id="L927" title="All 2 branches covered.">        if (value)</span>
         {
-<span class="fc" id="L1019">            buffer.writeByte(BOOL_TRUE);</span>
+<span class="fc" id="L929">            buffer.writeByte(BOOL_TRUE);</span>
         }
         else
         {
-<span class="fc" id="L1023">            buffer.writeByte(BOOL_FALSE);</span>
+<span class="fc" id="L933">            buffer.writeByte(BOOL_FALSE);</span>
         }
-<span class="fc" id="L1025">        finishValue();</span>
-<span class="fc" id="L1026">    }</span>
+<span class="fc" id="L935">        finishValue();</span>
+<span class="fc" id="L936">    }</span>
 
     /**
      * Writes a type descriptor followed by unsigned integer value.
@@ -1032,385 +942,385 @@ import java.util.NoSuchElementException;
      */
     private void writeTypedUInt(final int type, final long value)
     {
-<span class="fc bfc" id="L1035" title="All 2 branches covered.">        if (value &lt;= 0xFFL)</span>
+<span class="fc bfc" id="L945" title="All 2 branches covered.">        if (value &lt;= 0xFFL)</span>
         {
-<span class="fc" id="L1037">            updateLength(2);</span>
-<span class="fc" id="L1038">            buffer.writeUInt8(type | 0x01);</span>
-<span class="fc" id="L1039">            buffer.writeUInt8(value);</span>
+<span class="fc" id="L947">            updateLength(2);</span>
+<span class="fc" id="L948">            buffer.writeUInt8(type | 0x01);</span>
+<span class="fc" id="L949">            buffer.writeUInt8(value);</span>
         }
-<span class="fc bfc" id="L1041" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFL)</span>
+<span class="fc bfc" id="L951" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFL)</span>
         {
-<span class="fc" id="L1043">            updateLength(3);</span>
-<span class="fc" id="L1044">            buffer.writeUInt8(type | 0x02);</span>
-<span class="fc" id="L1045">            buffer.writeUInt16(value);</span>
+<span class="fc" id="L953">            updateLength(3);</span>
+<span class="fc" id="L954">            buffer.writeUInt8(type | 0x02);</span>
+<span class="fc" id="L955">            buffer.writeUInt16(value);</span>
         }
-<span class="fc bfc" id="L1047" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFL)</span>
+<span class="fc bfc" id="L957" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFL)</span>
         {
-<span class="fc" id="L1049">            updateLength(4);</span>
-<span class="fc" id="L1050">            buffer.writeUInt8(type | 0x03);</span>
-<span class="fc" id="L1051">            buffer.writeUInt24(value);</span>
+<span class="fc" id="L959">            updateLength(4);</span>
+<span class="fc" id="L960">            buffer.writeUInt8(type | 0x03);</span>
+<span class="fc" id="L961">            buffer.writeUInt24(value);</span>
         }
-<span class="fc bfc" id="L1053" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFL)</span>
+<span class="fc bfc" id="L963" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFL)</span>
         {
-<span class="fc" id="L1055">            updateLength(5);</span>
-<span class="fc" id="L1056">            buffer.writeUInt8(type | 0x04);</span>
-<span class="fc" id="L1057">            buffer.writeUInt32(value);</span>
+<span class="fc" id="L965">            updateLength(5);</span>
+<span class="fc" id="L966">            buffer.writeUInt8(type | 0x04);</span>
+<span class="fc" id="L967">            buffer.writeUInt32(value);</span>
         }
-<span class="fc bfc" id="L1059" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFFFL)</span>
+<span class="fc bfc" id="L969" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFFFL)</span>
         {
-<span class="fc" id="L1061">            updateLength(6);</span>
-<span class="fc" id="L1062">            buffer.writeUInt8(type | 0x05);</span>
-<span class="fc" id="L1063">            buffer.writeUInt40(value);</span>
+<span class="fc" id="L971">            updateLength(6);</span>
+<span class="fc" id="L972">            buffer.writeUInt8(type | 0x05);</span>
+<span class="fc" id="L973">            buffer.writeUInt40(value);</span>
         }
-<span class="fc bfc" id="L1065" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFFFFFL)</span>
+<span class="fc bfc" id="L975" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFFFFFL)</span>
         {
-<span class="fc" id="L1067">            updateLength(7);</span>
-<span class="fc" id="L1068">            buffer.writeUInt8(type | 0x06);</span>
-<span class="fc" id="L1069">            buffer.writeUInt48(value);</span>
+<span class="fc" id="L977">            updateLength(7);</span>
+<span class="fc" id="L978">            buffer.writeUInt8(type | 0x06);</span>
+<span class="fc" id="L979">            buffer.writeUInt48(value);</span>
         }
-<span class="fc bfc" id="L1071" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFFFFFFFL)</span>
+<span class="fc bfc" id="L981" title="All 2 branches covered.">        else if (value &lt;= 0xFFFFFFFFFFFFFFL)</span>
         {
-<span class="fc" id="L1073">            updateLength(8);</span>
-<span class="fc" id="L1074">            buffer.writeUInt8(type | 0x07);</span>
-<span class="fc" id="L1075">            buffer.writeUInt56(value);</span>
+<span class="fc" id="L983">            updateLength(8);</span>
+<span class="fc" id="L984">            buffer.writeUInt8(type | 0x07);</span>
+<span class="fc" id="L985">            buffer.writeUInt56(value);</span>
         }
         else
         {
-<span class="fc" id="L1079">            updateLength(9);</span>
-<span class="fc" id="L1080">            buffer.writeUInt8(type | 0x08);</span>
-<span class="fc" id="L1081">            buffer.writeUInt64(value);</span>
+<span class="fc" id="L989">            updateLength(9);</span>
+<span class="fc" id="L990">            buffer.writeUInt8(type | 0x08);</span>
+<span class="fc" id="L991">            buffer.writeUInt64(value);</span>
         }
-<span class="fc" id="L1083">    }</span>
+<span class="fc" id="L993">    }</span>
 
     public void writeInt(long value) throws IOException
     {
-<span class="fc" id="L1087">        prepareValue();</span>
-<span class="fc bfc" id="L1088" title="All 2 branches covered.">        if (value == 0)</span>
+<span class="fc" id="L997">        prepareValue();</span>
+<span class="fc bfc" id="L998" title="All 2 branches covered.">        if (value == 0)</span>
         {
-<span class="fc" id="L1090">            updateLength(1);</span>
-<span class="fc" id="L1091">            buffer.writeByte(INT_ZERO);</span>
+<span class="fc" id="L1000">            updateLength(1);</span>
+<span class="fc" id="L1001">            buffer.writeByte(INT_ZERO);</span>
         }
         else
         {
-<span class="fc" id="L1095">            int type = POS_INT_TYPE;</span>
-<span class="fc bfc" id="L1096" title="All 2 branches covered.">            if (value &lt; 0)</span>
+<span class="fc" id="L1005">            int type = POS_INT_TYPE;</span>
+<span class="fc bfc" id="L1006" title="All 2 branches covered.">            if (value &lt; 0)</span>
             {
-<span class="fc" id="L1098">                type = NEG_INT_TYPE;</span>
-<span class="fc bfc" id="L1099" title="All 2 branches covered.">                if (value == Long.MIN_VALUE)</span>
+<span class="fc" id="L1008">                type = NEG_INT_TYPE;</span>
+<span class="fc bfc" id="L1009" title="All 2 branches covered.">                if (value == Long.MIN_VALUE)</span>
                 {
                     // XXX special case for min_value which will not play nice with signed arithmetic and fit into the positive space
                     // XXX we keep 2's complement of Long.MIN_VALUE because it encodes to unsigned 2 ** 63 (0x8000000000000000L)
                     // XXX WriteBuffer.writeUInt64() never looks at sign
-<span class="fc" id="L1104">                    updateLength(9);</span>
-<span class="fc" id="L1105">                    buffer.writeUInt8(NEG_INT_TYPE | 0x8);</span>
-<span class="fc" id="L1106">                    buffer.writeUInt64(value);</span>
+<span class="fc" id="L1014">                    updateLength(9);</span>
+<span class="fc" id="L1015">                    buffer.writeUInt8(NEG_INT_TYPE | 0x8);</span>
+<span class="fc" id="L1016">                    buffer.writeUInt64(value);</span>
                 }
                 else
                 {
                     // get the magnitude, sign is already encoded
-<span class="fc" id="L1111">                    value = -value;</span>
-<span class="fc" id="L1112">                    writeTypedUInt(type, value);</span>
+<span class="fc" id="L1021">                    value = -value;</span>
+<span class="fc" id="L1022">                    writeTypedUInt(type, value);</span>
                 }
             }
             else
             {
-<span class="fc" id="L1117">                writeTypedUInt(type, value);</span>
+<span class="fc" id="L1027">                writeTypedUInt(type, value);</span>
             }
         }
-<span class="fc" id="L1120">        finishValue();</span>
-<span class="fc" id="L1121">    }</span>
+<span class="fc" id="L1030">        finishValue();</span>
+<span class="fc" id="L1031">    }</span>
 
     /** Write a raw byte array as some type. Note that this does not do {@link #prepareValue()}. */
     private void writeTypedBytes(final int type, final byte[] data, final int offset, final int length)
     {
-<span class="fc" id="L1126">        int totalLength = 1 + length;</span>
-<span class="fc bfc" id="L1127" title="All 2 branches covered.">        if (length &lt; 14)</span>
+<span class="fc" id="L1036">        int totalLength = 1 + length;</span>
+<span class="fc bfc" id="L1037" title="All 2 branches covered.">        if (length &lt; 14)</span>
         {
-<span class="fc" id="L1129">            buffer.writeUInt8(type | length);</span>
+<span class="fc" id="L1039">            buffer.writeUInt8(type | length);</span>
         }
         else
         {
             // need to specify length explicitly
-<span class="fc" id="L1134">            buffer.writeUInt8(type | 0xE);</span>
-<span class="fc" id="L1135">            final int sizeLength = buffer.writeVarUInt(length);</span>
-<span class="fc" id="L1136">            totalLength += sizeLength;</span>
+<span class="fc" id="L1044">            buffer.writeUInt8(type | 0xE);</span>
+<span class="fc" id="L1045">            final int sizeLength = buffer.writeVarUInt(length);</span>
+<span class="fc" id="L1046">            totalLength += sizeLength;</span>
         }
-<span class="fc" id="L1138">        updateLength(totalLength);</span>
-<span class="fc" id="L1139">        buffer.writeBytes(data, offset, length);</span>
-<span class="fc" id="L1140">    }</span>
+<span class="fc" id="L1048">        updateLength(totalLength);</span>
+<span class="fc" id="L1049">        buffer.writeBytes(data, offset, length);</span>
+<span class="fc" id="L1050">    }</span>
 
     public void writeInt(BigInteger value) throws IOException
     {
-<span class="fc bfc" id="L1144" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L1054" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L1146">            writeNull(IonType.INT);</span>
-<span class="fc" id="L1147">            return;</span>
+<span class="fc" id="L1056">            writeNull(IonType.INT);</span>
+<span class="fc" id="L1057">            return;</span>
         }
-<span class="fc bfc" id="L1149" title="All 4 branches covered.">        if (value.compareTo(BIG_INT_LONG_MIN_VALUE) &gt;= 0 &amp;&amp; value.compareTo(BIG_INT_LONG_MAX_VALUE) &lt;= 0)</span>
+<span class="fc bfc" id="L1059" title="All 4 branches covered.">        if (value.compareTo(BIG_INT_LONG_MIN_VALUE) &gt;= 0 &amp;&amp; value.compareTo(BIG_INT_LONG_MAX_VALUE) &lt;= 0)</span>
         {
             // for the small stuff, just write it as a signed int64
-<span class="fc" id="L1152">            writeInt(value.longValue());</span>
-<span class="fc" id="L1153">            return;</span>
+<span class="fc" id="L1062">            writeInt(value.longValue());</span>
+<span class="fc" id="L1063">            return;</span>
         }
 
-<span class="fc" id="L1156">        prepareValue();</span>
+<span class="fc" id="L1066">        prepareValue();</span>
 
-<span class="fc" id="L1158">        int type = POS_INT_TYPE;</span>
-<span class="fc bfc" id="L1159" title="All 2 branches covered.">        if(value.signum() &lt; 0)</span>
+<span class="fc" id="L1068">        int type = POS_INT_TYPE;</span>
+<span class="fc bfc" id="L1069" title="All 2 branches covered.">        if(value.signum() &lt; 0)</span>
         {
-<span class="fc" id="L1161">            type = NEG_INT_TYPE;</span>
-<span class="fc" id="L1162">            value = value.negate();</span>
+<span class="fc" id="L1071">            type = NEG_INT_TYPE;</span>
+<span class="fc" id="L1072">            value = value.negate();</span>
         }
 
         // generate big-endian representation of the positive value
-<span class="fc" id="L1166">        final byte[] magnitude = value.toByteArray();</span>
-<span class="fc" id="L1167">        writeTypedBytes(type, magnitude, 0, magnitude.length);</span>
+<span class="fc" id="L1076">        final byte[] magnitude = value.toByteArray();</span>
+<span class="fc" id="L1077">        writeTypedBytes(type, magnitude, 0, magnitude.length);</span>
 
-<span class="fc" id="L1169">        finishValue();</span>
-<span class="fc" id="L1170">    }</span>
+<span class="fc" id="L1079">        finishValue();</span>
+<span class="fc" id="L1080">    }</span>
 
     public void writeFloat(final double value) throws IOException
     {
-<span class="fc" id="L1174">        prepareValue();</span>
+<span class="fc" id="L1084">        prepareValue();</span>
 
-<span class="fc bfc" id="L1176" title="All 4 branches covered.">        if (isFloatBinary32Enabled &amp;&amp; value == ((double) ((float) value))) {</span>
-<span class="fc" id="L1177">            updateLength(5);</span>
-<span class="fc" id="L1178">            buffer.writeUInt8(FLOAT_TYPE | 4);</span>
-<span class="fc" id="L1179">            buffer.writeUInt32(floatToRawIntBits((float) value));</span>
+<span class="fc bfc" id="L1086" title="All 4 branches covered.">        if (isFloatBinary32Enabled &amp;&amp; value == ((double) ((float) value))) {</span>
+<span class="fc" id="L1087">            updateLength(5);</span>
+<span class="fc" id="L1088">            buffer.writeUInt8(FLOAT_TYPE | 4);</span>
+<span class="fc" id="L1089">            buffer.writeUInt32(floatToRawIntBits((float) value));</span>
         } else {
-<span class="fc" id="L1181">            updateLength(9);</span>
-<span class="fc" id="L1182">            buffer.writeUInt8(FLOAT_TYPE | 8);</span>
-<span class="fc" id="L1183">            buffer.writeUInt64(doubleToRawLongBits(value));</span>
+<span class="fc" id="L1091">            updateLength(9);</span>
+<span class="fc" id="L1092">            buffer.writeUInt8(FLOAT_TYPE | 8);</span>
+<span class="fc" id="L1093">            buffer.writeUInt64(doubleToRawLongBits(value));</span>
         }
 
-<span class="fc" id="L1186">        finishValue();</span>
-<span class="fc" id="L1187">    }</span>
+<span class="fc" id="L1096">        finishValue();</span>
+<span class="fc" id="L1097">    }</span>
 
     /** Encodes a decimal, updating the current container length context (which is probably a Decimal/Timestamp). */
     private void writeDecimalValue(final BigDecimal value)
     {
-<span class="fc" id="L1192">        final boolean isNegZero = isNegativeZero(value);</span>
-<span class="fc" id="L1193">        final int signum = value.signum();</span>
-<span class="fc" id="L1194">        final int exponent = -value.scale();</span>
+<span class="fc" id="L1102">        final boolean isNegZero = isNegativeZero(value);</span>
+<span class="fc" id="L1103">        final int signum = value.signum();</span>
+<span class="fc" id="L1104">        final int exponent = -value.scale();</span>
 
-<span class="fc" id="L1196">        writeVarInt(exponent);</span>
+<span class="fc" id="L1106">        writeVarInt(exponent);</span>
 
-<span class="fc" id="L1198">        final BigInteger mantissaBigInt = value.unscaledValue();</span>
-<span class="fc bfc" id="L1199" title="All 4 branches covered.">        if (mantissaBigInt.compareTo(BIG_INT_LONG_MIN_VALUE) &gt;= 0 &amp;&amp; mantissaBigInt.compareTo(BIG_INT_LONG_MAX_VALUE) &lt;= 0)</span>
+<span class="fc" id="L1108">        final BigInteger mantissaBigInt = value.unscaledValue();</span>
+<span class="fc bfc" id="L1109" title="All 4 branches covered.">        if (mantissaBigInt.compareTo(BIG_INT_LONG_MIN_VALUE) &gt;= 0 &amp;&amp; mantissaBigInt.compareTo(BIG_INT_LONG_MAX_VALUE) &lt;= 0)</span>
         {
             // we can fit into the long space
-<span class="fc" id="L1202">            final long mantissa = mantissaBigInt.longValue();</span>
-<span class="fc bfc" id="L1203" title="All 4 branches covered.">            if (signum == 0 &amp;&amp; !isNegZero)</span>
+<span class="fc" id="L1112">            final long mantissa = mantissaBigInt.longValue();</span>
+<span class="fc bfc" id="L1113" title="All 4 branches covered.">            if (signum == 0 &amp;&amp; !isNegZero)</span>
             {
                 // positive zero does not need to be encoded
             }
-<span class="fc bfc" id="L1207" title="All 2 branches covered.">            else if (isNegZero)</span>
+<span class="fc bfc" id="L1117" title="All 2 branches covered.">            else if (isNegZero)</span>
             {
                 // XXX special case for negative zero, we have to encode as a signed zero in the Int format
-<span class="fc" id="L1210">                updateLength(1);</span>
-<span class="fc" id="L1211">                buffer.writeByte(DECIMAL_NEGATIVE_ZERO_MANTISSA);</span>
+<span class="fc" id="L1120">                updateLength(1);</span>
+<span class="fc" id="L1121">                buffer.writeByte(DECIMAL_NEGATIVE_ZERO_MANTISSA);</span>
             }
-<span class="fc bfc" id="L1213" title="All 2 branches covered.">            else if (mantissa == Long.MIN_VALUE)</span>
+<span class="fc bfc" id="L1123" title="All 2 branches covered.">            else if (mantissa == Long.MIN_VALUE)</span>
             {
                 // XXX special case for min value -- we need 64-bits to store the magnitude and we need a bit for sign
-<span class="fc" id="L1216">                updateLength(9);</span>
-<span class="fc" id="L1217">                buffer.writeUInt8(0x80);</span>
-<span class="fc" id="L1218">                buffer.writeUInt64(mantissa);</span>
+<span class="fc" id="L1126">                updateLength(9);</span>
+<span class="fc" id="L1127">                buffer.writeUInt8(0x80);</span>
+<span class="fc" id="L1128">                buffer.writeUInt64(mantissa);</span>
             }
-<span class="fc bfc" id="L1220" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFFFFFFFF81L &amp;&amp; mantissa &lt;= 0x000000000000007FL)</span>
+<span class="fc bfc" id="L1130" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFFFFFFFF81L &amp;&amp; mantissa &lt;= 0x000000000000007FL)</span>
             {
-<span class="fc" id="L1222">                updateLength(1);</span>
-<span class="fc" id="L1223">                buffer.writeInt8(mantissa);</span>
+<span class="fc" id="L1132">                updateLength(1);</span>
+<span class="fc" id="L1133">                buffer.writeInt8(mantissa);</span>
             }
-<span class="fc bfc" id="L1225" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFFFFFF8001L &amp;&amp; mantissa &lt;= 0x0000000000007FFFL)</span>
+<span class="fc bfc" id="L1135" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFFFFFF8001L &amp;&amp; mantissa &lt;= 0x0000000000007FFFL)</span>
             {
-<span class="fc" id="L1227">                updateLength(2);</span>
-<span class="fc" id="L1228">                buffer.writeInt16(mantissa);</span>
+<span class="fc" id="L1137">                updateLength(2);</span>
+<span class="fc" id="L1138">                buffer.writeInt16(mantissa);</span>
             }
-<span class="fc bfc" id="L1230" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFFFF800001L &amp;&amp; mantissa &lt;= 0x00000000007FFFFFL)</span>
+<span class="fc bfc" id="L1140" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFFFF800001L &amp;&amp; mantissa &lt;= 0x00000000007FFFFFL)</span>
             {
-<span class="fc" id="L1232">                updateLength(3);</span>
-<span class="fc" id="L1233">                buffer.writeInt24(mantissa);</span>
+<span class="fc" id="L1142">                updateLength(3);</span>
+<span class="fc" id="L1143">                buffer.writeInt24(mantissa);</span>
             }
-<span class="fc bfc" id="L1235" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFF80000001L &amp;&amp; mantissa &lt;= 0x000000007FFFFFFFL)</span>
+<span class="fc bfc" id="L1145" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFFFF80000001L &amp;&amp; mantissa &lt;= 0x000000007FFFFFFFL)</span>
             {
-<span class="fc" id="L1237">                updateLength(4);</span>
-<span class="fc" id="L1238">                buffer.writeInt32(mantissa);</span>
+<span class="fc" id="L1147">                updateLength(4);</span>
+<span class="fc" id="L1148">                buffer.writeInt32(mantissa);</span>
             }
-<span class="fc bfc" id="L1240" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFF8000000001L &amp;&amp; mantissa &lt;= 0x0000007FFFFFFFFFL)</span>
+<span class="fc bfc" id="L1150" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFFFF8000000001L &amp;&amp; mantissa &lt;= 0x0000007FFFFFFFFFL)</span>
             {
-<span class="fc" id="L1242">                updateLength(5);</span>
-<span class="fc" id="L1243">                buffer.writeInt40(mantissa);</span>
+<span class="fc" id="L1152">                updateLength(5);</span>
+<span class="fc" id="L1153">                buffer.writeInt40(mantissa);</span>
             }
-<span class="fc bfc" id="L1245" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFF800000000001L &amp;&amp; mantissa &lt;= 0x00007FFFFFFFFFFFL)</span>
+<span class="fc bfc" id="L1155" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFFFF800000000001L &amp;&amp; mantissa &lt;= 0x00007FFFFFFFFFFFL)</span>
             {
-<span class="fc" id="L1247">                updateLength(6);</span>
-<span class="fc" id="L1248">                buffer.writeInt48(mantissa);</span>
+<span class="fc" id="L1157">                updateLength(6);</span>
+<span class="fc" id="L1158">                buffer.writeInt48(mantissa);</span>
             }
-<span class="fc bfc" id="L1250" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFF80000000000001L &amp;&amp; mantissa &lt;= 0x007FFFFFFFFFFFFFL)</span>
+<span class="fc bfc" id="L1160" title="All 4 branches covered.">            else if (mantissa &gt;= 0xFF80000000000001L &amp;&amp; mantissa &lt;= 0x007FFFFFFFFFFFFFL)</span>
             {
-<span class="fc" id="L1252">                updateLength(7);</span>
-<span class="fc" id="L1253">                buffer.writeInt56(mantissa);</span>
+<span class="fc" id="L1162">                updateLength(7);</span>
+<span class="fc" id="L1163">                buffer.writeInt56(mantissa);</span>
             }
             else
             {
                 // TODO consider being more space efficient for integers that can be written with 6/7 bytes.
-<span class="fc" id="L1258">                updateLength(8);</span>
-<span class="fc" id="L1259">                buffer.writeInt64(mantissa);</span>
+<span class="fc" id="L1168">                updateLength(8);</span>
+<span class="fc" id="L1169">                buffer.writeInt64(mantissa);</span>
             }
-<span class="fc" id="L1261">        }</span>
+<span class="fc" id="L1171">        }</span>
         else
         {
-<span class="fc bfc" id="L1264" title="All 2 branches covered.">            final BigInteger magnitude = signum &gt; 0 ? mantissaBigInt : mantissaBigInt.negate();</span>
-<span class="fc" id="L1265">            final byte[] bits = magnitude.toByteArray();</span>
-<span class="fc bfc" id="L1266" title="All 2 branches covered.">            if (signum &lt; 0)</span>
+<span class="fc bfc" id="L1174" title="All 2 branches covered.">            final BigInteger magnitude = signum &gt; 0 ? mantissaBigInt : mantissaBigInt.negate();</span>
+<span class="fc" id="L1175">            final byte[] bits = magnitude.toByteArray();</span>
+<span class="fc bfc" id="L1176" title="All 2 branches covered.">            if (signum &lt; 0)</span>
             {
-<span class="pc bpc" id="L1268" title="1 of 2 branches missed.">                if ((bits[0] &amp; 0x80) == 0)</span>
+<span class="pc bpc" id="L1178" title="1 of 2 branches missed.">                if ((bits[0] &amp; 0x80) == 0)</span>
                 {
-<span class="fc" id="L1270">                    bits[0] |= 0x80;</span>
+<span class="fc" id="L1180">                    bits[0] |= 0x80;</span>
                 }
                 else
                 {
                     // not enough space in the bits to store the negative sign
-<span class="nc" id="L1275">                    updateLength(1);</span>
-<span class="nc" id="L1276">                    buffer.writeUInt8(0x80);</span>
+<span class="nc" id="L1185">                    updateLength(1);</span>
+<span class="nc" id="L1186">                    buffer.writeUInt8(0x80);</span>
                 }
             }
-<span class="fc" id="L1279">            updateLength(bits.length);</span>
-<span class="fc" id="L1280">            buffer.writeBytes(bits);</span>
+<span class="fc" id="L1189">            updateLength(bits.length);</span>
+<span class="fc" id="L1190">            buffer.writeBytes(bits);</span>
         }
-<span class="fc" id="L1282">    }</span>
+<span class="fc" id="L1192">    }</span>
 
     private void patchSingleByteTypedOptimisticValue(final byte type, final ContainerInfo info)
     {
-<span class="fc bfc" id="L1286" title="All 2 branches covered.">        if (info.length &lt;= 0xD)</span>
+<span class="fc bfc" id="L1196" title="All 2 branches covered.">        if (info.length &lt;= 0xD)</span>
         {
             // we fit -- overwrite the type byte
-<span class="fc" id="L1289">            buffer.writeUInt8At(info.position - 1, type | info.length);</span>
+<span class="fc" id="L1199">            buffer.writeUInt8At(info.position - 1, type | info.length);</span>
         }
         else
         {
             // side patch
-<span class="fc" id="L1294">            buffer.writeUInt8At(info.position - 1, type | 0xE);</span>
-<span class="fc" id="L1295">            addPatchPoint(info.position, 0, info.length);</span>
+<span class="fc" id="L1204">            buffer.writeUInt8At(info.position - 1, type | 0xE);</span>
+<span class="fc" id="L1205">            addPatchPoint(info.position, 0, info.length);</span>
         }
-<span class="fc" id="L1297">    }</span>
+<span class="fc" id="L1207">    }</span>
 
     public void writeDecimal(final BigDecimal value) throws IOException
     {
-<span class="fc bfc" id="L1301" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L1211" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L1303">            writeNull(IonType.DECIMAL);</span>
-<span class="fc" id="L1304">            return;</span>
+<span class="fc" id="L1213">            writeNull(IonType.DECIMAL);</span>
+<span class="fc" id="L1214">            return;</span>
         }
 
-<span class="fc" id="L1307">        prepareValue();</span>
+<span class="fc" id="L1217">        prepareValue();</span>
 
-<span class="fc bfc" id="L1309" title="All 6 branches covered.">        if (value.signum() == 0 &amp;&amp; value.scale() == 0 &amp;&amp; !isNegativeZero(value))</span>
+<span class="fc bfc" id="L1219" title="All 6 branches covered.">        if (value.signum() == 0 &amp;&amp; value.scale() == 0 &amp;&amp; !isNegativeZero(value))</span>
         {
             // 0d0 can be written in one byte
-<span class="fc" id="L1312">            updateLength(1);</span>
-<span class="fc" id="L1313">            buffer.writeUInt8(DECIMAL_POS_ZERO);</span>
+<span class="fc" id="L1222">            updateLength(1);</span>
+<span class="fc" id="L1223">            buffer.writeUInt8(DECIMAL_POS_ZERO);</span>
         }
         else
         {
             // optimistically try to fit decimal length in low nibble (most should)
-<span class="fc" id="L1318">            updateLength(1);</span>
-<span class="fc" id="L1319">            pushContainer(ContainerType.VALUE);</span>
-<span class="fc" id="L1320">            buffer.writeByte(DECIMAL_TYPE);</span>
-<span class="fc" id="L1321">            writeDecimalValue(value);</span>
-<span class="fc" id="L1322">            final ContainerInfo info = popContainer();</span>
-<span class="fc" id="L1323">            patchSingleByteTypedOptimisticValue(DECIMAL_TYPE, info);</span>
+<span class="fc" id="L1228">            updateLength(1);</span>
+<span class="fc" id="L1229">            pushContainer(ContainerType.VALUE);</span>
+<span class="fc" id="L1230">            buffer.writeByte(DECIMAL_TYPE);</span>
+<span class="fc" id="L1231">            writeDecimalValue(value);</span>
+<span class="fc" id="L1232">            final ContainerInfo info = popContainer();</span>
+<span class="fc" id="L1233">            patchSingleByteTypedOptimisticValue(DECIMAL_TYPE, info);</span>
         }
 
-<span class="fc" id="L1326">        finishValue();</span>
-<span class="fc" id="L1327">    }</span>
+<span class="fc" id="L1236">        finishValue();</span>
+<span class="fc" id="L1237">    }</span>
 
     public void writeTimestamp(final Timestamp value) throws IOException
     {
-<span class="fc bfc" id="L1331" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L1241" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L1333">            writeNull(IonType.TIMESTAMP);</span>
-<span class="fc" id="L1334">            return;</span>
+<span class="fc" id="L1243">            writeNull(IonType.TIMESTAMP);</span>
+<span class="fc" id="L1244">            return;</span>
         }
-<span class="fc" id="L1336">        prepareValue();</span>
+<span class="fc" id="L1246">        prepareValue();</span>
 
         // optimistically try to fit a timestamp length in low nibble (most should)
-<span class="fc" id="L1339">        updateLength(1);</span>
-<span class="fc" id="L1340">        pushContainer(ContainerType.VALUE);</span>
-<span class="fc" id="L1341">        buffer.writeByte(TIMESTAMP_TYPE);</span>
+<span class="fc" id="L1249">        updateLength(1);</span>
+<span class="fc" id="L1250">        pushContainer(ContainerType.VALUE);</span>
+<span class="fc" id="L1251">        buffer.writeByte(TIMESTAMP_TYPE);</span>
 
         // OFFSET
-<span class="fc" id="L1344">        final Integer offset = value.getLocalOffset();</span>
-<span class="fc bfc" id="L1345" title="All 2 branches covered.">        if (offset == null)</span>
+<span class="fc" id="L1254">        final Integer offset = value.getLocalOffset();</span>
+<span class="fc bfc" id="L1255" title="All 2 branches covered.">        if (offset == null)</span>
         {
             // special case for unknown -00:00
-<span class="fc" id="L1348">            updateLength(1);</span>
-<span class="fc" id="L1349">            buffer.writeByte(VARINT_NEG_ZERO);</span>
+<span class="fc" id="L1258">            updateLength(1);</span>
+<span class="fc" id="L1259">            buffer.writeByte(VARINT_NEG_ZERO);</span>
         }
         else
         {
-<span class="fc" id="L1353">            writeVarInt(offset.intValue());</span>
+<span class="fc" id="L1263">            writeVarInt(offset.intValue());</span>
         }
 
         // YEAR
-<span class="fc" id="L1357">        final int year = value.getZYear();</span>
-<span class="fc" id="L1358">        writeVarUInt(year);</span>
+<span class="fc" id="L1267">        final int year = value.getZYear();</span>
+<span class="fc" id="L1268">        writeVarUInt(year);</span>
 
         // XXX it is really convenient to rely on the ordinal
-<span class="fc" id="L1361">        final int precision = value.getPrecision().ordinal();</span>
+<span class="fc" id="L1271">        final int precision = value.getPrecision().ordinal();</span>
 
-<span class="fc bfc" id="L1363" title="All 2 branches covered.">        if (precision &gt;= MONTH.ordinal())</span>
+<span class="fc bfc" id="L1273" title="All 2 branches covered.">        if (precision &gt;= MONTH.ordinal())</span>
         {
-<span class="fc" id="L1365">            final int month = value.getZMonth();</span>
-<span class="fc" id="L1366">            writeVarUInt(month);</span>
+<span class="fc" id="L1275">            final int month = value.getZMonth();</span>
+<span class="fc" id="L1276">            writeVarUInt(month);</span>
         }
-<span class="fc bfc" id="L1368" title="All 2 branches covered.">        if (precision &gt;= DAY.ordinal())</span>
+<span class="fc bfc" id="L1278" title="All 2 branches covered.">        if (precision &gt;= DAY.ordinal())</span>
         {
-<span class="fc" id="L1370">            final int day = value.getZDay();</span>
-<span class="fc" id="L1371">            writeVarUInt(day);</span>
+<span class="fc" id="L1280">            final int day = value.getZDay();</span>
+<span class="fc" id="L1281">            writeVarUInt(day);</span>
         }
-<span class="fc bfc" id="L1373" title="All 2 branches covered.">        if (precision &gt;= MINUTE.ordinal())</span>
+<span class="fc bfc" id="L1283" title="All 2 branches covered.">        if (precision &gt;= MINUTE.ordinal())</span>
         {
-<span class="fc" id="L1375">            final int hour = value.getZHour();</span>
-<span class="fc" id="L1376">            writeVarUInt(hour);</span>
-<span class="fc" id="L1377">            final int minute = value.getZMinute();</span>
-<span class="fc" id="L1378">            writeVarUInt(minute);</span>
+<span class="fc" id="L1285">            final int hour = value.getZHour();</span>
+<span class="fc" id="L1286">            writeVarUInt(hour);</span>
+<span class="fc" id="L1287">            final int minute = value.getZMinute();</span>
+<span class="fc" id="L1288">            writeVarUInt(minute);</span>
         }
-<span class="fc bfc" id="L1380" title="All 2 branches covered.">        if (precision &gt;= SECOND.ordinal())</span>
+<span class="fc bfc" id="L1290" title="All 2 branches covered.">        if (precision &gt;= SECOND.ordinal())</span>
         {
-<span class="fc" id="L1382">            final int second = value.getZSecond();</span>
-<span class="fc" id="L1383">            writeVarUInt(second);</span>
-<span class="fc" id="L1384">            final BigDecimal fraction = value.getZFractionalSecond();</span>
-<span class="fc bfc" id="L1385" title="All 2 branches covered.">            if (fraction != null) {</span>
-<span class="fc" id="L1386">                final BigInteger mantissaBigInt = fraction.unscaledValue();</span>
-<span class="fc" id="L1387">                final int exponent = -fraction.scale();</span>
-<span class="fc bfc" id="L1388" title="All 4 branches covered.">                if (!(mantissaBigInt.equals(BigInteger.ZERO) &amp;&amp; exponent &gt; -1)) {</span>
-<span class="fc" id="L1389">                    writeDecimalValue(fraction);</span>
+<span class="fc" id="L1292">            final int second = value.getZSecond();</span>
+<span class="fc" id="L1293">            writeVarUInt(second);</span>
+<span class="fc" id="L1294">            final BigDecimal fraction = value.getZFractionalSecond();</span>
+<span class="fc bfc" id="L1295" title="All 2 branches covered.">            if (fraction != null) {</span>
+<span class="fc" id="L1296">                final BigInteger mantissaBigInt = fraction.unscaledValue();</span>
+<span class="fc" id="L1297">                final int exponent = -fraction.scale();</span>
+<span class="fc bfc" id="L1298" title="All 4 branches covered.">                if (!(mantissaBigInt.equals(BigInteger.ZERO) &amp;&amp; exponent &gt; -1)) {</span>
+<span class="fc" id="L1299">                    writeDecimalValue(fraction);</span>
                 }
             }
         }
 
-<span class="fc" id="L1394">        final ContainerInfo info = popContainer();</span>
-<span class="fc" id="L1395">        patchSingleByteTypedOptimisticValue(TIMESTAMP_TYPE, info);</span>
+<span class="fc" id="L1304">        final ContainerInfo info = popContainer();</span>
+<span class="fc" id="L1305">        patchSingleByteTypedOptimisticValue(TIMESTAMP_TYPE, info);</span>
 
-<span class="fc" id="L1397">        finishValue();</span>
-<span class="fc" id="L1398">    }</span>
+<span class="fc" id="L1307">        finishValue();</span>
+<span class="fc" id="L1308">    }</span>
 
     public void writeSymbol(String content) throws IOException
     {
-<span class="nc" id="L1402">        throw new UnsupportedOperationException(&quot;Symbol writing via string is not supported in low-level binary writer&quot;);</span>
+<span class="nc" id="L1312">        throw new UnsupportedOperationException(&quot;Symbol writing via string is not supported in low-level binary writer&quot;);</span>
     }
 
     public void writeSymbolToken(final SymbolToken content) throws IOException
     {
-<span class="fc bfc" id="L1407" title="All 2 branches covered.">        if (content == null)</span>
+<span class="fc bfc" id="L1317" title="All 2 branches covered.">        if (content == null)</span>
         {
-<span class="fc" id="L1409">            writeNull(IonType.SYMBOL);</span>
-<span class="fc" id="L1410">            return;</span>
+<span class="fc" id="L1319">            writeNull(IonType.SYMBOL);</span>
+<span class="fc" id="L1320">            return;</span>
         }
-<span class="fc" id="L1412">        writeSymbolToken(content.getSid());</span>
-<span class="fc" id="L1413">    }</span>
+<span class="fc" id="L1322">        writeSymbolToken(content.getSid());</span>
+<span class="fc" id="L1323">    }</span>
 
     boolean isIVM(int sid)
     {
@@ -1419,172 +1329,109 @@ import java.util.NoSuchElementException;
         // symbol value.
         // TODO amzn/ion-java/issues/88 requires this behavior to be changed,
         // such that top-level SID 2 is treated as a symbol value, not an IVM.
-<span class="fc bfc" id="L1422" title="All 6 branches covered.">        return depth == 0 &amp;&amp; sid == ION_1_0_SID &amp;&amp; !hasAnnotations();</span>
+<span class="fc bfc" id="L1332" title="All 6 branches covered.">        return depth == 0 &amp;&amp; sid == ION_1_0_SID &amp;&amp; !hasAnnotations();</span>
     }
 
     public void writeSymbolToken(int sid) throws IOException
     {
-<span class="fc bfc" id="L1427" title="All 2 branches covered.">        if (isIVM(sid))</span>
+<span class="fc bfc" id="L1337" title="All 2 branches covered.">        if (isIVM(sid))</span>
         {
-<span class="fc" id="L1429">            throw new IonException(&quot;Direct writing of IVM is not supported in low-level binary writer&quot;);</span>
+<span class="fc" id="L1339">            throw new IonException(&quot;Direct writing of IVM is not supported in low-level binary writer&quot;);</span>
         }
-<span class="fc" id="L1431">        checkSid(sid);</span>
-<span class="fc" id="L1432">        prepareValue();</span>
-<span class="fc" id="L1433">        writeTypedUInt(SYMBOL_TYPE, sid);</span>
-<span class="fc" id="L1434">        finishValue();</span>
-<span class="fc" id="L1435">    }</span>
+<span class="fc" id="L1341">        checkSid(sid);</span>
+<span class="fc" id="L1342">        prepareValue();</span>
+<span class="fc" id="L1343">        writeTypedUInt(SYMBOL_TYPE, sid);</span>
+<span class="fc" id="L1344">        finishValue();</span>
+<span class="fc" id="L1345">    }</span>
 
     public void writeString(final String value) throws IOException
     {
-<span class="fc bfc" id="L1439" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L1349" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L1441">            writeNull(IonType.STRING);</span>
-<span class="fc" id="L1442">            return;</span>
+<span class="fc" id="L1351">            writeNull(IonType.STRING);</span>
+<span class="fc" id="L1352">            return;</span>
         }
-<span class="fc" id="L1444">        prepareValue();</span>
+<span class="fc" id="L1354">        prepareValue();</span>
 
-        /*
-         This method relies on the standard CharsetEncoder class to encode each String's UTF-16 char[] data into
-         UTF-8 bytes. Strangely, CharsetEncoders cannot operate directly on instances of a String. The CharsetEncoder
-         API requires all inputs and outputs to be specified as instances of java.nio.ByteBuffer and
-         java.nio.CharBuffer, making some number of allocations mandatory. Specifically, for each encoding operation
-         we need to have:
-
-            1. An instance of a UTF-8 CharsetEncoder.
-            2. A CharBuffer representation of the String's data.
-            3. A ByteBuffer into which the CharsetEncoder may write UTF-8 bytes.
-
-         To minimize the overhead involved, the IonRawBinaryWriter will reuse previously initialized resources wherever
-         possible. However, because CharBuffer and ByteBuffer each have a fixed length, we can only reuse them for
-         Strings that are small enough to fit. This creates two kinds of input String to encode: those that are small
-         enough for us to reuse our buffers (&quot;small strings&quot;), and those which are not (&quot;large strings&quot;).
-
-         The String#getBytes(Charset) method cannot be used for two reasons:
-
-               1. It always allocates, so we cannot reuse any resources.
-               2. If/when it encounters character data that cannot be encoded as UTF-8, it simply replaces that data
-                 with a substitute character[1]. (Sometimes seen in applications as a '?'.) In order
-                 to surface invalid data to the user, the method must be able to detect these events at encoding time.
-
-            [1] https://en.wikipedia.org/wiki/Substitute_character
-        */
-
-        CharBuffer stringData;
-        ByteBuffer encodingBuffer;
-
-<span class="fc" id="L1475">        int length = value.length();</span>
-
-        // While it is possible to encode the Ion string using a fixed-size encodingBuffer, we need to be able to
-        // write the length of the complete UTF-8 string to the output stream before we write the string itself.
-        // For simplicity, we reuse or create an encodingBuffer that is large enough to hold the full string.
-
-        // In order to encode the input String, we need to pass it to CharsetEncoder as an implementation of CharBuffer.
-        // Surprisingly, the intuitive way to achieve this (the CharBuffer#wrap(CharSequence) method) adds a large
-        // amount of CPU overhead to the encoding process. Benchmarking shows that it's substantially faster
-        // to use String#getChars(int, int, char[], int) to copy the String's backing array and then call
-        // CharBuffer#wrap(char[]) on the copy.
-
-<span class="fc bfc" id="L1487" title="All 2 branches covered.">        if (length &gt; SMALL_STRING_SIZE) {</span>
-            // Allocate a new buffer for large strings
-<span class="fc" id="L1489">            encodingBuffer = ByteBuffer.allocate((int) (value.length() * utf8Encoder.maxBytesPerChar()));</span>
-<span class="fc" id="L1490">            char[] chars = new char[value.length()];</span>
-<span class="fc" id="L1491">            value.getChars(0, value.length(), chars, 0);</span>
-<span class="fc" id="L1492">            stringData = CharBuffer.wrap(chars);</span>
-<span class="fc" id="L1493">        } else {</span>
-            // Reuse our existing buffers for small strings
-<span class="fc" id="L1495">            encodingBuffer = utf8EncodingBuffer;</span>
-<span class="fc" id="L1496">            encodingBuffer.clear();</span>
-<span class="fc" id="L1497">            stringData = reusableCharBuffer;</span>
-<span class="fc" id="L1498">            value.getChars(0, value.length(), charArray, 0);</span>
-<span class="fc" id="L1499">            reusableCharBuffer.rewind();</span>
-<span class="fc" id="L1500">            reusableCharBuffer.limit(value.length());</span>
-        }
-
-        // Because encodingBuffer is guaranteed to be large enough to hold the encoded string, we can
-        // perform the encoding in a single call to CharsetEncoder#encode(CharBuffer, ByteBuffer, boolean).
-<span class="fc" id="L1505">        CoderResult coderResult = utf8Encoder.encode(stringData, encodingBuffer, true);</span>
-
-        // 'Underflow' is the success state of a CoderResult.
-<span class="fc bfc" id="L1508" title="All 2 branches covered.">        if (!coderResult.isUnderflow()) {</span>
-<span class="fc" id="L1509">            throw new IllegalArgumentException(&quot;Could not encode string as UTF8 bytes: &quot; + value);</span>
-        }
-<span class="fc" id="L1511">        encodingBuffer.flip();</span>
-<span class="fc" id="L1512">        int utf8Length = encodingBuffer.remaining();</span>
+        // UTF-8 encode the String
+<span class="fc" id="L1357">        Utf8StringEncoder.Result encoderResult = utf8StringEncoder.encode(value);</span>
+<span class="fc" id="L1358">        int utf8Length = encoderResult.getEncodedLength();</span>
+<span class="fc" id="L1359">        byte[] utf8Buffer = encoderResult.getBuffer();</span>
 
         // Write the type and length codes to the output stream.
-<span class="fc" id="L1515">        long previousPosition = buffer.position();</span>
-<span class="fc bfc" id="L1516" title="All 2 branches covered.">        if (utf8Length &lt;= 0xD) {</span>
-<span class="fc" id="L1517">            buffer.writeUInt8(STRING_TYPE | utf8Length);</span>
+<span class="fc" id="L1362">        long previousPosition = buffer.position();</span>
+<span class="fc bfc" id="L1363" title="All 2 branches covered.">        if (utf8Length &lt;= 0xD) {</span>
+<span class="fc" id="L1364">            buffer.writeUInt8(STRING_TYPE | utf8Length);</span>
         } else {
-<span class="fc" id="L1519">            buffer.writeUInt8(STRING_TYPE | 0xE);</span>
-<span class="fc" id="L1520">            buffer.writeVarUInt(utf8Length);</span>
+<span class="fc" id="L1366">            buffer.writeUInt8(STRING_TYPE | 0xE);</span>
+<span class="fc" id="L1367">            buffer.writeVarUInt(utf8Length);</span>
         }
 
         // Write the encoded UTF-8 bytes to the output stream
-<span class="fc" id="L1524">        buffer.writeBytes(encodingBuffer.array(), 0, utf8Length);</span>
+<span class="fc" id="L1371">        buffer.writeBytes(utf8Buffer, 0, utf8Length);</span>
 
-<span class="fc" id="L1526">        long bytesWritten = buffer.position() - previousPosition;</span>
-<span class="fc" id="L1527">        updateLength(bytesWritten);</span>
+<span class="fc" id="L1373">        long bytesWritten = buffer.position() - previousPosition;</span>
+<span class="fc" id="L1374">        updateLength(bytesWritten);</span>
 
-<span class="fc" id="L1529">        finishValue();</span>
-<span class="fc" id="L1530">    }</span>
+<span class="fc" id="L1376">        finishValue();</span>
+<span class="fc" id="L1377">    }</span>
 
     public void writeClob(byte[] data) throws IOException
     {
-<span class="fc bfc" id="L1534" title="All 2 branches covered.">        if (data == null)</span>
+<span class="fc bfc" id="L1381" title="All 2 branches covered.">        if (data == null)</span>
         {
-<span class="fc" id="L1536">            writeNull(IonType.CLOB);</span>
-<span class="fc" id="L1537">            return;</span>
+<span class="fc" id="L1383">            writeNull(IonType.CLOB);</span>
+<span class="fc" id="L1384">            return;</span>
         }
-<span class="fc" id="L1539">        writeClob(data, 0, data.length);</span>
-<span class="fc" id="L1540">    }</span>
+<span class="fc" id="L1386">        writeClob(data, 0, data.length);</span>
+<span class="fc" id="L1387">    }</span>
 
     public void writeClob(final byte[] data, final int offset, final int length) throws IOException
     {
-<span class="fc bfc" id="L1544" title="All 2 branches covered.">        if (data == null)</span>
+<span class="fc bfc" id="L1391" title="All 2 branches covered.">        if (data == null)</span>
         {
-<span class="fc" id="L1546">            writeNull(IonType.CLOB);</span>
-<span class="fc" id="L1547">            return;</span>
+<span class="fc" id="L1393">            writeNull(IonType.CLOB);</span>
+<span class="fc" id="L1394">            return;</span>
         }
-<span class="fc" id="L1549">        prepareValue();</span>
-<span class="fc" id="L1550">        writeTypedBytes(CLOB_TYPE, data, offset, length);</span>
-<span class="fc" id="L1551">        finishValue();</span>
-<span class="fc" id="L1552">    }</span>
+<span class="fc" id="L1396">        prepareValue();</span>
+<span class="fc" id="L1397">        writeTypedBytes(CLOB_TYPE, data, offset, length);</span>
+<span class="fc" id="L1398">        finishValue();</span>
+<span class="fc" id="L1399">    }</span>
 
     public void writeBlob(byte[] data) throws IOException
     {
-<span class="fc bfc" id="L1556" title="All 2 branches covered.">        if (data == null)</span>
+<span class="fc bfc" id="L1403" title="All 2 branches covered.">        if (data == null)</span>
         {
-<span class="fc" id="L1558">            writeNull(IonType.BLOB);</span>
-<span class="fc" id="L1559">            return;</span>
+<span class="fc" id="L1405">            writeNull(IonType.BLOB);</span>
+<span class="fc" id="L1406">            return;</span>
         }
-<span class="fc" id="L1561">        writeBlob(data, 0, data.length);</span>
-<span class="fc" id="L1562">    }</span>
+<span class="fc" id="L1408">        writeBlob(data, 0, data.length);</span>
+<span class="fc" id="L1409">    }</span>
 
     public void writeBlob(final byte[] data, final int offset, final int length) throws IOException
     {
-<span class="fc bfc" id="L1566" title="All 2 branches covered.">        if (data == null)</span>
+<span class="fc bfc" id="L1413" title="All 2 branches covered.">        if (data == null)</span>
         {
-<span class="fc" id="L1568">            writeNull(IonType.BLOB);</span>
-<span class="fc" id="L1569">            return;</span>
+<span class="fc" id="L1415">            writeNull(IonType.BLOB);</span>
+<span class="fc" id="L1416">            return;</span>
         }
-<span class="fc" id="L1571">        prepareValue();</span>
-<span class="fc" id="L1572">        writeTypedBytes(BLOB_TYPE, data, offset, length);</span>
-<span class="fc" id="L1573">        finishValue();</span>
-<span class="fc" id="L1574">    }</span>
+<span class="fc" id="L1418">        prepareValue();</span>
+<span class="fc" id="L1419">        writeTypedBytes(BLOB_TYPE, data, offset, length);</span>
+<span class="fc" id="L1420">        finishValue();</span>
+<span class="fc" id="L1421">    }</span>
 
     @Override
     public void writeString(byte[] data, int offset, int length) throws IOException
     {
-<span class="fc bfc" id="L1579" title="All 2 branches covered.">        if (data == null)</span>
+<span class="fc bfc" id="L1426" title="All 2 branches covered.">        if (data == null)</span>
         {
-<span class="fc" id="L1581">            writeNull(IonType.STRING);</span>
-<span class="fc" id="L1582">            return;</span>
+<span class="fc" id="L1428">            writeNull(IonType.STRING);</span>
+<span class="fc" id="L1429">            return;</span>
         }
-<span class="fc" id="L1584">        prepareValue();</span>
-<span class="fc" id="L1585">        writeTypedBytes(STRING_TYPE, data, offset, length);</span>
-<span class="fc" id="L1586">        finishValue();</span>
-<span class="fc" id="L1587">    }</span>
+<span class="fc" id="L1431">        prepareValue();</span>
+<span class="fc" id="L1432">        writeTypedBytes(STRING_TYPE, data, offset, length);</span>
+<span class="fc" id="L1433">        finishValue();</span>
+<span class="fc" id="L1434">    }</span>
 
     /**
      * Writes a raw value into the buffer, updating lengths appropriately.
@@ -1593,110 +1440,111 @@ import java.util.NoSuchElementException;
      */
     public void writeBytes(byte[] data, int offset, int length) throws IOException
     {
-<span class="fc" id="L1596">        prepareValue();</span>
-<span class="fc" id="L1597">        updateLength(length);</span>
-<span class="fc" id="L1598">        buffer.writeBytes(data, offset, length);</span>
-<span class="fc" id="L1599">        finishValue();</span>
-<span class="fc" id="L1600">    }</span>
+<span class="fc" id="L1443">        prepareValue();</span>
+<span class="fc" id="L1444">        updateLength(length);</span>
+<span class="fc" id="L1445">        buffer.writeBytes(data, offset, length);</span>
+<span class="fc" id="L1446">        finishValue();</span>
+<span class="fc" id="L1447">    }</span>
 
     // Stream Manipulation/Terminators
 
     /*package*/ long position()
     {
-<span class="fc" id="L1606">        return buffer.position();</span>
+<span class="fc" id="L1453">        return buffer.position();</span>
     }
 
     /*package*/ void truncate(long position)
     {
-<span class="fc" id="L1611">        buffer.truncate(position);</span>
+<span class="fc" id="L1458">        buffer.truncate(position);</span>
         // TODO decide if it is worth making this faster than O(N)
-<span class="fc" id="L1613">        final PatchPoint patch = patchPoints.truncate(position);</span>
-<span class="fc bfc" id="L1614" title="All 2 branches covered.">        if (patch != null)</span>
+<span class="fc" id="L1460">        final PatchPoint patch = patchPoints.truncate(position);</span>
+<span class="fc bfc" id="L1461" title="All 2 branches covered.">        if (patch != null)</span>
         {
-<span class="fc" id="L1616">            patchBuffer.truncate(patch.patchPosition);</span>
+<span class="fc" id="L1463">            patchBuffer.truncate(patch.patchPosition);</span>
         }
-<span class="fc" id="L1618">    }</span>
+<span class="fc" id="L1465">    }</span>
 
-<span class="nc" id="L1620">    public void flush() throws IOException {}</span>
+<span class="nc" id="L1467">    public void flush() throws IOException {}</span>
 
     public void finish() throws IOException
     {
-<span class="fc bfc" id="L1624" title="All 2 branches covered.">        if (closed)</span>
+<span class="fc bfc" id="L1471" title="All 2 branches covered.">        if (closed)</span>
         {
-<span class="fc" id="L1626">            return;</span>
+<span class="fc" id="L1473">            return;</span>
         }
-<span class="pc bpc" id="L1628" title="1 of 4 branches missed.">        if (!containers.isEmpty() || depth &gt; 0)</span>
+<span class="pc bpc" id="L1475" title="1 of 4 branches missed.">        if (!containers.isEmpty() || depth &gt; 0)</span>
         {
-<span class="fc" id="L1630">            throw new IllegalStateException(&quot;Cannot finish within container: &quot; + containers);</span>
+<span class="fc" id="L1477">            throw new IllegalStateException(&quot;Cannot finish within container: &quot; + containers);</span>
         }
 
-<span class="fc bfc" id="L1633" title="All 2 branches covered.">        if (patchPoints.isEmpty())</span>
+<span class="fc bfc" id="L1480" title="All 2 branches covered.">        if (patchPoints.isEmpty())</span>
         {
             // nothing to patch--write 'em out!
-<span class="fc" id="L1636">            buffer.writeTo(out);</span>
+<span class="fc" id="L1483">            buffer.writeTo(out);</span>
         }
         else
         {
-<span class="fc" id="L1640">            long bufferPosition = 0;</span>
-<span class="fc bfc" id="L1641" title="All 2 branches covered.">            for (final PatchPoint patch : patchPoints)</span>
+<span class="fc" id="L1487">            long bufferPosition = 0;</span>
+<span class="fc bfc" id="L1488" title="All 2 branches covered.">            for (final PatchPoint patch : patchPoints)</span>
             {
                 // write up to the thing to be patched
-<span class="fc" id="L1644">                final long bufferLength = patch.oldPosition - bufferPosition;</span>
-<span class="fc" id="L1645">                buffer.writeTo(out, bufferPosition, bufferLength);</span>
+<span class="fc" id="L1491">                final long bufferLength = patch.oldPosition - bufferPosition;</span>
+<span class="fc" id="L1492">                buffer.writeTo(out, bufferPosition, bufferLength);</span>
 
                 // write out the patch
-<span class="fc" id="L1648">                patchBuffer.writeTo(out, patch.patchPosition, patch.patchLength);</span>
+<span class="fc" id="L1495">                patchBuffer.writeTo(out, patch.patchPosition, patch.patchLength);</span>
 
                 // skip over the preallocated varuint field
-<span class="fc" id="L1651">                bufferPosition = patch.oldPosition;</span>
-<span class="fc" id="L1652">                bufferPosition += patch.oldLength;</span>
-<span class="fc" id="L1653">            }</span>
-<span class="fc" id="L1654">            buffer.writeTo(out, bufferPosition, buffer.position() - bufferPosition);</span>
+<span class="fc" id="L1498">                bufferPosition = patch.oldPosition;</span>
+<span class="fc" id="L1499">                bufferPosition += patch.oldLength;</span>
+<span class="fc" id="L1500">            }</span>
+<span class="fc" id="L1501">            buffer.writeTo(out, bufferPosition, buffer.position() - bufferPosition);</span>
         }
-<span class="fc" id="L1656">        patchPoints.clear();</span>
-<span class="fc" id="L1657">        patchBuffer.reset();</span>
-<span class="fc" id="L1658">        buffer.reset();</span>
+<span class="fc" id="L1503">        patchPoints.clear();</span>
+<span class="fc" id="L1504">        patchBuffer.reset();</span>
+<span class="fc" id="L1505">        buffer.reset();</span>
 
-<span class="fc bfc" id="L1660" title="All 2 branches covered.">        if (streamFlushMode == StreamFlushMode.FLUSH)</span>
+<span class="fc bfc" id="L1507" title="All 2 branches covered.">        if (streamFlushMode == StreamFlushMode.FLUSH)</span>
         {
-<span class="fc" id="L1662">            out.flush();</span>
+<span class="fc" id="L1509">            out.flush();</span>
         }
 
-<span class="fc" id="L1665">        hasWrittenValuesSinceFinished = false;</span>
-<span class="fc" id="L1666">    }</span>
+<span class="fc" id="L1512">        hasWrittenValuesSinceFinished = false;</span>
+<span class="fc" id="L1513">    }</span>
 
     public void close() throws IOException
     {
-<span class="fc bfc" id="L1670" title="All 2 branches covered.">        if (closed)</span>
+<span class="fc bfc" id="L1517" title="All 2 branches covered.">        if (closed)</span>
         {
-<span class="fc" id="L1672">            return;</span>
+<span class="fc" id="L1519">            return;</span>
         }
         try
         {
             try
             {
-<span class="fc" id="L1678">                finish();</span>
+<span class="fc" id="L1525">                finish();</span>
             }
-<span class="fc" id="L1680">            catch (final IllegalStateException e)</span>
+<span class="fc" id="L1527">            catch (final IllegalStateException e)</span>
             {
                 // callers don't expect this...
-<span class="fc" id="L1683">            }</span>
+<span class="fc" id="L1530">            }</span>
 
             // release all of our blocks -- these should never throw
-<span class="fc" id="L1686">            buffer.close();</span>
-<span class="fc" id="L1687">            patchBuffer.close();</span>
-<span class="fc" id="L1688">            allocator.close();</span>
+<span class="fc" id="L1533">            buffer.close();</span>
+<span class="fc" id="L1534">            patchBuffer.close();</span>
+<span class="fc" id="L1535">            allocator.close();</span>
+<span class="fc" id="L1536">            utf8StringEncoder.close();</span>
         }
         finally
         {
-<span class="fc" id="L1692">            closed = true;</span>
-<span class="fc bfc" id="L1693" title="All 2 branches covered.">            if (streamCloseMode == StreamCloseMode.CLOSE)</span>
+<span class="fc" id="L1540">            closed = true;</span>
+<span class="fc bfc" id="L1541" title="All 2 branches covered.">            if (streamCloseMode == StreamCloseMode.CLOSE)</span>
             {
                 // release the stream
-<span class="fc" id="L1696">                out.close();</span>
+<span class="fc" id="L1544">                out.close();</span>
             }
         }
-<span class="fc" id="L1699">    }</span>
+<span class="fc" id="L1547">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

@@ -134,8 +134,8 @@ import java.util.Queue;
 <span class="fc" id="L134">                _symtabs = new LinkedList&lt;SymbolTable&gt;();</span>
             }
 <span class="fc" id="L136">            ++_freePos;</span>
-<span class="pc bpc" id="L137" title="1 of 2 branches missed.">            if (_freePos == _positions.length) {</span>
-<span class="nc" id="L138">                grow();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">            if (_freePos == _positions.length) {</span>
+<span class="fc" id="L138">                grow();</span>
             }
 <span class="fc bfc" id="L140" title="All 2 branches covered.">            if (injectBeforeCurrent) {</span>
                 // move current value to the right
@@ -536,11 +536,11 @@ import java.util.Queue;
 
 <span class="pc bpc" id="L537" title="1 of 2 branches missed.">                if (symtab != null &amp;&amp;</span>
 <span class="fc bfc" id="L538" title="All 2 branches covered.">                    symtab.isReadOnly() &amp;&amp;</span>
-<span class="pc bpc" id="L539" title="1 of 2 branches missed.">                    symtab.isLocalTable())</span>
+<span class="fc bfc" id="L539" title="All 2 branches covered.">                    symtab.isLocalTable())</span>
                 {
                     // It's no longer possible to add more symbols to the local
                     // symtab, so we can safely write everything out.
-<span class="nc" id="L543">                    writeAllBufferedData();</span>
+<span class="fc" id="L543">                    writeAllBufferedData();</span>
                 }
             }
 

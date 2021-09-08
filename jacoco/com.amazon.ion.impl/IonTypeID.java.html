@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IonTypeID.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.amazon.ion:ion-java</a> &gt; <a href="index.source.html" class="el_package">com.amazon.ion.impl</a> &gt; <span class="el_source">IonTypeID.java</span></div><h1>IonTypeID.java</h1><pre class="source lang-java linenums">package com.amazon.ion.impl;
+
+import com.amazon.ion.IonType;
+
+/**
+ * Holds pre-computed information about a binary Ion type ID byte.
+ */
+final class IonTypeID {
+
+    private static final int NUMBER_OF_BYTES = 0x100;
+    private static final int BITS_PER_NIBBLE = 4;
+    private static final int LOW_NIBBLE_BITMASK = 0x0F;
+    private static final int NULL_VALUE_NIBBLE = 0xF;
+    private static final int VARIABLE_LENGTH_NIBBLE = 0xE;
+    private static final int NEGATIVE_INT_TYPE_CODE = 0x3;
+    private static final int TYPE_CODE_INVALID = 0xF;
+    private static final int ANNOTATION_WRAPPER_MIN_LENGTH = 0x3;
+    private static final int ANNOTATION_WRAPPER_MAX_LENGTH = 0xE;
+    static final int ORDERED_STRUCT_NIBBLE = 0x1;
+
+    // NOTE: 'annotation wrapper' is not an IonType, but it is simplest to treat it as one for the purposes of this
+    // implementation in order to have a direct mapping from binary type IDs to IonType enum values. IonType.DATAGRAM
+    // does not have a type ID, so we will use it to mean 'annotation wrapper' instead.
+<span class="fc" id="L24">    static final IonType ION_TYPE_ANNOTATION_WRAPPER = IonType.DATAGRAM;</span>
+
+    // Lookup table from type ID to IonType. See https://amzn.github.io/ion-docs/docs/binary.html#typed-value-formats
+<span class="fc" id="L27">    static final IonType[] ION_TYPES = new IonType[] {</span>
+        IonType.NULL,
+        IonType.BOOL,
+        IonType.INT,
+        IonType.INT,
+        IonType.FLOAT,
+        IonType.DECIMAL,
+        IonType.TIMESTAMP,
+        IonType.SYMBOL,
+        IonType.STRING,
+        IonType.CLOB,
+        IonType.BLOB,
+        IonType.LIST,
+        IonType.SEXP,
+        IonType.STRUCT,
+        ION_TYPE_ANNOTATION_WRAPPER,
+        null // The 0xF type code is illegal in Ion 1.0.
+    };
+
+    // Pre-compute all possible type ID bytes.
+    static final IonTypeID[] TYPE_IDS;
+    static {
+<span class="fc" id="L49">        TYPE_IDS = new IonTypeID[NUMBER_OF_BYTES];</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        for (int b = 0x00; b &lt; NUMBER_OF_BYTES; b++) {</span>
+<span class="fc" id="L51">            TYPE_IDS[b] = new IonTypeID((byte) b);</span>
+        }
+<span class="fc" id="L53">    }</span>
+
+    final IonType type;
+    final byte length;
+    final boolean variableLength;
+    final boolean isNull;
+    final boolean isNopPad;
+    final byte lowerNibble;
+    final boolean isValid;
+    final boolean isNegativeInt;
+
+    /**
+     * Determines whether the Ion spec allows this particular upperNibble/lowerNibble pair.
+     */
+    private static boolean isValid(byte upperNibble, byte lowerNibble, IonType type) {
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (upperNibble == TYPE_CODE_INVALID) {</span>
+            // Type code F is unused in Ion 1.0.
+<span class="fc" id="L70">            return false;</span>
+        }
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (type == IonType.BOOL) {</span>
+            // Bool values can only be false (0), true (1), or null (F).
+<span class="fc bfc" id="L74" title="All 4 branches covered.">            return lowerNibble &lt;= 1 || lowerNibble == NULL_VALUE_NIBBLE;</span>
+        }
+<span class="fc bfc" id="L76" title="All 4 branches covered.">        if (type == IonType.INT &amp;&amp; upperNibble == NEGATIVE_INT_TYPE_CODE) {</span>
+            // There is no negative zero int.
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            return lowerNibble != 0;</span>
+        }
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (type == IonType.FLOAT) {</span>
+            // Floats are either 0e0 (0), 32-bit (4), 64-bit (8), or null (F).
+<span class="fc bfc" id="L82" title="All 8 branches covered.">            return lowerNibble == 0 || lowerNibble == 4 || lowerNibble == 8 || lowerNibble == NULL_VALUE_NIBBLE;</span>
+        }
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (type == IonType.TIMESTAMP) {</span>
+            // There is no zero-length timestamp representation.
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            return lowerNibble &gt; 1;</span>
+        }
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (type == ION_TYPE_ANNOTATION_WRAPPER) {</span>
+<span class="fc bfc" id="L89" title="All 4 branches covered.">            return lowerNibble &gt;= ANNOTATION_WRAPPER_MIN_LENGTH &amp;&amp; lowerNibble &lt;= ANNOTATION_WRAPPER_MAX_LENGTH;</span>
+        }
+<span class="fc" id="L91">        return true;</span>
+    }
+
+<span class="fc" id="L94">    private IonTypeID(byte id) {</span>
+<span class="fc" id="L95">        byte upperNibble = (byte) ((id &gt;&gt; BITS_PER_NIBBLE) &amp; LOW_NIBBLE_BITMASK);</span>
+<span class="fc" id="L96">        this.lowerNibble = (byte) (id &amp; LOW_NIBBLE_BITMASK);</span>
+<span class="fc" id="L97">        this.type = ION_TYPES[upperNibble];</span>
+<span class="fc" id="L98">        this.isValid = isValid(upperNibble, lowerNibble, type);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        this.isNull = lowerNibble == NULL_VALUE_NIBBLE;</span>
+<span class="fc bfc" id="L100" title="All 4 branches covered.">        this.isNopPad = type == IonType.NULL &amp;&amp; !isNull;</span>
+<span class="fc" id="L101">        byte length = lowerNibble;</span>
+<span class="fc bfc" id="L102" title="All 8 branches covered.">        if ((type == IonType.NULL &amp;&amp; !isNopPad) || type == IonType.BOOL || !isValid) {</span>
+<span class="fc" id="L103">            variableLength = false;</span>
+<span class="fc" id="L104">            length = 0;</span>
+<span class="fc bfc" id="L105" title="All 4 branches covered.">        } else if (type == IonType.STRUCT &amp;&amp; length == ORDERED_STRUCT_NIBBLE) {</span>
+<span class="fc" id="L106">            variableLength = true;</span>
+        } else {
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            variableLength = length == VARIABLE_LENGTH_NIBBLE;</span>
+        }
+<span class="fc bfc" id="L110" title="All 2 branches covered.">        if (isNull) {</span>
+<span class="fc" id="L111">            length = 0;</span>
+        }
+<span class="fc bfc" id="L113" title="All 4 branches covered.">        this.isNegativeInt = type == IonType.INT &amp;&amp; upperNibble == NEGATIVE_INT_TYPE_CODE;</span>
+<span class="fc" id="L114">        this.length = length;</span>
+<span class="fc" id="L115">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

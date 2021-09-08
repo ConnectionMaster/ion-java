@@ -34,26 +34,25 @@ public class _Private_IonTextWriterBuilder
     extends IonTextWriterBuilder
 {
 <span class="fc" id="L36">    private final static CharSequence SPACE_CHARACTER = &quot; &quot;;</span>
-    // TODO amzn/ion-java/issues/57 decide if this should be platform-specific
-<span class="fc" id="L38">    private final static CharSequence LINE_SEPARATOR =</span>
-<span class="fc" id="L39">        System.getProperty(&quot;line.separator&quot;);</span>
-
 
     public static _Private_IonTextWriterBuilder standard()
     {
-<span class="fc" id="L44">        return new _Private_IonTextWriterBuilder.Mutable();</span>
+<span class="fc" id="L40">        return new _Private_IonTextWriterBuilder.Mutable();</span>
     }
 
-<span class="fc" id="L47">    public static _Private_IonTextWriterBuilder STANDARD =</span>
-<span class="fc" id="L48">        standard().immutable();</span>
+<span class="fc" id="L43">    public static _Private_IonTextWriterBuilder STANDARD =</span>
+<span class="fc" id="L44">        standard().immutable();</span>
 
 
     //=========================================================================
 
     private boolean _pretty_print;
+
+    // These options control whether the IonTextWriter will write standard ion or ion that is down-converted json.
     public boolean _blob_as_string;
     public boolean _clob_as_string;
     public boolean _decimal_as_float;
+    public boolean _float_nan_and_inf_as_null;
     public boolean _sexp_as_list;
     public boolean _skip_annotations;
     public boolean _string_as_json;
@@ -61,6 +60,7 @@ public class _Private_IonTextWriterBuilder
     public boolean _timestamp_as_millis;
     public boolean _timestamp_as_string;
     public boolean _untyped_nulls;
+
     private _Private_CallbackBuilder _callback_builder;
 
 
@@ -77,32 +77,33 @@ public class _Private_IonTextWriterBuilder
 <span class="fc" id="L77">        this._blob_as_string      = that._blob_as_string     ;</span>
 <span class="fc" id="L78">        this._clob_as_string      = that._clob_as_string     ;</span>
 <span class="fc" id="L79">        this._decimal_as_float    = that._decimal_as_float   ;</span>
-<span class="fc" id="L80">        this._sexp_as_list        = that._sexp_as_list       ;</span>
-<span class="fc" id="L81">        this._skip_annotations    = that._skip_annotations   ;</span>
-<span class="fc" id="L82">        this._string_as_json      = that._string_as_json     ;</span>
-<span class="fc" id="L83">        this._symbol_as_string    = that._symbol_as_string   ;</span>
-<span class="fc" id="L84">        this._timestamp_as_millis = that._timestamp_as_millis;</span>
-<span class="fc" id="L85">        this._timestamp_as_string = that._timestamp_as_string;</span>
-<span class="fc" id="L86">        this._untyped_nulls       = that._untyped_nulls      ;</span>
-<span class="fc" id="L87">    }</span>
+<span class="fc" id="L80">        this._float_nan_and_inf_as_null = that._float_nan_and_inf_as_null;</span>
+<span class="fc" id="L81">        this._sexp_as_list        = that._sexp_as_list       ;</span>
+<span class="fc" id="L82">        this._skip_annotations    = that._skip_annotations   ;</span>
+<span class="fc" id="L83">        this._string_as_json      = that._string_as_json     ;</span>
+<span class="fc" id="L84">        this._symbol_as_string    = that._symbol_as_string   ;</span>
+<span class="fc" id="L85">        this._timestamp_as_millis = that._timestamp_as_millis;</span>
+<span class="fc" id="L86">        this._timestamp_as_string = that._timestamp_as_string;</span>
+<span class="fc" id="L87">        this._untyped_nulls       = that._untyped_nulls      ;</span>
+<span class="fc" id="L88">    }</span>
 
 
     @Override
     public final _Private_IonTextWriterBuilder copy()
     {
-<span class="fc" id="L93">        return new Mutable(this);</span>
+<span class="fc" id="L94">        return new Mutable(this);</span>
     }
 
     @Override
     public _Private_IonTextWriterBuilder immutable()
     {
-<span class="nc" id="L99">        return this;</span>
+<span class="nc" id="L100">        return this;</span>
     }
 
     @Override
     public _Private_IonTextWriterBuilder mutable()
     {
-<span class="fc" id="L105">        return copy();</span>
+<span class="fc" id="L106">        return copy();</span>
     }
 
 
@@ -111,119 +112,129 @@ public class _Private_IonTextWriterBuilder
     @Override
     public final IonTextWriterBuilder withPrettyPrinting()
     {
-<span class="fc" id="L114">        _Private_IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L115">        b._pretty_print = true;</span>
-<span class="fc" id="L116">        return b;</span>
+<span class="fc" id="L115">        _Private_IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L116">        b._pretty_print = true;</span>
+<span class="fc" id="L117">        return b;</span>
     }
 
     @Override
     public final IonTextWriterBuilder withJsonDowngrade()
     {
-<span class="fc" id="L122">        _Private_IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L123">        _Private_IonTextWriterBuilder b = mutable();</span>
 
-<span class="fc" id="L124">        b.withMinimalSystemData();</span>
+<span class="fc" id="L125">        b.withMinimalSystemData();</span>
 
-<span class="fc" id="L126">        _blob_as_string      = true;</span>
-<span class="fc" id="L127">        _clob_as_string      = true;</span>
+<span class="fc" id="L127">        _blob_as_string      = true;</span>
+<span class="fc" id="L128">        _clob_as_string      = true;</span>
         // datagramAsList    = true; // TODO
-<span class="fc" id="L129">        _decimal_as_float    = true;</span>
-<span class="fc" id="L130">        _sexp_as_list        = true;</span>
-<span class="fc" id="L131">        _skip_annotations    = true;</span>
+<span class="fc" id="L130">        _decimal_as_float    = true;</span>
+<span class="fc" id="L131">        _float_nan_and_inf_as_null = true;</span>
+<span class="fc" id="L132">        _sexp_as_list        = true;</span>
+<span class="fc" id="L133">        _skip_annotations    = true;</span>
         // skipSystemValues  = true; // TODO
-<span class="fc" id="L133">        _string_as_json      = true;</span>
-<span class="fc" id="L134">        _symbol_as_string    = true;</span>
-<span class="fc" id="L135">        _timestamp_as_string = true;  // TODO different from Printer</span>
-<span class="fc" id="L136">        _timestamp_as_millis = false;</span>
-<span class="fc" id="L137">        _untyped_nulls       = true;</span>
+<span class="fc" id="L135">        _string_as_json      = true;</span>
+<span class="fc" id="L136">        _symbol_as_string    = true;</span>
+<span class="fc" id="L137">        _timestamp_as_string = true;  // TODO different from Printer</span>
+<span class="fc" id="L138">        _timestamp_as_millis = false;</span>
+<span class="fc" id="L139">        _untyped_nulls       = true;</span>
 
-<span class="fc" id="L139">        return b;</span>
+<span class="fc" id="L141">        return b;</span>
     }
 
 
     final boolean isPrettyPrintOn()
     {
-<span class="fc" id="L145">        return _pretty_print;</span>
+<span class="fc" id="L147">        return _pretty_print;</span>
     }
 
     final CharSequence lineSeparator()
     {
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">        if (_pretty_print) {</span>
-<span class="fc" id="L151">            return LINE_SEPARATOR;</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">        if (_pretty_print) {</span>
+<span class="fc" id="L153">            return getNewLineType().getCharSequence();</span>
         }
         else {
-<span class="nc" id="L154">            return SPACE_CHARACTER;</span>
+<span class="fc" id="L156">            return SPACE_CHARACTER;</span>
         }
     }
 
+    final CharSequence topLevelSeparator()
+    {
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        return getWriteTopLevelValuesOnNewLines() ? getNewLineType().getCharSequence() : lineSeparator();</span>
+    }
 
     //=========================================================================
 
     private _Private_IonTextWriterBuilder fillDefaults()
     {
         // Ensure that we don't modify the user's builder.
-<span class="fc" id="L164">        IonTextWriterBuilder b = copy();</span>
+<span class="fc" id="L170">        IonTextWriterBuilder b = copy();</span>
 
-<span class="fc bfc" id="L166" title="All 2 branches covered.">        if (b.getCatalog() == null)</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if (b.getCatalog() == null)</span>
         {
-<span class="fc" id="L168">            b.setCatalog(new SimpleCatalog());</span>
+<span class="fc" id="L174">            b.setCatalog(new SimpleCatalog());</span>
         }
 
-<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (b.getCharset() == null)</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (b.getCharset() == null)</span>
         {
-<span class="fc" id="L173">            b.setCharset(UTF8);</span>
+<span class="fc" id="L179">            b.setCharset(UTF8);</span>
         }
 
-<span class="fc" id="L176">        return (_Private_IonTextWriterBuilder) b.immutable();</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (b.getNewLineType() == null)</span>
+        {
+<span class="fc" id="L184">            b.setNewLineType(NewLineType.PLATFORM_DEPENDENT);</span>
+        }
+
+<span class="fc" id="L187">        return (_Private_IonTextWriterBuilder) b.immutable();</span>
     }
 
 
     /** Assumes that {@link #fillDefaults()} has been called. */
     private IonWriter build(_Private_FastAppendable appender)
     {
-<span class="fc" id="L183">        IonCatalog catalog = getCatalog();</span>
-<span class="fc" id="L184">        SymbolTable[] imports = getImports();</span>
+<span class="fc" id="L194">        IonCatalog catalog = getCatalog();</span>
+<span class="fc" id="L195">        SymbolTable[] imports = getImports();</span>
 
         // TODO We shouldn't need a system here
         IonSystem system =
-<span class="fc" id="L188">            IonSystemBuilder.standard().withCatalog(catalog).build();</span>
+<span class="fc" id="L199">            IonSystemBuilder.standard().withCatalog(catalog).build();</span>
 
-<span class="fc" id="L190">        SymbolTable defaultSystemSymtab = system.getSystemSymbolTable();</span>
+<span class="fc" id="L201">        SymbolTable defaultSystemSymtab = system.getSystemSymbolTable();</span>
 
         IonWriterSystemText systemWriter =
-<span class="fc bfc" id="L193" title="All 2 branches covered.">            (getCallbackBuilder() == null</span>
-<span class="fc" id="L194">                ? new IonWriterSystemText(defaultSystemSymtab,</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">            (getCallbackBuilder() == null</span>
+<span class="fc" id="L205">                ? new IonWriterSystemText(defaultSystemSymtab,</span>
                                           this,
                                           appender)
-<span class="fc" id="L197">                : new IonWriterSystemTextMarkup(defaultSystemSymtab,</span>
+<span class="fc" id="L208">                : new IonWriterSystemTextMarkup(defaultSystemSymtab,</span>
                                                 this,
                                                 appender));
 
-<span class="fc" id="L201">        SymbolTable initialSymtab =</span>
-<span class="fc" id="L202">            initialSymtab(((_Private_ValueFactory)system).getLstFactory(), defaultSystemSymtab, imports);</span>
+<span class="fc" id="L212">        SymbolTable initialSymtab =</span>
+<span class="fc" id="L213">            initialSymtab(((_Private_ValueFactory)system).getLstFactory(), defaultSystemSymtab, imports);</span>
 
-<span class="fc" id="L204">        return new IonWriterUser(catalog, system, systemWriter, initialSymtab);</span>
+<span class="fc" id="L215">        return new IonWriterUser(catalog, system, systemWriter, initialSymtab);</span>
     }
 
 
     @Override
     public final IonWriter build(Appendable out)
     {
-<span class="fc" id="L211">        _Private_IonTextWriterBuilder b = fillDefaults();</span>
+<span class="fc" id="L222">        _Private_IonTextWriterBuilder b = fillDefaults();</span>
 
-<span class="fc" id="L213">        _Private_FastAppendable fast = new AppendableFastAppendable(out);</span>
+<span class="fc" id="L224">        _Private_FastAppendable fast = new AppendableFastAppendable(out);</span>
 
-<span class="fc" id="L215">        return b.build(fast);</span>
+<span class="fc" id="L226">        return b.build(fast);</span>
     }
 
 
     @Override
     public final IonWriter build(OutputStream out)
     {
-<span class="fc" id="L222">        _Private_IonTextWriterBuilder b = fillDefaults();</span>
+<span class="fc" id="L233">        _Private_IonTextWriterBuilder b = fillDefaults();</span>
 
-<span class="fc" id="L224">        _Private_FastAppendable fast = new OutputStreamFastAppendable(out);</span>
+<span class="fc" id="L235">        _Private_FastAppendable fast = new OutputStreamFastAppendable(out);</span>
 
-<span class="fc" id="L226">        return b.build(fast);</span>
+<span class="fc" id="L237">        return b.build(fast);</span>
     }
 
     //=========================================================================
@@ -231,29 +242,29 @@ public class _Private_IonTextWriterBuilder
     private static final class Mutable
         extends _Private_IonTextWriterBuilder
     {
-<span class="fc" id="L234">        private Mutable() { }</span>
+<span class="fc" id="L245">        private Mutable() { }</span>
 
         private Mutable(_Private_IonTextWriterBuilder that)
         {
-<span class="fc" id="L238">            super(that);</span>
-<span class="fc" id="L239">        }</span>
+<span class="fc" id="L249">            super(that);</span>
+<span class="fc" id="L250">        }</span>
 
         @Override
         public _Private_IonTextWriterBuilder immutable()
         {
-<span class="fc" id="L244">            return new _Private_IonTextWriterBuilder(this);</span>
+<span class="fc" id="L255">            return new _Private_IonTextWriterBuilder(this);</span>
         }
 
         @Override
         public _Private_IonTextWriterBuilder mutable()
         {
-<span class="fc" id="L250">            return this;</span>
+<span class="fc" id="L261">            return this;</span>
         }
 
         @Override
         protected void mutationCheck()
         {
-<span class="fc" id="L256">        }</span>
+<span class="fc" id="L267">        }</span>
     }
 
     //-------------------------------------------------------------------------
@@ -267,7 +278,7 @@ public class _Private_IonTextWriterBuilder
      */
     public final _Private_CallbackBuilder getCallbackBuilder()
     {
-<span class="fc" id="L270">        return this._callback_builder;</span>
+<span class="fc" id="L281">        return this._callback_builder;</span>
     }
 
     /**
@@ -282,9 +293,9 @@ public class _Private_IonTextWriterBuilder
      */
     public void setCallbackBuilder(_Private_CallbackBuilder builder)
     {
-<span class="fc" id="L285">        mutationCheck();</span>
-<span class="fc" id="L286">        this._callback_builder = builder;</span>
-<span class="fc" id="L287">    }</span>
+<span class="fc" id="L296">        mutationCheck();</span>
+<span class="fc" id="L297">        this._callback_builder = builder;</span>
+<span class="fc" id="L298">    }</span>
 
     /**
      * Declares the {@link _Private_CallbackBuilder} to use when building.
@@ -298,9 +309,9 @@ public class _Private_IonTextWriterBuilder
     public final _Private_IonTextWriterBuilder
                  withCallbackBuilder(_Private_CallbackBuilder builder)
     {
-<span class="fc" id="L301">        _Private_IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L302">        b.setCallbackBuilder(builder);</span>
-<span class="fc" id="L303">        return b;</span>
+<span class="fc" id="L312">        _Private_IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L313">        b.setCallbackBuilder(builder);</span>
+<span class="fc" id="L314">        return b;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

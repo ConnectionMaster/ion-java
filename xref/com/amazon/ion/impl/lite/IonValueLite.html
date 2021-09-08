@@ -641,7 +641,7 @@
 <a class="jxr_linenumber" name="L633" href="#L633">633</a>         <strong class="jxr_keyword">if</strong> (symbols != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L634" href="#L634">634</a>             <strong class="jxr_keyword">return</strong> symbols;
 <a class="jxr_linenumber" name="L635" href="#L635">635</a>         }
-<a class="jxr_linenumber" name="L636" href="#L636">636</a>         <strong class="jxr_keyword">return</strong> _context.getSystem().getSystemSymbolTable();
+<a class="jxr_linenumber" name="L636" href="#L636">636</a>         <strong class="jxr_keyword">return</strong> getSystem().getSystemSymbolTable();
 <a class="jxr_linenumber" name="L637" href="#L637">637</a>     }
 <a class="jxr_linenumber" name="L638" href="#L638">638</a> 
 <a class="jxr_linenumber" name="L639" href="#L639">639</a>     <strong class="jxr_keyword">public</strong> <a name="SymbolTable" href="../../../../../com/amazon/ion/SymbolTable.html#SymbolTable">SymbolTable</a> getAssignedSymbolTable()
@@ -659,7 +659,7 @@
 <a class="jxr_linenumber" name="L651" href="#L651">651</a> 
 <a class="jxr_linenumber" name="L652" href="#L652">652</a>     <strong class="jxr_keyword">public</strong> <a name="IonType" href="../../../../../com/amazon/ion/IonType.html#IonType">IonType</a> getType()
 <a class="jxr_linenumber" name="L653" href="#L653">653</a>     {
-<a class="jxr_linenumber" name="L654" href="#L654">654</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> UnsupportedOperationException(<span class="jxr_string">"this type "</span>+<strong class="jxr_keyword">this</strong>.getClass().getSimpleName()+<span class="jxr_string">" should not be instanciated, there is not IonType associated with it"</span>);
+<a class="jxr_linenumber" name="L654" href="#L654">654</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> UnsupportedOperationException(<span class="jxr_string">"this type "</span>+<strong class="jxr_keyword">this</strong>.getClass().getSimpleName()+<span class="jxr_string">" should not be instantiated, there is not IonType associated with it"</span>);
 <a class="jxr_linenumber" name="L655" href="#L655">655</a>     }
 <a class="jxr_linenumber" name="L656" href="#L656">656</a> 
 <a class="jxr_linenumber" name="L657" href="#L657">657</a>     <strong class="jxr_keyword">public</strong> <a name="SymbolToken" href="../../../../../com/amazon/ion/SymbolToken.html#SymbolToken">SymbolToken</a>[] getTypeAnnotationSymbols()
@@ -1206,6 +1206,6 @@
 <a class="jxr_linenumber" name="L1198" href="#L1198">1198</a> <em class="jxr_javadoccomment"> */</em>
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

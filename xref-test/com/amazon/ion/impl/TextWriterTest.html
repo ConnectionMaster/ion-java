@@ -343,151 +343,296 @@
 <a class="jxr_linenumber" name="L335" href="#L335">335</a>     }
 <a class="jxr_linenumber" name="L336" href="#L336">336</a> 
 <a class="jxr_linenumber" name="L337" href="#L337">337</a>     @Test
-<a class="jxr_linenumber" name="L338" href="#L338">338</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingLongClobs()
-<a class="jxr_linenumber" name="L339" href="#L339">339</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L340" href="#L340">340</a>     {
-<a class="jxr_linenumber" name="L341" href="#L341">341</a>         options = IonTextWriterBuilder.standard();
-<a class="jxr_linenumber" name="L342" href="#L342">342</a>         options.setInitialIvmHandling(SUPPRESS);
-<a class="jxr_linenumber" name="L343" href="#L343">343</a>         options.setLongStringThreshold(4);
+<a class="jxr_linenumber" name="L338" href="#L338">338</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingTopLevelValuesOnNewLinesWithoutPrettyPrint()
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>     {
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>         IonTextWriterBuilder writerBuilder = IonTextWriterBuilder.standard()
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>                 .withInitialIvmHandling(SUPPRESS)
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>                 .withWriteTopLevelValuesOnNewLines(<strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>                 .withNewLineType(IonTextWriterBuilder.NewLineType.LF);
 <a class="jxr_linenumber" name="L344" href="#L344">344</a> 
-<a class="jxr_linenumber" name="L345" href="#L345">345</a> 
-<a class="jxr_linenumber" name="L346" href="#L346">346</a>         IonDatagram dg = system().newDatagram();
-<a class="jxr_linenumber" name="L347" href="#L347">347</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n'});
-<a class="jxr_linenumber" name="L348" href="#L348">348</a> 
-<a class="jxr_linenumber" name="L349" href="#L349">349</a>         expectRendering(<span class="jxr_string">"{{\&quot;a&#92;&#92;\&quot;'&#92;&#92;n\&quot;}}"</span>, dg);
-<a class="jxr_linenumber" name="L350" href="#L350">350</a> 
-<a class="jxr_linenumber" name="L351" href="#L351">351</a>         dg.clear();
-<a class="jxr_linenumber" name="L352" href="#L352">352</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n', 'c'});
-<a class="jxr_linenumber" name="L353" href="#L353">353</a>         expectRendering(<span class="jxr_string">"{{'''a\&quot;&#92;&#92;'\n"</span> +
-<a class="jxr_linenumber" name="L354" href="#L354">354</a>                         <span class="jxr_string">"c'''}}"</span>,
-<a class="jxr_linenumber" name="L355" href="#L355">355</a>                         dg);
-<a class="jxr_linenumber" name="L356" href="#L356">356</a>     }
-<a class="jxr_linenumber" name="L357" href="#L357">357</a> 
-<a class="jxr_linenumber" name="L358" href="#L358">358</a>     @Test
-<a class="jxr_linenumber" name="L359" href="#L359">359</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingJsonLongClobs()
-<a class="jxr_linenumber" name="L360" href="#L360">360</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L361" href="#L361">361</a>     {
-<a class="jxr_linenumber" name="L362" href="#L362">362</a>         options = IonTextWriterBuilder.json();
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>         options.setInitialIvmHandling(SUPPRESS);
-<a class="jxr_linenumber" name="L364" href="#L364">364</a>         options.setLongStringThreshold(4);
-<a class="jxr_linenumber" name="L365" href="#L365">365</a> 
-<a class="jxr_linenumber" name="L366" href="#L366">366</a>         <em class="jxr_comment">// Cannot call expectRendering as the input to reload() would be Json rather than Ion</em>
-<a class="jxr_linenumber" name="L367" href="#L367">367</a>         <em class="jxr_comment">// test 1</em>
-<a class="jxr_linenumber" name="L368" href="#L368">368</a>         IonDatagram dg = system().newDatagram();
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n'});
-<a class="jxr_linenumber" name="L370" href="#L370">370</a> 
-<a class="jxr_linenumber" name="L371" href="#L371">371</a>         <em class="jxr_comment">// expectRendering</em>
-<a class="jxr_linenumber" name="L372" href="#L372">372</a>         iw = makeWriter();
-<a class="jxr_linenumber" name="L373" href="#L373">373</a>         dg.writeTo(iw);
-<a class="jxr_linenumber" name="L374" href="#L374">374</a> 
-<a class="jxr_linenumber" name="L375" href="#L375">375</a>         IonDatagram reloaded = loader().load(<span class="jxr_string">"{{\&quot;a&#92;&#92;\&quot;'&#92;&#92;n\&quot;}}"</span>);
-<a class="jxr_linenumber" name="L376" href="#L376">376</a>         assertEquals(dg, reloaded);
-<a class="jxr_linenumber" name="L377" href="#L377">377</a> 
-<a class="jxr_linenumber" name="L378" href="#L378">378</a>         String actual = outputString();
-<a class="jxr_linenumber" name="L379" href="#L379">379</a>         assertEquals(<span class="jxr_string">"\&quot;a&#92;&#92;\&quot;'&#92;&#92;n\&quot;"</span>, actual);
-<a class="jxr_linenumber" name="L380" href="#L380">380</a> 
-<a class="jxr_linenumber" name="L381" href="#L381">381</a>         <em class="jxr_comment">// test 2</em>
-<a class="jxr_linenumber" name="L382" href="#L382">382</a>         dg.clear();
-<a class="jxr_linenumber" name="L383" href="#L383">383</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n', 'c', 0x7F});
-<a class="jxr_linenumber" name="L384" href="#L384">384</a> 
-<a class="jxr_linenumber" name="L385" href="#L385">385</a>         <em class="jxr_comment">// expectRendering</em>
-<a class="jxr_linenumber" name="L386" href="#L386">386</a>         iw = makeWriter();
-<a class="jxr_linenumber" name="L387" href="#L387">387</a>         dg.writeTo(iw);
-<a class="jxr_linenumber" name="L388" href="#L388">388</a> 
-<a class="jxr_linenumber" name="L389" href="#L389">389</a>         reloaded = loader().load(<span class="jxr_string">"{{'''a\&quot;&#92;&#92;'\nc&#92;&#92;x7f'''}}"</span>);
-<a class="jxr_linenumber" name="L390" href="#L390">390</a>         assertEquals(dg, reloaded);
-<a class="jxr_linenumber" name="L391" href="#L391">391</a> 
-<a class="jxr_linenumber" name="L392" href="#L392">392</a>         actual = outputString();
-<a class="jxr_linenumber" name="L393" href="#L393">393</a>         assertEquals(<span class="jxr_string">"\&quot;a&#92;&#92;\&quot;'&#92;&#92;nc&#92;&#92;u007f\&quot;"</span>, actual);
-<a class="jxr_linenumber" name="L394" href="#L394">394</a>     }
-<a class="jxr_linenumber" name="L395" href="#L395">395</a> 
-<a class="jxr_linenumber" name="L396" href="#L396">396</a>     @Test
-<a class="jxr_linenumber" name="L397" href="#L397">397</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testSuppressInitialIvm()
-<a class="jxr_linenumber" name="L398" href="#L398">398</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L399" href="#L399">399</a>     {
-<a class="jxr_linenumber" name="L400" href="#L400">400</a>         iw = makeWriter();
-<a class="jxr_linenumber" name="L401" href="#L401">401</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L402" href="#L402">402</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L403" href="#L403">403</a>         iw.writeNull();
-<a class="jxr_linenumber" name="L404" href="#L404">404</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L405" href="#L405">405</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>         dg.add().newString(<span class="jxr_string">"Foo"</span>);
+<a class="jxr_linenumber" name="L347" href="#L347">347</a>         dg.add().newSymbol(<span class="jxr_string">"Bar"</span>);
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>         dg.add().newSexp(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{1, 2, 3});
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>         dg.add().newList(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{4, 5, 6});
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>         IonStruct struct = dg.add().newEmptyStruct();
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>         struct.add(<span class="jxr_string">"def"</span>).newInt(42);
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>         struct.addTypeAnnotation(<span class="jxr_string">"abc"</span>);
+<a class="jxr_linenumber" name="L353" href="#L353">353</a> 
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>         StringBuilder sb = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L355" href="#L355">355</a>         IonWriter writer = writerBuilder.build(sb);
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>         dg.writeTo(writer);
+<a class="jxr_linenumber" name="L357" href="#L357">357</a>         assertEquals(<span class="jxr_string">"\&quot;Foo\&quot;\nBar\n(1 2 3)\n[4,5,6]\nabc::{def:42}"</span>, sb.toString());
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>     }
+<a class="jxr_linenumber" name="L359" href="#L359">359</a> 
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>     @Test
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingTopLevelValuesOnNewLinesShouldHaveNoEffectWithPrettyPrint()
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>     {
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>         <em class="jxr_comment">// Setting top-level newlines to false should have no effect when pretty printing.</em>
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>         IonTextWriterBuilder writerBuilder = IonTextWriterBuilder.standard()
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>                 .withInitialIvmHandling(SUPPRESS)
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>                 .withWriteTopLevelValuesOnNewLines(false)
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>                 .withPrettyPrinting()
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>                 .withNewLineType(IonTextWriterBuilder.NewLineType.LF);
+<a class="jxr_linenumber" name="L369" href="#L369">369</a> 
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>         dg.add().newString(<span class="jxr_string">"Foo"</span>);
+<a class="jxr_linenumber" name="L372" href="#L372">372</a>         dg.add().newSymbol(<span class="jxr_string">"Bar"</span>);
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>         dg.add().newSexp(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{1, 2, 3});
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>         dg.add().newList(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{4, 5, 6});
+<a class="jxr_linenumber" name="L375" href="#L375">375</a> 
+<a class="jxr_linenumber" name="L376" href="#L376">376</a>         StringBuilder sb = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>         IonWriter writer = writerBuilder.build(sb);
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>         dg.writeTo(writer);
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>         assertEquals(<span class="jxr_string">"\n\&quot;Foo\&quot;\nBar\n(\n  1\n  2\n  3\n)\n[\n  4,\n  5,\n  6\n]"</span>, sb.toString());
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>     }
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>     
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>     @Test
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testNewLineTypesWithPrettyPrinting()
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>     {
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>         <strong class="jxr_keyword">for</strong> (IonTextWriterBuilder.NewLineType nlt : IonTextWriterBuilder.NewLineType.values()) {
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>             String expected = String.format(<span class="jxr_string">"%s\&quot;Foo\&quot;%&lt;sBar%&lt;s(%&lt;s  1%&lt;s  2%&lt;s  3%&lt;s)%&lt;s[%&lt;s  4,%&lt;s  5,%&lt;s  6%&lt;s]"</span>, nlt.getCharSequence());
+<a class="jxr_linenumber" name="L387" href="#L387">387</a> 
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>             IonTextWriterBuilder writerBuilder = IonTextWriterBuilder.standard()
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>                     .withInitialIvmHandling(SUPPRESS)
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>                     .withWriteTopLevelValuesOnNewLines(false)
+<a class="jxr_linenumber" name="L391" href="#L391">391</a>                     .withPrettyPrinting()
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>                     .withNewLineType(nlt);
+<a class="jxr_linenumber" name="L393" href="#L393">393</a> 
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>             IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L395" href="#L395">395</a>             dg.add().newString(<span class="jxr_string">"Foo"</span>);
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>             dg.add().newSymbol(<span class="jxr_string">"Bar"</span>);
+<a class="jxr_linenumber" name="L397" href="#L397">397</a>             dg.add().newSexp(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{1, 2, 3});
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>             dg.add().newList(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{4, 5, 6});
+<a class="jxr_linenumber" name="L399" href="#L399">399</a> 
+<a class="jxr_linenumber" name="L400" href="#L400">400</a>             StringBuilder sb = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L401" href="#L401">401</a>             IonWriter writer = writerBuilder.build(sb);
+<a class="jxr_linenumber" name="L402" href="#L402">402</a>             dg.writeTo(writer);
+<a class="jxr_linenumber" name="L403" href="#L403">403</a>             assertEquals(expected, sb.toString());
+<a class="jxr_linenumber" name="L404" href="#L404">404</a>         }
+<a class="jxr_linenumber" name="L405" href="#L405">405</a>     }
 <a class="jxr_linenumber" name="L406" href="#L406">406</a> 
-<a class="jxr_linenumber" name="L407" href="#L407">407</a>         assertEquals(ION_1_0 + <span class="jxr_string">" "</span> + ION_1_0 + <span class="jxr_string">" null "</span> + ION_1_0 + <span class="jxr_string">" null"</span>,
-<a class="jxr_linenumber" name="L408" href="#L408">408</a>                      outputString());
-<a class="jxr_linenumber" name="L409" href="#L409">409</a> 
-<a class="jxr_linenumber" name="L410" href="#L410">410</a>         options = IonTextWriterBuilder.standard().withInitialIvmHandling(SUPPRESS);
-<a class="jxr_linenumber" name="L411" href="#L411">411</a> 
-<a class="jxr_linenumber" name="L412" href="#L412">412</a>         iw = makeWriter();
-<a class="jxr_linenumber" name="L413" href="#L413">413</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L414" href="#L414">414</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L415" href="#L415">415</a>         iw.writeNull();
-<a class="jxr_linenumber" name="L416" href="#L416">416</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L417" href="#L417">417</a>         iw.writeNull();
-<a class="jxr_linenumber" name="L418" href="#L418">418</a> 
-<a class="jxr_linenumber" name="L419" href="#L419">419</a>         assertEquals(<span class="jxr_string">"null "</span> + ION_1_0 + <span class="jxr_string">" null"</span>, outputString());
-<a class="jxr_linenumber" name="L420" href="#L420">420</a>     }
-<a class="jxr_linenumber" name="L421" href="#L421">421</a> 
-<a class="jxr_linenumber" name="L422" href="#L422">422</a>     @Test
-<a class="jxr_linenumber" name="L423" href="#L423">423</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testMinimizeDistantIvm()
-<a class="jxr_linenumber" name="L424" href="#L424">424</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L425" href="#L425">425</a>     {
-<a class="jxr_linenumber" name="L426" href="#L426">426</a>         options = IonTextWriterBuilder.standard().withIvmMinimizing(DISTANT);
-<a class="jxr_linenumber" name="L427" href="#L427">427</a> 
-<a class="jxr_linenumber" name="L428" href="#L428">428</a>         iw = makeWriter();
-<a class="jxr_linenumber" name="L429" href="#L429">429</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L430" href="#L430">430</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L431" href="#L431">431</a>         iw.writeNull();
-<a class="jxr_linenumber" name="L432" href="#L432">432</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L433" href="#L433">433</a>         iw.writeSymbol(ION_1_0);
-<a class="jxr_linenumber" name="L434" href="#L434">434</a>         iw.writeNull();
-<a class="jxr_linenumber" name="L435" href="#L435">435</a> 
-<a class="jxr_linenumber" name="L436" href="#L436">436</a>         assertEquals(ION_1_0 + <span class="jxr_string">" null null"</span>, outputString());
-<a class="jxr_linenumber" name="L437" href="#L437">437</a>     }
+<a class="jxr_linenumber" name="L407" href="#L407">407</a>     @Test
+<a class="jxr_linenumber" name="L408" href="#L408">408</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testNewLineTypesWithStandardPrinting()
+<a class="jxr_linenumber" name="L409" href="#L409">409</a>     {
+<a class="jxr_linenumber" name="L410" href="#L410">410</a>         <strong class="jxr_keyword">for</strong> (IonTextWriterBuilder.NewLineType nlt : IonTextWriterBuilder.NewLineType.values()) {
+<a class="jxr_linenumber" name="L411" href="#L411">411</a>             String expected = String.format(<span class="jxr_string">"\&quot;Foo\&quot;%sBar%&lt;s(1 2 3)%&lt;s[4,5,6]"</span>, nlt.getCharSequence());
+<a class="jxr_linenumber" name="L412" href="#L412">412</a> 
+<a class="jxr_linenumber" name="L413" href="#L413">413</a>             IonTextWriterBuilder writerBuilder = IonTextWriterBuilder.standard()
+<a class="jxr_linenumber" name="L414" href="#L414">414</a>                     .withInitialIvmHandling(SUPPRESS)
+<a class="jxr_linenumber" name="L415" href="#L415">415</a>                     .withWriteTopLevelValuesOnNewLines(<strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="L416" href="#L416">416</a>                     .withNewLineType(nlt);
+<a class="jxr_linenumber" name="L417" href="#L417">417</a> 
+<a class="jxr_linenumber" name="L418" href="#L418">418</a>             IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L419" href="#L419">419</a>             dg.add().newString(<span class="jxr_string">"Foo"</span>);
+<a class="jxr_linenumber" name="L420" href="#L420">420</a>             dg.add().newSymbol(<span class="jxr_string">"Bar"</span>);
+<a class="jxr_linenumber" name="L421" href="#L421">421</a>             dg.add().newSexp(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{1, 2, 3});
+<a class="jxr_linenumber" name="L422" href="#L422">422</a>             dg.add().newList(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[]{4, 5, 6});
+<a class="jxr_linenumber" name="L423" href="#L423">423</a> 
+<a class="jxr_linenumber" name="L424" href="#L424">424</a>             StringBuilder sb = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L425" href="#L425">425</a>             IonWriter writer = writerBuilder.build(sb);
+<a class="jxr_linenumber" name="L426" href="#L426">426</a>             dg.writeTo(writer);
+<a class="jxr_linenumber" name="L427" href="#L427">427</a>             assertEquals(expected, sb.toString());
+<a class="jxr_linenumber" name="L428" href="#L428">428</a>         }
+<a class="jxr_linenumber" name="L429" href="#L429">429</a>     }
+<a class="jxr_linenumber" name="L430" href="#L430">430</a> 
+<a class="jxr_linenumber" name="L431" href="#L431">431</a>     @Test
+<a class="jxr_linenumber" name="L432" href="#L432">432</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingLongClobs()
+<a class="jxr_linenumber" name="L433" href="#L433">433</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L434" href="#L434">434</a>     {
+<a class="jxr_linenumber" name="L435" href="#L435">435</a>         options = IonTextWriterBuilder.standard();
+<a class="jxr_linenumber" name="L436" href="#L436">436</a>         options.setInitialIvmHandling(SUPPRESS);
+<a class="jxr_linenumber" name="L437" href="#L437">437</a>         options.setLongStringThreshold(4);
 <a class="jxr_linenumber" name="L438" href="#L438">438</a> 
-<a class="jxr_linenumber" name="L439" href="#L439">439</a>     @Test @Override
-<a class="jxr_linenumber" name="L440" href="#L440">440</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingLob()
-<a class="jxr_linenumber" name="L441" href="#L441">441</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L442" href="#L442">442</a>     {
-<a class="jxr_linenumber" name="L443" href="#L443">443</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
+<a class="jxr_linenumber" name="L439" href="#L439">439</a> 
+<a class="jxr_linenumber" name="L440" href="#L440">440</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L441" href="#L441">441</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n'});
+<a class="jxr_linenumber" name="L442" href="#L442">442</a> 
+<a class="jxr_linenumber" name="L443" href="#L443">443</a>         expectRendering(<span class="jxr_string">"{{\&quot;a&#92;&#92;\&quot;'&#92;&#92;n\&quot;}}"</span>, dg);
 <a class="jxr_linenumber" name="L444" href="#L444">444</a> 
-<a class="jxr_linenumber" name="L445" href="#L445">445</a>         options = IonTextWriterBuilder.standard();
-<a class="jxr_linenumber" name="L446" href="#L446">446</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
-<a class="jxr_linenumber" name="L447" href="#L447">447</a> 
-<a class="jxr_linenumber" name="L448" href="#L448">448</a>         options = IonTextWriterBuilder.pretty();
-<a class="jxr_linenumber" name="L449" href="#L449">449</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
-<a class="jxr_linenumber" name="L450" href="#L450">450</a> 
-<a class="jxr_linenumber" name="L451" href="#L451">451</a>         options.setLongStringThreshold(2);
-<a class="jxr_linenumber" name="L452" href="#L452">452</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
-<a class="jxr_linenumber" name="L453" href="#L453">453</a>     }
-<a class="jxr_linenumber" name="L454" href="#L454">454</a> 
-<a class="jxr_linenumber" name="L455" href="#L455">455</a>     @Test @Override
-<a class="jxr_linenumber" name="L456" href="#L456">456</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testFinishDoesReset()
-<a class="jxr_linenumber" name="L457" href="#L457">457</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L458" href="#L458">458</a>     {
-<a class="jxr_linenumber" name="L459" href="#L459">459</a>         <strong class="jxr_keyword">super</strong>.testFinishDoesReset();
-<a class="jxr_linenumber" name="L460" href="#L460">460</a> 
-<a class="jxr_linenumber" name="L461" href="#L461">461</a>         options = IonTextWriterBuilder.standard().withIvmMinimizing(DISTANT);
-<a class="jxr_linenumber" name="L462" href="#L462">462</a>         <strong class="jxr_keyword">super</strong>.testFinishDoesReset();
-<a class="jxr_linenumber" name="L463" href="#L463">463</a>     }
+<a class="jxr_linenumber" name="L445" href="#L445">445</a>         dg.clear();
+<a class="jxr_linenumber" name="L446" href="#L446">446</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n', 'c'});
+<a class="jxr_linenumber" name="L447" href="#L447">447</a>         expectRendering(<span class="jxr_string">"{{'''a\&quot;&#92;&#92;'\n"</span> +
+<a class="jxr_linenumber" name="L448" href="#L448">448</a>                         <span class="jxr_string">"c'''}}"</span>,
+<a class="jxr_linenumber" name="L449" href="#L449">449</a>                         dg);
+<a class="jxr_linenumber" name="L450" href="#L450">450</a>     }
+<a class="jxr_linenumber" name="L451" href="#L451">451</a> 
+<a class="jxr_linenumber" name="L452" href="#L452">452</a>     @Test
+<a class="jxr_linenumber" name="L453" href="#L453">453</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingJsonLongClobs()
+<a class="jxr_linenumber" name="L454" href="#L454">454</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L455" href="#L455">455</a>     {
+<a class="jxr_linenumber" name="L456" href="#L456">456</a>         options = IonTextWriterBuilder.json();
+<a class="jxr_linenumber" name="L457" href="#L457">457</a>         options.setInitialIvmHandling(SUPPRESS);
+<a class="jxr_linenumber" name="L458" href="#L458">458</a>         options.setLongStringThreshold(4);
+<a class="jxr_linenumber" name="L459" href="#L459">459</a> 
+<a class="jxr_linenumber" name="L460" href="#L460">460</a>         <em class="jxr_comment">// Cannot call expectRendering as the input to reload() would be Json rather than Ion</em>
+<a class="jxr_linenumber" name="L461" href="#L461">461</a>         <em class="jxr_comment">// test 1</em>
+<a class="jxr_linenumber" name="L462" href="#L462">462</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L463" href="#L463">463</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n'});
 <a class="jxr_linenumber" name="L464" href="#L464">464</a> 
-<a class="jxr_linenumber" name="L465" href="#L465">465</a>     @Test @Override
-<a class="jxr_linenumber" name="L466" href="#L466">466</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testAnnotationNotSetToIvmOnStartOfStream()
-<a class="jxr_linenumber" name="L467" href="#L467">467</a>         <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L468" href="#L468">468</a>     {
-<a class="jxr_linenumber" name="L469" href="#L469">469</a>         options = IonTextWriterBuilder.standard().withInitialIvmHandling(ENSURE);
-<a class="jxr_linenumber" name="L470" href="#L470">470</a> 
-<a class="jxr_linenumber" name="L471" href="#L471">471</a>         <strong class="jxr_keyword">super</strong>.testAnnotationNotSetToIvmOnStartOfStream();
-<a class="jxr_linenumber" name="L472" href="#L472">472</a>     }
-<a class="jxr_linenumber" name="L473" href="#L473">473</a> 
-<a class="jxr_linenumber" name="L474" href="#L474">474</a>     @Override
-<a class="jxr_linenumber" name="L475" href="#L475">475</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> checkFlushedAfterTopLevelValueWritten()
-<a class="jxr_linenumber" name="L476" href="#L476">476</a>     {
-<a class="jxr_linenumber" name="L477" href="#L477">477</a>         checkFlushed(<strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L478" href="#L478">478</a>         myOutputStreamWrapper.flushed = false;
-<a class="jxr_linenumber" name="L479" href="#L479">479</a>     }
-<a class="jxr_linenumber" name="L480" href="#L480">480</a> }
+<a class="jxr_linenumber" name="L465" href="#L465">465</a>         <em class="jxr_comment">// expectRendering</em>
+<a class="jxr_linenumber" name="L466" href="#L466">466</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L467" href="#L467">467</a>         dg.writeTo(iw);
+<a class="jxr_linenumber" name="L468" href="#L468">468</a> 
+<a class="jxr_linenumber" name="L469" href="#L469">469</a>         IonDatagram reloaded = loader().load(<span class="jxr_string">"{{\&quot;a&#92;&#92;\&quot;'&#92;&#92;n\&quot;}}"</span>);
+<a class="jxr_linenumber" name="L470" href="#L470">470</a>         assertEquals(dg, reloaded);
+<a class="jxr_linenumber" name="L471" href="#L471">471</a> 
+<a class="jxr_linenumber" name="L472" href="#L472">472</a>         String actual = outputString();
+<a class="jxr_linenumber" name="L473" href="#L473">473</a>         assertEquals(<span class="jxr_string">"\&quot;a&#92;&#92;\&quot;'&#92;&#92;n\&quot;"</span>, actual);
+<a class="jxr_linenumber" name="L474" href="#L474">474</a> 
+<a class="jxr_linenumber" name="L475" href="#L475">475</a>         <em class="jxr_comment">// test 2</em>
+<a class="jxr_linenumber" name="L476" href="#L476">476</a>         dg.clear();
+<a class="jxr_linenumber" name="L477" href="#L477">477</a>         dg.add().newClob(<strong class="jxr_keyword">new</strong> byte[]{'a', '&quot;', '\'', '\n', 'c', 0x7F});
+<a class="jxr_linenumber" name="L478" href="#L478">478</a> 
+<a class="jxr_linenumber" name="L479" href="#L479">479</a>         <em class="jxr_comment">// expectRendering</em>
+<a class="jxr_linenumber" name="L480" href="#L480">480</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L481" href="#L481">481</a>         dg.writeTo(iw);
+<a class="jxr_linenumber" name="L482" href="#L482">482</a> 
+<a class="jxr_linenumber" name="L483" href="#L483">483</a>         reloaded = loader().load(<span class="jxr_string">"{{'''a\&quot;&#92;&#92;'\nc&#92;&#92;x7f'''}}"</span>);
+<a class="jxr_linenumber" name="L484" href="#L484">484</a>         assertEquals(dg, reloaded);
+<a class="jxr_linenumber" name="L485" href="#L485">485</a> 
+<a class="jxr_linenumber" name="L486" href="#L486">486</a>         actual = outputString();
+<a class="jxr_linenumber" name="L487" href="#L487">487</a>         assertEquals(<span class="jxr_string">"\&quot;a&#92;&#92;\&quot;'&#92;&#92;nc&#92;&#92;u007f\&quot;"</span>, actual);
+<a class="jxr_linenumber" name="L488" href="#L488">488</a>     }
+<a class="jxr_linenumber" name="L489" href="#L489">489</a> 
+<a class="jxr_linenumber" name="L490" href="#L490">490</a>     @Test
+<a class="jxr_linenumber" name="L491" href="#L491">491</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingFloatNanToJson()
+<a class="jxr_linenumber" name="L492" href="#L492">492</a>             <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L493" href="#L493">493</a>     {
+<a class="jxr_linenumber" name="L494" href="#L494">494</a>         options = IonTextWriterBuilder.json();
+<a class="jxr_linenumber" name="L495" href="#L495">495</a>         options.setInitialIvmHandling(SUPPRESS);
+<a class="jxr_linenumber" name="L496" href="#L496">496</a> 
+<a class="jxr_linenumber" name="L497" href="#L497">497</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L498" href="#L498">498</a>         dg.add().newFloat(Double.NaN);
+<a class="jxr_linenumber" name="L499" href="#L499">499</a> 
+<a class="jxr_linenumber" name="L500" href="#L500">500</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L501" href="#L501">501</a>         dg.writeTo(iw);
+<a class="jxr_linenumber" name="L502" href="#L502">502</a> 
+<a class="jxr_linenumber" name="L503" href="#L503">503</a>         String actual = outputString();
+<a class="jxr_linenumber" name="L504" href="#L504">504</a>         assertEquals(<span class="jxr_string">"null"</span>, actual);
+<a class="jxr_linenumber" name="L505" href="#L505">505</a>     }
+<a class="jxr_linenumber" name="L506" href="#L506">506</a> 
+<a class="jxr_linenumber" name="L507" href="#L507">507</a>     @Test
+<a class="jxr_linenumber" name="L508" href="#L508">508</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingFloatPositiveInfinityToJson()
+<a class="jxr_linenumber" name="L509" href="#L509">509</a>             <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L510" href="#L510">510</a>     {
+<a class="jxr_linenumber" name="L511" href="#L511">511</a>         options = IonTextWriterBuilder.json();
+<a class="jxr_linenumber" name="L512" href="#L512">512</a>         options.setInitialIvmHandling(SUPPRESS);
+<a class="jxr_linenumber" name="L513" href="#L513">513</a> 
+<a class="jxr_linenumber" name="L514" href="#L514">514</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L515" href="#L515">515</a>         dg.add().newFloat(Double.POSITIVE_INFINITY);
+<a class="jxr_linenumber" name="L516" href="#L516">516</a> 
+<a class="jxr_linenumber" name="L517" href="#L517">517</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L518" href="#L518">518</a>         dg.writeTo(iw);
+<a class="jxr_linenumber" name="L519" href="#L519">519</a> 
+<a class="jxr_linenumber" name="L520" href="#L520">520</a>         String actual = outputString();
+<a class="jxr_linenumber" name="L521" href="#L521">521</a>         assertEquals(<span class="jxr_string">"null"</span>, actual);
+<a class="jxr_linenumber" name="L522" href="#L522">522</a>     }
+<a class="jxr_linenumber" name="L523" href="#L523">523</a> 
+<a class="jxr_linenumber" name="L524" href="#L524">524</a>     @Test
+<a class="jxr_linenumber" name="L525" href="#L525">525</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingFloatNegativeInfinityToJson()
+<a class="jxr_linenumber" name="L526" href="#L526">526</a>             <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L527" href="#L527">527</a>     {
+<a class="jxr_linenumber" name="L528" href="#L528">528</a>         options = IonTextWriterBuilder.json();
+<a class="jxr_linenumber" name="L529" href="#L529">529</a>         options.setInitialIvmHandling(SUPPRESS);
+<a class="jxr_linenumber" name="L530" href="#L530">530</a> 
+<a class="jxr_linenumber" name="L531" href="#L531">531</a>         IonDatagram dg = system().newDatagram();
+<a class="jxr_linenumber" name="L532" href="#L532">532</a>         dg.add().newFloat(Double.NEGATIVE_INFINITY);
+<a class="jxr_linenumber" name="L533" href="#L533">533</a> 
+<a class="jxr_linenumber" name="L534" href="#L534">534</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L535" href="#L535">535</a>         dg.writeTo(iw);
+<a class="jxr_linenumber" name="L536" href="#L536">536</a> 
+<a class="jxr_linenumber" name="L537" href="#L537">537</a>         String actual = outputString();
+<a class="jxr_linenumber" name="L538" href="#L538">538</a>         assertEquals(<span class="jxr_string">"null"</span>, actual);
+<a class="jxr_linenumber" name="L539" href="#L539">539</a>     }
+<a class="jxr_linenumber" name="L540" href="#L540">540</a> 
+<a class="jxr_linenumber" name="L541" href="#L541">541</a>     @Test
+<a class="jxr_linenumber" name="L542" href="#L542">542</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testSuppressInitialIvm()
+<a class="jxr_linenumber" name="L543" href="#L543">543</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L544" href="#L544">544</a>     {
+<a class="jxr_linenumber" name="L545" href="#L545">545</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L546" href="#L546">546</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L547" href="#L547">547</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L548" href="#L548">548</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L549" href="#L549">549</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L550" href="#L550">550</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L551" href="#L551">551</a> 
+<a class="jxr_linenumber" name="L552" href="#L552">552</a>         assertEquals(ION_1_0 + <span class="jxr_string">" "</span> + ION_1_0 + <span class="jxr_string">" null "</span> + ION_1_0 + <span class="jxr_string">" null"</span>,
+<a class="jxr_linenumber" name="L553" href="#L553">553</a>                      outputString());
+<a class="jxr_linenumber" name="L554" href="#L554">554</a> 
+<a class="jxr_linenumber" name="L555" href="#L555">555</a>         options = IonTextWriterBuilder.standard().withInitialIvmHandling(SUPPRESS);
+<a class="jxr_linenumber" name="L556" href="#L556">556</a> 
+<a class="jxr_linenumber" name="L557" href="#L557">557</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L558" href="#L558">558</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L559" href="#L559">559</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L560" href="#L560">560</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L561" href="#L561">561</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L562" href="#L562">562</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L563" href="#L563">563</a> 
+<a class="jxr_linenumber" name="L564" href="#L564">564</a>         assertEquals(<span class="jxr_string">"null "</span> + ION_1_0 + <span class="jxr_string">" null"</span>, outputString());
+<a class="jxr_linenumber" name="L565" href="#L565">565</a>     }
+<a class="jxr_linenumber" name="L566" href="#L566">566</a> 
+<a class="jxr_linenumber" name="L567" href="#L567">567</a>     @Test
+<a class="jxr_linenumber" name="L568" href="#L568">568</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testMinimizeDistantIvm()
+<a class="jxr_linenumber" name="L569" href="#L569">569</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L570" href="#L570">570</a>     {
+<a class="jxr_linenumber" name="L571" href="#L571">571</a>         options = IonTextWriterBuilder.standard().withIvmMinimizing(DISTANT);
+<a class="jxr_linenumber" name="L572" href="#L572">572</a> 
+<a class="jxr_linenumber" name="L573" href="#L573">573</a>         iw = makeWriter();
+<a class="jxr_linenumber" name="L574" href="#L574">574</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L575" href="#L575">575</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L576" href="#L576">576</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L577" href="#L577">577</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L578" href="#L578">578</a>         iw.writeSymbol(ION_1_0);
+<a class="jxr_linenumber" name="L579" href="#L579">579</a>         iw.writeNull();
+<a class="jxr_linenumber" name="L580" href="#L580">580</a> 
+<a class="jxr_linenumber" name="L581" href="#L581">581</a>         assertEquals(ION_1_0 + <span class="jxr_string">" null null"</span>, outputString());
+<a class="jxr_linenumber" name="L582" href="#L582">582</a>     }
+<a class="jxr_linenumber" name="L583" href="#L583">583</a> 
+<a class="jxr_linenumber" name="L584" href="#L584">584</a>     @Test @Override
+<a class="jxr_linenumber" name="L585" href="#L585">585</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testWritingLob()
+<a class="jxr_linenumber" name="L586" href="#L586">586</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L587" href="#L587">587</a>     {
+<a class="jxr_linenumber" name="L588" href="#L588">588</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
+<a class="jxr_linenumber" name="L589" href="#L589">589</a> 
+<a class="jxr_linenumber" name="L590" href="#L590">590</a>         options = IonTextWriterBuilder.standard();
+<a class="jxr_linenumber" name="L591" href="#L591">591</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
+<a class="jxr_linenumber" name="L592" href="#L592">592</a> 
+<a class="jxr_linenumber" name="L593" href="#L593">593</a>         options = IonTextWriterBuilder.pretty();
+<a class="jxr_linenumber" name="L594" href="#L594">594</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
+<a class="jxr_linenumber" name="L595" href="#L595">595</a> 
+<a class="jxr_linenumber" name="L596" href="#L596">596</a>         options.setLongStringThreshold(2);
+<a class="jxr_linenumber" name="L597" href="#L597">597</a>         <strong class="jxr_keyword">super</strong>.testWritingLob();
+<a class="jxr_linenumber" name="L598" href="#L598">598</a>     }
+<a class="jxr_linenumber" name="L599" href="#L599">599</a> 
+<a class="jxr_linenumber" name="L600" href="#L600">600</a>     @Test @Override
+<a class="jxr_linenumber" name="L601" href="#L601">601</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testFinishDoesReset()
+<a class="jxr_linenumber" name="L602" href="#L602">602</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L603" href="#L603">603</a>     {
+<a class="jxr_linenumber" name="L604" href="#L604">604</a>         <strong class="jxr_keyword">super</strong>.testFinishDoesReset();
+<a class="jxr_linenumber" name="L605" href="#L605">605</a> 
+<a class="jxr_linenumber" name="L606" href="#L606">606</a>         options = IonTextWriterBuilder.standard().withIvmMinimizing(DISTANT);
+<a class="jxr_linenumber" name="L607" href="#L607">607</a>         <strong class="jxr_keyword">super</strong>.testFinishDoesReset();
+<a class="jxr_linenumber" name="L608" href="#L608">608</a>     }
+<a class="jxr_linenumber" name="L609" href="#L609">609</a> 
+<a class="jxr_linenumber" name="L610" href="#L610">610</a>     @Test @Override
+<a class="jxr_linenumber" name="L611" href="#L611">611</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testAnnotationNotSetToIvmOnStartOfStream()
+<a class="jxr_linenumber" name="L612" href="#L612">612</a>         <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L613" href="#L613">613</a>     {
+<a class="jxr_linenumber" name="L614" href="#L614">614</a>         options = IonTextWriterBuilder.standard().withInitialIvmHandling(ENSURE);
+<a class="jxr_linenumber" name="L615" href="#L615">615</a> 
+<a class="jxr_linenumber" name="L616" href="#L616">616</a>         <strong class="jxr_keyword">super</strong>.testAnnotationNotSetToIvmOnStartOfStream();
+<a class="jxr_linenumber" name="L617" href="#L617">617</a>     }
+<a class="jxr_linenumber" name="L618" href="#L618">618</a> 
+<a class="jxr_linenumber" name="L619" href="#L619">619</a>     @Override
+<a class="jxr_linenumber" name="L620" href="#L620">620</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> checkFlushedAfterTopLevelValueWritten()
+<a class="jxr_linenumber" name="L621" href="#L621">621</a>     {
+<a class="jxr_linenumber" name="L622" href="#L622">622</a>         checkFlushed(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L623" href="#L623">623</a>         myOutputStreamWrapper.flushed = false;
+<a class="jxr_linenumber" name="L624" href="#L624">624</a>     }
+<a class="jxr_linenumber" name="L625" href="#L625">625</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

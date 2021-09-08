@@ -166,75 +166,78 @@
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>             }
 <a class="jxr_linenumber" name="L159" href="#L159">159</a> 
 <a class="jxr_linenumber" name="L160" href="#L160">160</a>             <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>                 myReader.iterateTypeAnnotations();
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>                 fail(<span class="jxr_string">"Expected "</span> + UnknownSymbolException.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>             }
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>             <strong class="jxr_keyword">catch</strong> (UnknownSymbolException e)
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>             {
-<a class="jxr_linenumber" name="L166" href="#L166">166</a>                 assertEquals(expectedSid, e.getSid());
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>             }
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>         }
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>         <strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="L170" href="#L170">170</a>         {
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>             String[] typeAnnotations = myReader.getTypeAnnotations();
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>             assertEquals(<span class="jxr_string">"symbol text"</span>, expectedText, typeAnnotations[0]);
-<a class="jxr_linenumber" name="L173" href="#L173">173</a> 
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>             Iterator&lt;String&gt; anns = myReader.iterateTypeAnnotations();
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>             assertEquals(<span class="jxr_string">"symbol text"</span>, expectedText, anns.next());
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>             assertFalse(anns.hasNext());
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>         }
-<a class="jxr_linenumber" name="L178" href="#L178">178</a> 
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>         SymbolToken[] annSyms = myReader.getTypeAnnotationSymbols();
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>         IonTestCase.checkSymbol(expectedText, expectedSid, annSyms[0]);
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>                 Iterator&lt;String&gt; iterator = myReader.iterateTypeAnnotations();
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>                 <strong class="jxr_keyword">while</strong> (iterator.hasNext()) {
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>                     iterator.next();
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>                 }
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>                 fail(<span class="jxr_string">"Expected "</span> + UnknownSymbolException.<strong class="jxr_keyword">class</strong>);
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>             }
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>             <strong class="jxr_keyword">catch</strong> (UnknownSymbolException e)
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>             {
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>                 assertEquals(expectedSid, e.getSid());
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>             }
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         }
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>         <strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         {
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>             String[] typeAnnotations = myReader.getTypeAnnotations();
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>             assertEquals(<span class="jxr_string">"symbol text"</span>, expectedText, typeAnnotations[0]);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a> 
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>             Iterator&lt;String&gt; anns = myReader.iterateTypeAnnotations();
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>             assertEquals(<span class="jxr_string">"symbol text"</span>, expectedText, anns.next());
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>             assertFalse(anns.hasNext());
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>         }
 <a class="jxr_linenumber" name="L181" href="#L181">181</a> 
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>     }
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>         SymbolToken[] annSyms = myReader.getTypeAnnotationSymbols();
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>         IonTestCase.checkSymbol(expectedText, expectedSid, annSyms[0]);
 <a class="jxr_linenumber" name="L184" href="#L184">184</a> 
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> annotations(String[] expectedTexts, <strong class="jxr_keyword">int</strong>[] expectedSids)
-<a class="jxr_linenumber" name="L186" href="#L186">186</a>     {
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>         String[] typeAnnotations = myReader.getTypeAnnotations();
-<a class="jxr_linenumber" name="L188" href="#L188">188</a>         assertArrayEquals(expectedTexts, typeAnnotations);
-<a class="jxr_linenumber" name="L189" href="#L189">189</a> 
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>         Iterator&lt;String&gt; anns = myReader.iterateTypeAnnotations();
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>         assertIteratorEquals(stringIterator(expectedTexts), anns);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>     }
+<a class="jxr_linenumber" name="L187" href="#L187">187</a> 
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> annotations(String[] expectedTexts, <strong class="jxr_keyword">int</strong>[] expectedSids)
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>     {
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>         String[] typeAnnotations = myReader.getTypeAnnotations();
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>         assertArrayEquals(expectedTexts, typeAnnotations);
 <a class="jxr_linenumber" name="L192" href="#L192">192</a> 
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>         SymbolToken[] tokens = myReader.getTypeAnnotationSymbols();
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>         assertEquals(expectedSids.length, tokens.length);
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>         <strong class="jxr_keyword">int</strong> i = 0;
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>         <strong class="jxr_keyword">for</strong> (SymbolToken token : tokens)
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>         {
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>             assertEquals(expectedSids[i++], token.getSid());
-<a class="jxr_linenumber" name="L199" href="#L199">199</a>         }
-<a class="jxr_linenumber" name="L200" href="#L200">200</a> 
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
-<a class="jxr_linenumber" name="L202" href="#L202">202</a>     }
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>         Iterator&lt;String&gt; anns = myReader.iterateTypeAnnotations();
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>         assertIteratorEquals(stringIterator(expectedTexts), anns);
+<a class="jxr_linenumber" name="L195" href="#L195">195</a> 
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>         SymbolToken[] tokens = myReader.getTypeAnnotationSymbols();
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>         assertEquals(expectedSids.length, tokens.length);
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>         <strong class="jxr_keyword">int</strong> i = 0;
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>         <strong class="jxr_keyword">for</strong> (SymbolToken token : tokens)
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>         {
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>             assertEquals(expectedSids[i++], token.getSid());
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>         }
 <a class="jxr_linenumber" name="L203" href="#L203">203</a> 
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> annotations(SymbolToken[] expecteds)
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>     {
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>         SymbolToken[] actuals = myReader.getTypeAnnotationSymbols();
-<a class="jxr_linenumber" name="L207" href="#L207">207</a> 
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>         assertSymbolEquals(<span class="jxr_string">"annotation"</span>, expecteds, actuals);
-<a class="jxr_linenumber" name="L209" href="#L209">209</a> 
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>     }
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>     }
+<a class="jxr_linenumber" name="L206" href="#L206">206</a> 
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> annotations(SymbolToken[] expecteds)
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>     {
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>         SymbolToken[] actuals = myReader.getTypeAnnotationSymbols();
+<a class="jxr_linenumber" name="L210" href="#L210">210</a> 
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>         assertSymbolEquals(<span class="jxr_string">"annotation"</span>, expecteds, actuals);
 <a class="jxr_linenumber" name="L212" href="#L212">212</a> 
-<a class="jxr_linenumber" name="L213" href="#L213">213</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> type(IonType expected)
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>     {
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>         IonType actual = myReader.getType();
-<a class="jxr_linenumber" name="L216" href="#L216">216</a>         assertEquals(<span class="jxr_string">"IonReader.getType()"</span>, expected, actual);
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>     }
-<a class="jxr_linenumber" name="L219" href="#L219">219</a> 
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> isInt(<strong class="jxr_keyword">long</strong> expected)
-<a class="jxr_linenumber" name="L221" href="#L221">221</a>     {
-<a class="jxr_linenumber" name="L222" href="#L222">222</a>         type(IonType.INT);
-<a class="jxr_linenumber" name="L223" href="#L223">223</a>         <strong class="jxr_keyword">long</strong> actual = myReader.longValue();
-<a class="jxr_linenumber" name="L224" href="#L224">224</a>         assertEquals(<span class="jxr_string">"IonReader.longValue()"</span>, expected, actual);
-<a class="jxr_linenumber" name="L225" href="#L225">225</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
-<a class="jxr_linenumber" name="L226" href="#L226">226</a>     }
-<a class="jxr_linenumber" name="L227" href="#L227">227</a> }
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>     }
+<a class="jxr_linenumber" name="L215" href="#L215">215</a> 
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> type(IonType expected)
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>     {
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>         IonType actual = myReader.getType();
+<a class="jxr_linenumber" name="L219" href="#L219">219</a>         assertEquals(<span class="jxr_string">"IonReader.getType()"</span>, expected, actual);
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>     }
+<a class="jxr_linenumber" name="L222" href="#L222">222</a> 
+<a class="jxr_linenumber" name="L223" href="#L223">223</a>     <strong class="jxr_keyword">public</strong> <a name="ReaderChecker" href="../../../com/amazon/ion/ReaderChecker.html#ReaderChecker">ReaderChecker</a> isInt(<strong class="jxr_keyword">long</strong> expected)
+<a class="jxr_linenumber" name="L224" href="#L224">224</a>     {
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>         type(IonType.INT);
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>         <strong class="jxr_keyword">long</strong> actual = myReader.longValue();
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>         assertEquals(<span class="jxr_string">"IonReader.longValue()"</span>, expected, actual);
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L229" href="#L229">229</a>     }
+<a class="jxr_linenumber" name="L230" href="#L230">230</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

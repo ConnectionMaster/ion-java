@@ -468,7 +468,7 @@
 <a class="jxr_linenumber" name="L460" href="#L460">460</a> 
 <a class="jxr_linenumber" name="L461" href="#L461">461</a>     <strong class="jxr_keyword">public</strong> <a name="ValueFactory" href="../../../../../com/amazon/ion/ValueFactory.html#ValueFactory">ValueFactory</a> add(<strong class="jxr_keyword">final</strong> String fieldName)
 <a class="jxr_linenumber" name="L462" href="#L462">462</a>     {
-<a class="jxr_linenumber" name="L463" href="#L463">463</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="_Private_CurriedValueFactory" href="../../../../../com/amazon/ion/impl/_Private_CurriedValueFactory.html#_Private_CurriedValueFactory">_Private_CurriedValueFactory</a>(_context.getSystem())
+<a class="jxr_linenumber" name="L463" href="#L463">463</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="_Private_CurriedValueFactory" href="../../../../../com/amazon/ion/impl/_Private_CurriedValueFactory.html#_Private_CurriedValueFactory">_Private_CurriedValueFactory</a>(getSystem())
 <a class="jxr_linenumber" name="L464" href="#L464">464</a>         {
 <a class="jxr_linenumber" name="L465" href="#L465">465</a>             @Override
 <a class="jxr_linenumber" name="L466" href="#L466">466</a>             <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> handle(<a name="IonValue" href="../../../../../com/amazon/ion/IonValue.html#IonValue">IonValue</a> newValue)
@@ -539,7 +539,7 @@
 <a class="jxr_linenumber" name="L531" href="#L531">531</a> 
 <a class="jxr_linenumber" name="L532" href="#L532">532</a>     <strong class="jxr_keyword">public</strong> <a name="ValueFactory" href="../../../../../com/amazon/ion/ValueFactory.html#ValueFactory">ValueFactory</a> put(<strong class="jxr_keyword">final</strong> String fieldName)
 <a class="jxr_linenumber" name="L533" href="#L533">533</a>     {
-<a class="jxr_linenumber" name="L534" href="#L534">534</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="_Private_CurriedValueFactory" href="../../../../../com/amazon/ion/impl/_Private_CurriedValueFactory.html#_Private_CurriedValueFactory">_Private_CurriedValueFactory</a>(_context.getSystem())
+<a class="jxr_linenumber" name="L534" href="#L534">534</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="_Private_CurriedValueFactory" href="../../../../../com/amazon/ion/impl/_Private_CurriedValueFactory.html#_Private_CurriedValueFactory">_Private_CurriedValueFactory</a>(getSystem())
 <a class="jxr_linenumber" name="L535" href="#L535">535</a>         {
 <a class="jxr_linenumber" name="L536" href="#L536">536</a>             @Override
 <a class="jxr_linenumber" name="L537" href="#L537">537</a>             <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> handle(<a name="IonValue" href="../../../../../com/amazon/ion/IonValue.html#IonValue">IonValue</a> newValue)
@@ -827,6 +827,6 @@
 <a class="jxr_linenumber" name="L819" href="#L819">819</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

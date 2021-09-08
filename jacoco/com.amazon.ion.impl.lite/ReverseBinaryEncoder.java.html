@@ -486,7 +486,7 @@ import java.util.ListIterator;
 <span class="fc" id="L486">            myBuffer[offset]     = (byte) (v &gt;&gt;&gt; (7 * 1));</span>
 <span class="fc" id="L487">            myBuffer[offset + 1] = (byte) (v | 0x80);</span>
         }
-<span class="fc bfc" id="L489" title="All 2 branches covered.">        else if (v &lt; (1 &lt;&lt; (7 * 3)))          // 3 bytes - 21 bits used - 0x1fffff max</span>
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">        else if (v &lt; (1 &lt;&lt; (7 * 3)))          // 3 bytes - 21 bits used - 0x1fffff max</span>
         {
 <span class="pc bpc" id="L491" title="1 of 2 branches missed.">            if ((offset -= 3) &lt; 0) {</span>
 <span class="nc" id="L492">                offset = growBuffer(offset);</span>
@@ -495,26 +495,26 @@ import java.util.ListIterator;
 <span class="fc" id="L495">            myBuffer[offset + 1] = (byte) ((v &gt;&gt;&gt; (7 * 1)) &amp; 0x7f);</span>
 <span class="fc" id="L496">            myBuffer[offset + 2] = (byte) ( v | 0x80);</span>
         }
-<span class="fc bfc" id="L498" title="All 2 branches covered.">        else if (v &lt; (1 &lt;&lt; (7 * 4)))          // 4 bytes - 28 bits used - 0xfffffff max</span>
+<span class="nc bnc" id="L498" title="All 2 branches missed.">        else if (v &lt; (1 &lt;&lt; (7 * 4)))          // 4 bytes - 28 bits used - 0xfffffff max</span>
         {
-<span class="pc bpc" id="L500" title="1 of 2 branches missed.">            if ((offset -= 4) &lt; 0) {</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">            if ((offset -= 4) &lt; 0) {</span>
 <span class="nc" id="L501">                offset = growBuffer(offset);</span>
             }
-<span class="fc" id="L503">            myBuffer[offset]     = (byte) ( v &gt;&gt;&gt; (7 * 3));</span>
-<span class="fc" id="L504">            myBuffer[offset + 1] = (byte) ((v &gt;&gt;&gt; (7 * 2)) &amp; 0x7f);</span>
-<span class="fc" id="L505">            myBuffer[offset + 2] = (byte) ((v &gt;&gt;&gt; (7 * 1)) &amp; 0x7f);</span>
-<span class="fc" id="L506">            myBuffer[offset + 3] = (byte) ( v | 0x80);</span>
+<span class="nc" id="L503">            myBuffer[offset]     = (byte) ( v &gt;&gt;&gt; (7 * 3));</span>
+<span class="nc" id="L504">            myBuffer[offset + 1] = (byte) ((v &gt;&gt;&gt; (7 * 2)) &amp; 0x7f);</span>
+<span class="nc" id="L505">            myBuffer[offset + 2] = (byte) ((v &gt;&gt;&gt; (7 * 1)) &amp; 0x7f);</span>
+<span class="nc" id="L506">            myBuffer[offset + 3] = (byte) ( v | 0x80);</span>
         }
         else                                  // 5 bytes - 32 bits used - 0x7fffffff max (Integer.MAX_VALUE)
         {
-<span class="pc bpc" id="L510" title="1 of 2 branches missed.">            if ((offset -= 5) &lt; 0) {</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">            if ((offset -= 5) &lt; 0) {</span>
 <span class="nc" id="L511">                offset = growBuffer(offset);</span>
             }
-<span class="fc" id="L513">            myBuffer[offset]     = (byte) ( v &gt;&gt;&gt; (7 * 4));</span>
-<span class="fc" id="L514">            myBuffer[offset + 1] = (byte) ((v &gt;&gt;&gt; (7 * 3)) &amp; 0x7f);</span>
-<span class="fc" id="L515">            myBuffer[offset + 2] = (byte) ((v &gt;&gt;&gt; (7 * 2)) &amp; 0x7f);</span>
-<span class="fc" id="L516">            myBuffer[offset + 3] = (byte) ((v &gt;&gt;&gt; (7 * 1)) &amp; 0x7f);</span>
-<span class="fc" id="L517">            myBuffer[offset + 4] = (byte) ( v | 0x80);</span>
+<span class="nc" id="L513">            myBuffer[offset]     = (byte) ( v &gt;&gt;&gt; (7 * 4));</span>
+<span class="nc" id="L514">            myBuffer[offset + 1] = (byte) ((v &gt;&gt;&gt; (7 * 3)) &amp; 0x7f);</span>
+<span class="nc" id="L515">            myBuffer[offset + 2] = (byte) ((v &gt;&gt;&gt; (7 * 2)) &amp; 0x7f);</span>
+<span class="nc" id="L516">            myBuffer[offset + 3] = (byte) ((v &gt;&gt;&gt; (7 * 1)) &amp; 0x7f);</span>
+<span class="nc" id="L517">            myBuffer[offset + 4] = (byte) ( v | 0x80);</span>
         }
 
 <span class="fc" id="L520">        myOffset = offset;</span>

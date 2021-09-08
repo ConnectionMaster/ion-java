@@ -981,9 +981,9 @@
 <a class="jxr_linenumber" name="L973" href="#L973">973</a>         IonSystem system = system();
 <a class="jxr_linenumber" name="L974" href="#L974">974</a>         SymbolTable st = ((_Private_ValueFactory)system).getLstFactory().newLocalSymtab(system.getSystemSymbolTable());
 <a class="jxr_linenumber" name="L975" href="#L975">975</a>         st.intern(<span class="jxr_string">"foo"</span>);
-<a class="jxr_linenumber" name="L976" href="#L976">976</a>         IonStruct image = symtabTree(st);
+<a class="jxr_linenumber" name="L976" href="#L976">976</a>         IonStruct image = symtabTree(st, system);
 <a class="jxr_linenumber" name="L977" href="#L977">977</a>         st.intern(<span class="jxr_string">"bar"</span>);
-<a class="jxr_linenumber" name="L978" href="#L978">978</a>         image = symtabTree(st);
+<a class="jxr_linenumber" name="L978" href="#L978">978</a>         image = symtabTree(st, system);
 <a class="jxr_linenumber" name="L979" href="#L979">979</a>         IonList symbols = (IonList) image.get(SYMBOLS);
 <a class="jxr_linenumber" name="L980" href="#L980">980</a>         assertEquals(<span class="jxr_string">"[\&quot;foo\&quot;,\&quot;bar\&quot;]"</span>, symbols.toString());
 <a class="jxr_linenumber" name="L981" href="#L981">981</a>     }
@@ -1429,6 +1429,6 @@
 <a class="jxr_linenumber" name="L1421" href="#L1421">1421</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

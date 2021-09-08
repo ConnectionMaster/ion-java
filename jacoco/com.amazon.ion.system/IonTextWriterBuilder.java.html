@@ -113,6 +113,38 @@ public abstract class IonTextWriterBuilder
      */
 <span class="fc" id="L114">    public static final Charset UTF8 = _Private_Utils.UTF8_CHARSET;</span>
 
+    /**
+     * Represents common new-line separators that are valid in Ion.
+     *
+     * Unicode defines several characters that can represent a new line, but only carriage return (CR) and linefeed (LF) are valid whitespace in Ion.
+     * Using other new-line characters (such as {@code NEL}) will result in printing invalid Ion.
+     */
+<span class="fc" id="L122">    public enum NewLineType {</span>
+        /**
+         * A carriage return and linefeed ({@code U+000D} followed by {@code U+000A}).
+         */
+<span class="fc" id="L126">        CRLF(&quot;\r\n&quot;),</span>
+        /**
+         * A single linefeed ({@code U+000A}).
+         */
+<span class="fc" id="L130">        LF(&quot;\n&quot;),</span>
+        /**
+         * The new-line separator specified in the &quot;line.separator&quot; system property.
+         * Using this will result in writing invalid Ion if the platform uses anything other than CR and/or LF as the line separator
+         * &lt;i&gt;and&lt;/i&gt; the IonTextWriter is configured to use pretty printing or to write each top-level value on a separate line.
+         */
+<span class="fc" id="L136">        PLATFORM_DEPENDENT(System.getProperty(&quot;line.separator&quot;));</span>
+
+        private final CharSequence charSequence;
+
+<span class="fc" id="L140">        NewLineType(CharSequence cs) {</span>
+<span class="fc" id="L141">            this.charSequence = cs;</span>
+<span class="fc" id="L142">        }</span>
+
+        public CharSequence getCharSequence() {
+<span class="fc" id="L145">            return charSequence;</span>
+        }
+    }
 
     /**
      * The standard builder of text {@link IonWriter}s, with all configuration
@@ -128,7 +160,7 @@ public abstract class IonTextWriterBuilder
      */
     public static IonTextWriterBuilder standard()
     {
-<span class="fc" id="L131">        return _Private_IonTextWriterBuilder.standard();</span>
+<span class="fc" id="L163">        return _Private_IonTextWriterBuilder.standard();</span>
     }
 
     /**
@@ -143,7 +175,7 @@ public abstract class IonTextWriterBuilder
      */
     public static IonTextWriterBuilder minimal()
     {
-<span class="nc" id="L146">        return standard().withMinimalSystemData();</span>
+<span class="nc" id="L178">        return standard().withMinimalSystemData();</span>
     }
 
     /**
@@ -160,7 +192,7 @@ public abstract class IonTextWriterBuilder
      */
     public static IonTextWriterBuilder pretty()
     {
-<span class="fc" id="L163">        return standard().withPrettyPrinting();</span>
+<span class="fc" id="L195">        return standard().withPrettyPrinting();</span>
     }
 
     /**
@@ -172,7 +204,7 @@ public abstract class IonTextWriterBuilder
      */
     public static IonTextWriterBuilder json()
     {
-<span class="fc" id="L175">        return standard().withJsonDowngrade();</span>
+<span class="fc" id="L207">        return standard().withJsonDowngrade();</span>
     }
 
     //=========================================================================
@@ -187,24 +219,28 @@ public abstract class IonTextWriterBuilder
     private IvmMinimizing myIvmMinimizing;
     private LstMinimizing myLstMinimizing;
     private int myLongStringThreshold;
+    private NewLineType myNewLineType;
+    private boolean myTopLevelValuesOnNewLines;
 
 
     /** NOT FOR APPLICATION USE! */
     protected IonTextWriterBuilder()
-<span class="fc" id="L194">    {</span>
-<span class="fc" id="L195">    }</span>
+<span class="fc" id="L228">    {</span>
+<span class="fc" id="L229">    }</span>
 
     /** NOT FOR APPLICATION USE! */
     protected IonTextWriterBuilder(IonTextWriterBuilder that)
     {
-<span class="fc" id="L200">        super(that);</span>
+<span class="fc" id="L234">        super(that);</span>
 
-<span class="fc" id="L202">        this.myCharset              = that.myCharset;</span>
-<span class="fc" id="L203">        this.myInitialIvmHandling   = that.myInitialIvmHandling;</span>
-<span class="fc" id="L204">        this.myIvmMinimizing        = that.myIvmMinimizing;</span>
-<span class="fc" id="L205">        this.myLstMinimizing        = that.myLstMinimizing;</span>
-<span class="fc" id="L206">        this.myLongStringThreshold  = that.myLongStringThreshold;</span>
-<span class="fc" id="L207">    }</span>
+<span class="fc" id="L236">        this.myCharset              = that.myCharset;</span>
+<span class="fc" id="L237">        this.myInitialIvmHandling   = that.myInitialIvmHandling;</span>
+<span class="fc" id="L238">        this.myIvmMinimizing        = that.myIvmMinimizing;</span>
+<span class="fc" id="L239">        this.myLstMinimizing        = that.myLstMinimizing;</span>
+<span class="fc" id="L240">        this.myLongStringThreshold  = that.myLongStringThreshold;</span>
+<span class="fc" id="L241">        this.myNewLineType          = that.myNewLineType;</span>
+<span class="fc" id="L242">        this.myTopLevelValuesOnNewLines = that.myTopLevelValuesOnNewLines;</span>
+<span class="fc" id="L243">    }</span>
 
 
     //=========================================================================
@@ -224,13 +260,13 @@ public abstract class IonTextWriterBuilder
     @Override
     public final IonTextWriterBuilder withCatalog(IonCatalog catalog)
     {
-<span class="fc" id="L227">        return super.withCatalog(catalog);</span>
+<span class="fc" id="L263">        return super.withCatalog(catalog);</span>
     }
 
     @Override
     public final IonTextWriterBuilder withImports(SymbolTable... imports)
     {
-<span class="fc" id="L233">        return super.withImports(imports);</span>
+<span class="fc" id="L269">        return super.withImports(imports);</span>
     }
 
 
@@ -247,7 +283,7 @@ public abstract class IonTextWriterBuilder
      */
     public final Charset getCharset()
     {
-<span class="fc" id="L250">        return myCharset;</span>
+<span class="fc" id="L286">        return myCharset;</span>
     }
 
     /**
@@ -264,19 +300,19 @@ public abstract class IonTextWriterBuilder
      */
     public void setCharset(Charset charset)
     {
-<span class="fc" id="L267">        mutationCheck();</span>
-<span class="fc bfc" id="L268" title="All 2 branches covered.">        if (charset == null</span>
-<span class="fc bfc" id="L269" title="All 2 branches covered.">            || charset.equals(ASCII)</span>
-<span class="fc bfc" id="L270" title="All 2 branches covered.">            || charset.equals(UTF8))</span>
+<span class="fc" id="L303">        mutationCheck();</span>
+<span class="fc bfc" id="L304" title="All 2 branches covered.">        if (charset == null</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">            || charset.equals(ASCII)</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">            || charset.equals(UTF8))</span>
         {
-<span class="fc" id="L272">            myCharset = charset;</span>
+<span class="fc" id="L308">            myCharset = charset;</span>
         }
         else
         {
-<span class="fc" id="L276">            throw new IllegalArgumentException(&quot;Unsupported Charset &quot;</span>
+<span class="fc" id="L312">            throw new IllegalArgumentException(&quot;Unsupported Charset &quot;</span>
                                                + charset);
         }
-<span class="fc" id="L279">    }</span>
+<span class="fc" id="L315">    }</span>
 
     /**
      * Declares the charset denoting the output encoding,
@@ -294,9 +330,9 @@ public abstract class IonTextWriterBuilder
      */
     public final IonTextWriterBuilder withCharset(Charset charset)
     {
-<span class="fc" id="L297">        IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L298">        b.setCharset(charset);</span>
-<span class="fc" id="L299">        return b;</span>
+<span class="fc" id="L333">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L334">        b.setCharset(charset);</span>
+<span class="fc" id="L335">        return b;</span>
     }
 
     /**
@@ -307,7 +343,7 @@ public abstract class IonTextWriterBuilder
      */
     public final IonTextWriterBuilder withCharsetAscii()
     {
-<span class="fc" id="L310">        return withCharset(ASCII);</span>
+<span class="fc" id="L346">        return withCharset(ASCII);</span>
     }
 
     //-------------------------------------------------------------------------
@@ -333,11 +369,11 @@ public abstract class IonTextWriterBuilder
      */
     public final IonTextWriterBuilder withMinimalSystemData()
     {
-<span class="fc" id="L336">        IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L337">        b.setInitialIvmHandling(SUPPRESS);</span>
-<span class="fc" id="L338">        b.setIvmMinimizing(IvmMinimizing.DISTANT);</span>
-<span class="fc" id="L339">        b.setLstMinimizing(LstMinimizing.EVERYTHING);</span>
-<span class="fc" id="L340">        return b;</span>
+<span class="fc" id="L372">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L373">        b.setInitialIvmHandling(SUPPRESS);</span>
+<span class="fc" id="L374">        b.setIvmMinimizing(IvmMinimizing.DISTANT);</span>
+<span class="fc" id="L375">        b.setLstMinimizing(LstMinimizing.EVERYTHING);</span>
+<span class="fc" id="L376">        return b;</span>
     }
 
 
@@ -396,7 +432,7 @@ public abstract class IonTextWriterBuilder
     @Override
     public final InitialIvmHandling getInitialIvmHandling()
     {
-<span class="fc" id="L399">        return myInitialIvmHandling;</span>
+<span class="fc" id="L435">        return myInitialIvmHandling;</span>
     }
 
     /**
@@ -414,9 +450,9 @@ public abstract class IonTextWriterBuilder
      */
     public void setInitialIvmHandling(InitialIvmHandling handling)
     {
-<span class="fc" id="L417">        mutationCheck();</span>
-<span class="fc" id="L418">        myInitialIvmHandling = handling;</span>
-<span class="fc" id="L419">    }</span>
+<span class="fc" id="L453">        mutationCheck();</span>
+<span class="fc" id="L454">        myInitialIvmHandling = handling;</span>
+<span class="fc" id="L455">    }</span>
 
     /**
      * Declares the strategy for emitting Ion version markers at the start
@@ -436,9 +472,9 @@ public abstract class IonTextWriterBuilder
     public final IonTextWriterBuilder
     withInitialIvmHandling(InitialIvmHandling handling)
     {
-<span class="fc" id="L439">        IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L440">        b.setInitialIvmHandling(handling);</span>
-<span class="fc" id="L441">        return b;</span>
+<span class="fc" id="L475">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L476">        b.setInitialIvmHandling(handling);</span>
+<span class="fc" id="L477">        return b;</span>
     }
 
     //-------------------------------------------------------------------------
@@ -458,7 +494,7 @@ public abstract class IonTextWriterBuilder
     @Override
     public final IvmMinimizing getIvmMinimizing()
     {
-<span class="fc" id="L461">        return myIvmMinimizing;</span>
+<span class="fc" id="L497">        return myIvmMinimizing;</span>
     }
 
     /**
@@ -477,9 +513,9 @@ public abstract class IonTextWriterBuilder
      */
     public void setIvmMinimizing(IvmMinimizing minimizing)
     {
-<span class="fc" id="L480">        mutationCheck();</span>
-<span class="fc" id="L481">        myIvmMinimizing = minimizing;</span>
-<span class="fc" id="L482">    }</span>
+<span class="fc" id="L516">        mutationCheck();</span>
+<span class="fc" id="L517">        myIvmMinimizing = minimizing;</span>
+<span class="fc" id="L518">    }</span>
 
     /**
      * Declares the strategy for reducing or eliminating non-initial Ion version
@@ -500,9 +536,9 @@ public abstract class IonTextWriterBuilder
     public final IonTextWriterBuilder
     withIvmMinimizing(IvmMinimizing minimizing)
     {
-<span class="fc" id="L503">        IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L504">        b.setIvmMinimizing(minimizing);</span>
-<span class="fc" id="L505">        return b;</span>
+<span class="fc" id="L539">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L540">        b.setIvmMinimizing(minimizing);</span>
+<span class="fc" id="L541">        return b;</span>
     }
 
     //-------------------------------------------------------------------------
@@ -519,7 +555,7 @@ public abstract class IonTextWriterBuilder
      */
     public final LstMinimizing getLstMinimizing()
     {
-<span class="fc" id="L522">        return myLstMinimizing;</span>
+<span class="fc" id="L558">        return myLstMinimizing;</span>
     }
 
     /**
@@ -539,9 +575,9 @@ public abstract class IonTextWriterBuilder
      */
     public void setLstMinimizing(LstMinimizing minimizing)
     {
-<span class="fc" id="L542">        mutationCheck();</span>
-<span class="fc" id="L543">        myLstMinimizing = minimizing;</span>
-<span class="fc" id="L544">    }</span>
+<span class="fc" id="L578">        mutationCheck();</span>
+<span class="fc" id="L579">        myLstMinimizing = minimizing;</span>
+<span class="fc" id="L580">    }</span>
 
     /**
      * Sets the strategy for reducing or eliminating local symbol tables.
@@ -562,9 +598,9 @@ public abstract class IonTextWriterBuilder
     public final IonTextWriterBuilder
     withLstMinimizing(LstMinimizing minimizing)
     {
-<span class="fc" id="L565">        IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L566">        b.setLstMinimizing(minimizing);</span>
-<span class="fc" id="L567">        return b;</span>
+<span class="fc" id="L601">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L602">        b.setLstMinimizing(minimizing);</span>
+<span class="fc" id="L603">        return b;</span>
     }
 
     //-------------------------------------------------------------------------
@@ -582,7 +618,7 @@ public abstract class IonTextWriterBuilder
      */
     public final int getLongStringThreshold()
     {
-<span class="fc" id="L585">        return myLongStringThreshold;</span>
+<span class="fc" id="L621">        return myLongStringThreshold;</span>
     }
 
     /**
@@ -599,9 +635,9 @@ public abstract class IonTextWriterBuilder
      */
     public void setLongStringThreshold(int threshold)
     {
-<span class="fc" id="L602">        mutationCheck();</span>
-<span class="fc" id="L603">        myLongStringThreshold = threshold;</span>
-<span class="fc" id="L604">    }</span>
+<span class="fc" id="L638">        mutationCheck();</span>
+<span class="fc" id="L639">        myLongStringThreshold = threshold;</span>
+<span class="fc" id="L640">    }</span>
 
     /**
      * Declares the length beyond which string and clob content will be rendered
@@ -618,14 +654,115 @@ public abstract class IonTextWriterBuilder
      */
     public final IonTextWriterBuilder withLongStringThreshold(int threshold)
     {
-<span class="fc" id="L621">        IonTextWriterBuilder b = mutable();</span>
-<span class="fc" id="L622">        b.setLongStringThreshold(threshold);</span>
-<span class="fc" id="L623">        return b;</span>
+<span class="fc" id="L657">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L658">        b.setLongStringThreshold(threshold);</span>
+<span class="fc" id="L659">        return b;</span>
     }
 
 
     //=========================================================================
 
+    /**
+     * Gets the character sequence that will be written as a line separator.
+     * The default is {@link NewLineType#PLATFORM_DEPENDENT}
+     *
+     * @return the character sequence to be written between top-level values; null means the default should be used.
+     *
+     * @see #setNewLineType(NewLineType)
+     * @see #withNewLineType(NewLineType)
+     */
+    public final NewLineType getNewLineType()
+    {
+<span class="fc" id="L676">        return myNewLineType;</span>
+    }
+
+    /**
+     * Sets the character sequence that will be written as a line separator.
+     * The default is {@link NewLineType#PLATFORM_DEPENDENT}
+     *
+     * @param newLineType the character sequence to be written between top-level values; null means the default should be used.
+     *
+     * @see #getNewLineType()
+     * @see #withNewLineType(NewLineType)
+     *
+     * @throws UnsupportedOperationException if this is immutable.
+     */
+    public void setNewLineType(NewLineType newLineType)
+    {
+<span class="fc" id="L692">        mutationCheck();</span>
+<span class="fc" id="L693">        this.myNewLineType = newLineType;</span>
+<span class="fc" id="L694">    }</span>
+
+    /**
+     * Declares the character sequence that will be written as a line separator.
+     * The default is {@link NewLineType#PLATFORM_DEPENDENT}
+     *
+     * @param newLineType the character sequence to be written between top-level values; null means the default should be used.
+     *
+     * @see #getNewLineType()
+     * @see #setNewLineType(NewLineType)
+     *
+     * @return this instance, if mutable;
+     * otherwise a mutable copy of this instance.
+     */
+    public final IonTextWriterBuilder withNewLineType(NewLineType newLineType)
+    {
+<span class="fc" id="L710">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L711">        b.setNewLineType(newLineType);</span>
+<span class="fc" id="L712">        return b;</span>
+    }
+
+    //=========================================================================
+
+    /**
+     * Gets whether each top level value for standard printing should start on a new line. The default value is {@code false}.
+     * When false, the IonTextWriter will insert a single space character (U+0020) between top-level values.
+     * When pretty-printing, this setting is ignored; the pretty printer will always start top-level values on a new line.
+     *
+     * @return value indicating whether standard printing will insert a newline between top-level values
+     *
+     * @see #setWriteTopLevelValuesOnNewLines(boolean)
+     * @see #withWriteTopLevelValuesOnNewLines(boolean)
+     */
+    public final boolean getWriteTopLevelValuesOnNewLines()
+    {
+<span class="fc" id="L729">        return myTopLevelValuesOnNewLines;</span>
+    }
+
+    /**
+     * Sets whether each top level value for standard printing should start on a new line. The default value is {@code false}.
+     * When false, the IonTextWriter will insert a single space character (U+0020) between top-level values.
+     * When pretty-printing, this setting is ignored; the pretty printer will always start top-level values on a new line.
+     *
+     * @param writeTopLevelValuesOnNewLines value indicating whether standard printing will insert a newline between top-level values
+     *
+     * @see #getWriteTopLevelValuesOnNewLines()
+     * @see #withWriteTopLevelValuesOnNewLines(boolean)
+     */
+    public void setWriteTopLevelValuesOnNewLines(boolean writeTopLevelValuesOnNewLines)
+    {
+<span class="fc" id="L744">        mutationCheck();</span>
+<span class="fc" id="L745">        myTopLevelValuesOnNewLines = writeTopLevelValuesOnNewLines;</span>
+<span class="fc" id="L746">    }</span>
+
+    /**
+     * Declares whether each top level value for standard printing should start on a new line. The default value is {@code false}.
+     * When false, the IonTextWriter will insert a single space character (U+0020) between top-level values.
+     * When pretty-printing, this setting is ignored; the pretty printer will always start top-level values on a new line.
+     *
+     * @param writeTopLevelValuesOnNewLines value indicating whether standard printing will insert a newline between top-level values
+     *
+     * @see #getWriteTopLevelValuesOnNewLines()
+     * @see #setWriteTopLevelValuesOnNewLines(boolean)
+     */
+    public final IonTextWriterBuilder withWriteTopLevelValuesOnNewLines(boolean writeTopLevelValuesOnNewLines)
+    {
+<span class="fc" id="L760">        IonTextWriterBuilder b = mutable();</span>
+<span class="fc" id="L761">        b.setWriteTopLevelValuesOnNewLines(writeTopLevelValuesOnNewLines);</span>
+<span class="fc" id="L762">        return b;</span>
+    }
+
+    //=========================================================================
 
     /**
      * Creates a new writer that will write text to the given output

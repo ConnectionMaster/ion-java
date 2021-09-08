@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IonBufferConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.amazon.ion:ion-java</a> &gt; <a href="index.source.html" class="el_package">com.amazon.ion</a> &gt; <span class="el_source">IonBufferConfiguration.java</span></div><h1>IonBufferConfiguration.java</h1><pre class="source lang-java linenums">package com.amazon.ion;
+
+import com.amazon.ion.impl.IonReaderLookaheadBuffer;
+
+/**
+ * Configures Ion lookahead buffers.
+ */
+public final class IonBufferConfiguration extends BufferConfiguration&lt;IonBufferConfiguration&gt; {
+
+    /**
+     * Functional interface for handling oversized symbol tables.
+     */
+    public interface OversizedSymbolTableHandler {
+        /**
+         * Invoked when the user specifies a finite maximum buffer size and that size is exceeded by symbol table(s)
+         * alone. Because symbol tables cannot be truncated without corrupting values that follow in the stream,
+         * this condition is not recoverable. After this method is called,
+         * {@link IonReaderLookaheadBuffer#fillInput()} has no effect.
+         * @throws Exception if handler logic fails.
+         */
+        void onOversizedSymbolTable() throws Exception;
+    }
+
+    /**
+     * Builds IonBufferConfiguration instances.
+     */
+    public static final class Builder extends BufferConfiguration.Builder&lt;IonBufferConfiguration, Builder&gt; {
+
+        /**
+         * 4-byte IVM + 1 byte user value.
+         */
+        private static final int MINIMUM_MAX_VALUE_SIZE = 5;
+
+        /**
+         * An OversizedValueHandler that does nothing.
+         */
+<span class="fc" id="L37">        private static final OversizedValueHandler NO_OP_OVERSIZED_VALUE_HANDLER = new OversizedValueHandler() {</span>
+
+            @Override
+            public void onOversizedValue() {
+                // If no maximum buffer size is configured, values cannot be considered oversized and this
+                // implementation will never be called.
+                // If a maximum buffer size is configured, a handler must also be configured. In that case,
+                // this implementation will only be called if the user provides it to the builder manually.
+<span class="nc" id="L45">            }</span>
+        };
+
+        /**
+         * A DataHandler that does nothing.
+         */
+<span class="fc" id="L51">        private static final DataHandler NO_OP_DATA_HANDLER = new DataHandler() {</span>
+
+            @Override
+            public void onData(int bytes) {
+                // Do nothing.
+<span class="fc" id="L56">            }</span>
+        };
+
+        /**
+         * An OversizedSymbolTableHandler that does nothing.
+         */
+<span class="fc" id="L62">        private static final OversizedSymbolTableHandler NO_OP_OVERSIZED_SYMBOL_TABLE_HANDLER</span>
+<span class="fc" id="L63">            = new OversizedSymbolTableHandler() {</span>
+
+            @Override
+            public void onOversizedSymbolTable() {
+                // If no maximum buffer size is configured, symbol tables cannot be considered oversized and this
+                // implementation will never be called.
+                // If a maximum buffer size is configured, a handler must also be configured. In that case,
+                // this implementation will only be called if the user provides it to the builder manually.
+<span class="nc" id="L71">            }</span>
+        };
+
+        /**
+         * The handler that will be notified when oversized symbol tables are encountered.
+         */
+<span class="fc" id="L77">        private OversizedSymbolTableHandler oversizedSymbolTableHandler = null;</span>
+
+<span class="fc" id="L79">        private Builder() {</span>
+            // Must be publicly instantiated via the factory method.
+<span class="fc" id="L81">        }</span>
+
+        /**
+         * Provides the standard builder with the default initial buffer size, an unbounded maximum buffer size, and
+         * an event handler that does nothing.
+         * @return a standard Builder.
+         */
+        public static Builder standard() {
+<span class="fc" id="L89">            return new Builder();</span>
+        }
+
+        /**
+         * Sets the handler that will be notified when oversized symbol tables are encountered. If the maximum buffer
+         * size is finite (see {@link #withMaximumBufferSize(int)}, this handler is required to be non-null.
+         *
+         * @param handler the handler.
+         * @return this builder.
+         */
+        public Builder onOversizedSymbolTable(OversizedSymbolTableHandler handler) {
+<span class="fc" id="L100">            oversizedSymbolTableHandler = handler;</span>
+<span class="fc" id="L101">            return this;</span>
+        }
+
+        /**
+         * @return the handler that will be notified when oversized symbol tables are encountered.
+         */
+        public OversizedSymbolTableHandler getOversizedSymbolTableHandler() {
+<span class="fc" id="L108">            return oversizedSymbolTableHandler;</span>
+        }
+
+        @Override
+        public int getMinimumMaximumBufferSize() {
+<span class="fc" id="L113">            return MINIMUM_MAX_VALUE_SIZE;</span>
+        }
+
+        @Override
+        public OversizedValueHandler getNoOpOversizedValueHandler() {
+<span class="fc" id="L118">            return NO_OP_OVERSIZED_VALUE_HANDLER;</span>
+        }
+
+        @Override
+        public DataHandler getNoOpDataHandler() {
+<span class="fc" id="L123">            return NO_OP_DATA_HANDLER;</span>
+        }
+
+        /**
+         * @return an OversizedSymbolTableHandler that does nothing.
+         */
+        public OversizedSymbolTableHandler getNoOpOversizedSymbolTableHandler() {
+<span class="fc" id="L130">            return NO_OP_OVERSIZED_SYMBOL_TABLE_HANDLER;</span>
+        }
+
+        @Override
+        public IonBufferConfiguration build() {
+<span class="fc" id="L135">            return new IonBufferConfiguration(this);</span>
+        }
+    }
+
+    /**
+     * The handler that will be notified when oversized symbol tables are encountered.
+     */
+    private final OversizedSymbolTableHandler oversizedSymbolTableHandler;
+
+    /**
+     * Constructs an instance from the given Builder.
+     * @param builder the builder containing the settings to apply to the new configuration.
+     */
+    private IonBufferConfiguration(Builder builder) {
+<span class="fc" id="L149">        super(builder);</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        if (builder.getOversizedSymbolTableHandler() == null) {</span>
+<span class="fc" id="L151">            requireUnlimitedBufferSize();</span>
+<span class="fc" id="L152">            oversizedSymbolTableHandler = builder.getNoOpOversizedSymbolTableHandler();</span>
+        } else {
+<span class="fc" id="L154">            oversizedSymbolTableHandler = builder.getOversizedSymbolTableHandler();</span>
+        }
+<span class="fc" id="L156">    }</span>
+
+    /**
+     * @return the handler that will be notified when oversized symbol tables are encountered.
+     */
+    public OversizedSymbolTableHandler getOversizedSymbolTableHandler() {
+<span class="fc" id="L162">        return oversizedSymbolTableHandler;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

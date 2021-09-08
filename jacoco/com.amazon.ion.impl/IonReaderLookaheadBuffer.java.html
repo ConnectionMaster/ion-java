@@ -1,0 +1,922 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IonReaderLookaheadBuffer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.amazon.ion:ion-java</a> &gt; <a href="index.source.html" class="el_package">com.amazon.ion.impl</a> &gt; <span class="el_source">IonReaderLookaheadBuffer.java</span></div><h1>IonReaderLookaheadBuffer.java</h1><pre class="source lang-java linenums">package com.amazon.ion.impl;
+
+import com.amazon.ion.IonBufferConfiguration;
+import com.amazon.ion.IonException;
+import com.amazon.ion.IonType;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Monitors an InputStream over binary Ion data to ensure enough data is available to be navigated successfully by a
+ * non-incremental IonReader.
+ * &lt;p&gt;
+ * Error reporting: this wrapper reads the least amount of Ion data possible in order to determine whether a value
+ * is complete. As such, it will not raise any errors if invalid data exists anywhere outside the header of a
+ * top-level value. Any such invalid data will be detected as normal by the IonReader. In the few cases where this
+ * wrapper does detect an error (e.g. upon finding the illegal type 0xF), it will raise {@link IonException}.
+ */
+public final class IonReaderLookaheadBuffer extends ReaderLookaheadBufferBase {
+
+    private static final int LOWER_SEVEN_BITS_BITMASK = 0x7F;
+    private static final int HIGHEST_BIT_BITMASK = 0x80;
+    private static final int VALUE_BITS_PER_VARUINT_BYTE = 7;
+    // Note: because long is a signed type, Long.MAX_VALUE is represented in Long.SIZE - 1 bits.
+    private static final int MAXIMUM_SUPPORTED_VAR_UINT_BYTES = (Long.SIZE - 1) / VALUE_BITS_PER_VARUINT_BYTE;
+    private static final int IVM_START_BYTE = 0xE0;
+    private static final int IVM_REMAINING_LENGTH = 3; // Length of the IVM after the first byte.
+    private static final int ION_SYMBOL_TABLE_SID = 3;
+
+    /**
+     * Represents a VarUInt that may be read in multiple steps.
+     */
+    private static final class VarUInt {
+
+        /**
+         * The location of the VarUInt in the value header.
+         */
+<span class="fc" id="L41">        private enum Location {</span>
+            /**
+             * The length field that is included when the low nibble of a value's type ID is VARIABLE_LENGTH_NIBBLE.
+             */
+<span class="fc" id="L45">            VALUE_LENGTH,</span>
+            /**
+             * The length field that is included when the low nibble of an annotation wrapper's type ID is
+             * VARIABLE_LENGTH_NIBBLE.
+             */
+<span class="fc" id="L50">            ANNOTATION_WRAPPER_LENGTH,</span>
+            /**
+             * The annot_length field that always precedes the SIDs in an annotation wrapper. Indicates the number
+             * of total bytes used to represent the SIDs that follow.
+             */
+<span class="fc" id="L55">            ANNOTATION_WRAPPER_SIDS_LENGTH,</span>
+            /**
+             * A symbol ID. An annotation wrapper may contain more than one.
+             */
+<span class="fc" id="L59">            ANNOTATION_WRAPPER_SID</span>
+        }
+
+        /**
+         * The location.
+         */
+        private VarUInt.Location location;
+
+        /**
+         * The value accumulated so far. This will only be the actual value when `isComplete` is true.
+         */
+        private long value;
+
+        /**
+         * The number of bytes in the VarUInt representation that have been read so far. This is only the total
+         * number of bytes in the representation when `isComplete` is true.
+         */
+        private int numberOfBytesRead;
+
+        /**
+         * True when the VarUInt is complete; otherwise, false.
+         */
+        private boolean isComplete;
+
+        /**
+         * Constructor.
+         */
+<span class="fc" id="L86">        private VarUInt() {</span>
+<span class="fc" id="L87">            reset(Location.VALUE_LENGTH);</span>
+<span class="fc" id="L88">        }</span>
+
+        /**
+         * Resets the value to zero.
+         * @param nextLocation the location of the next VarUInt to read.
+         */
+        private void reset(final Location nextLocation) {
+<span class="fc" id="L95">            location = nextLocation;</span>
+<span class="fc" id="L96">            value = 0;</span>
+<span class="fc" id="L97">            numberOfBytesRead = 0;</span>
+<span class="fc" id="L98">            isComplete = false;</span>
+<span class="fc" id="L99">        }</span>
+    }
+
+    /**
+     * The state of the wrapper.
+     */
+<span class="fc" id="L105">    private enum State {</span>
+        /**
+         * Positioned before the type ID of a top-level value.
+         */
+<span class="fc" id="L109">        BEFORE_TYPE_ID,</span>
+
+        /**
+         * Started reading a value's type ID, but did not finish because the byte was not yet available.
+         */
+<span class="fc" id="L114">        READING_TYPE_ID,</span>
+
+        /**
+         * Reading the value's header, which includes all bytes between the type ID and the first byte of
+         * the value representation.
+         */
+<span class="fc" id="L120">        READING_HEADER,</span>
+
+        /**
+         * Skipping over the value representation.
+         */
+<span class="fc" id="L125">        SKIPPING_VALUE,</span>
+
+        /**
+         * Reading the type ID of a value annotated with $ion_symbol_table to determine whether it is a
+         * struct.
+         */
+<span class="fc" id="L131">        READING_VALUE_WITH_SYMBOL_TABLE_ANNOTATION,</span>
+
+        /**
+         * Reading the length of a struct annotated with $ion_symbol_table.
+         */
+<span class="fc" id="L136">        READING_SYMBOL_TABLE_LENGTH,</span>
+
+        /**
+         * There is nothing left to do.
+         */
+<span class="fc" id="L141">        DONE</span>
+    }
+
+    /**
+     * Holds the start and end indices of a buffered symbol table.
+     */
+    static class SymbolTableMarker {
+        /**
+         * Index of the first byte of the symbol table struct's contents.
+         */
+        int startIndex;
+
+        /**
+         * Index of the first byte after the end of the symbol table.
+         */
+        int endIndex;
+
+        /**
+         * @param startIndex index of the first byte of the symbol table struct's contents.
+         * @param length the number of bytes that remain in the symbol table struct after 'startIndex'.
+         */
+<span class="fc" id="L162">        private SymbolTableMarker(final int startIndex, final int length) {</span>
+<span class="fc" id="L163">            this.startIndex = startIndex;</span>
+<span class="fc" id="L164">            this.endIndex = startIndex + length;</span>
+<span class="fc" id="L165">        }</span>
+    }
+
+    /**
+     * The number of bytes to attempt to buffer each time more bytes are required.
+     */
+    private final int pageSize;
+
+    /**
+     * The VarUInt currently in progress.
+     */
+    private final VarUInt inProgressVarUInt;
+
+    /**
+     * Markers for any symbol tables that occurred in the stream between the last value and the current value.
+     */
+<span class="fc" id="L181">    private final List&lt;SymbolTableMarker&gt; symbolTableMarkers = new ArrayList&lt;SymbolTableMarker&gt;(2);</span>
+
+    /**
+     * The symbol IDs of any annotations on the current value.
+     */
+<span class="fc" id="L186">    private final List&lt;Integer&gt; annotationSids = new ArrayList&lt;Integer&gt;(3);</span>
+
+    /**
+     * The handler that will be notified when a symbol table exceeds the maximum buffer size.
+     */
+    private final IonBufferConfiguration.OversizedSymbolTableHandler oversizedSymbolTableHandler;
+
+    /**
+     * The number of additional bytes that must be read from `input` and stored in `pipe` before
+     * {@link #moreDataRequired()} can return false.
+     */
+    private long additionalBytesNeeded;
+
+    /**
+     * True if the current value is a system value (IVM, symbol table, or NOP pad), not a user value.
+     * `IonReader#next()` consumes any system values before the next user value, so the wrapper
+     * must be able to identify system values so that their bytes can be included in `pipe` before
+     * {@link #moreDataRequired()} returns false.
+     */
+    private boolean isSystemValue;
+
+    /**
+     * True if the current value has an annotation wrapper whose first annotation is `$ion_symbol_table`.
+     * The value will be deemed a system value if it is later determined to be a struct.
+     */
+    private boolean isSymbolTableAnnotationFirst;
+
+    /**
+     * The number of bytes of annotation SIDs left to read from the value's annotation wrapper.
+     */
+    private long numberOfAnnotationSidBytesRemaining;
+
+    /**
+     * The number of annotations in the annotation wrapper that have been processed so far.
+     */
+    private long currentNumberOfAnnotations;
+
+    /**
+     * The current state of the wrapper.
+     */
+<span class="fc" id="L226">    private State state = State.BEFORE_TYPE_ID;</span>
+
+    /**
+     * The write index of the start of the current value.
+     */
+    private int valueStartWriteIndex;
+
+    /**
+     * The number of bytes available in the buffer if truncated to `valueStartWriteIndex`.
+     */
+    private int valueStartAvailable;
+
+    /**
+     * The read index of the type ID byte of the current value.
+     */
+    private int valuePreHeaderIndex;
+
+    /**
+     * The read index of the first byte of the value representation of the current value (past the type ID and the
+     * optional length field).
+     */
+    private int valuePostHeaderIndex;
+
+    /**
+     * The type ID byte of the current value.
+     */
+    private IonTypeID valueTid;
+
+    /**
+     * The index of the first byte after the end of the current value.
+     */
+    private int valueEndIndex;
+
+    /**
+     * The index of the first byte of the first no-op pad that precedes the current value. -1 indicates either that
+     * the current value was not preceded by no-op padding or that the space occupied by the no-op padding that preceded
+     * the current value has already been reclaimed.
+     */
+<span class="fc" id="L264">    private int nopPadStartIndex = -1;</span>
+
+    /**
+     * The index of the second byte of the IVM.
+     */
+<span class="fc" id="L269">    private int ivmSecondByteIndex = -1;</span>
+
+    /**
+     * The index of the next byte to peek from the buffer.
+     */
+<span class="fc" id="L274">    private int peekIndex = 0;</span>
+
+    /**
+     * True if the event handler has not yet been notified if the current value is oversized.
+     */
+<span class="fc" id="L279">    private boolean handlerNeedsToBeNotifiedOfOversizedValue = true;</span>
+
+    /**
+     * Resets the wrapper to the start of a new value.
+     */
+    private void reset() {
+<span class="fc" id="L285">        additionalBytesNeeded = 0;</span>
+<span class="fc" id="L286">        isSystemValue = false;</span>
+<span class="fc" id="L287">        isSymbolTableAnnotationFirst = false;</span>
+<span class="fc" id="L288">        numberOfAnnotationSidBytesRemaining = 0;</span>
+<span class="fc" id="L289">        currentNumberOfAnnotations = 0;</span>
+<span class="fc" id="L290">        valuePreHeaderIndex = -1;</span>
+<span class="fc" id="L291">        valuePostHeaderIndex = -1;</span>
+<span class="fc" id="L292">        valueTid = null;</span>
+<span class="fc" id="L293">        valueEndIndex = -1;</span>
+<span class="fc" id="L294">        annotationSids.clear();</span>
+<span class="fc" id="L295">        valueStartAvailable = pipe.available();</span>
+<span class="fc" id="L296">        startNewValue();</span>
+<span class="fc" id="L297">    }</span>
+
+    /**
+     * Constructs a wrapper with the given configuration.
+     * @param configuration the configuration for the new instance.
+     * @param inputStream an InputStream over binary Ion data.
+     */
+    public IonReaderLookaheadBuffer(final IonBufferConfiguration configuration, final InputStream inputStream) {
+<span class="fc" id="L305">        super(configuration, inputStream);</span>
+<span class="fc" id="L306">        pipe.registerNotificationConsumer(</span>
+<span class="fc" id="L307">            new ResizingPipedInputStream.NotificationConsumer() {</span>
+                @Override
+                public void bytesConsolidatedToStartOfBuffer(int leftShiftAmount) {
+                    // The existing data in the buffer has been shifted to the start. Adjust the saved indexes
+                    // accordingly. -1 indicates that all indices starting at 0 will be shifted.
+<span class="fc" id="L312">                    shiftIndicesLeft(-1, leftShiftAmount);</span>
+<span class="fc" id="L313">                }</span>
+            }
+        );
+<span class="fc" id="L316">        pageSize = configuration.getInitialBufferSize();</span>
+<span class="fc" id="L317">        oversizedSymbolTableHandler = configuration.getOversizedSymbolTableHandler();</span>
+<span class="fc" id="L318">        inProgressVarUInt = new VarUInt();</span>
+<span class="fc" id="L319">        reset();</span>
+<span class="fc" id="L320">    }</span>
+
+    /**
+     * Resets the `inProgressVarUInt`.
+     * @param location the VarUInt's location.
+     */
+    private void initializeVarUInt(final VarUInt.Location location) {
+<span class="fc" id="L327">        inProgressVarUInt.reset(location);</span>
+<span class="fc" id="L328">        state = State.READING_HEADER;</span>
+<span class="fc" id="L329">    }</span>
+
+    /**
+     * Reads one byte, if possible.
+     * @return the byte, or -1 if none was available.
+     * @throws Exception if thrown by a handler method or if an IOException is thrown by the underlying InputStream.
+     */
+    private int readByte() throws Exception {
+<span class="fc bfc" id="L337" title="All 4 branches covered.">        if (pipe.availableBeyondBoundary() == 0 &amp;&amp; fillPage(1) &lt; 1) {</span>
+<span class="fc" id="L338">            return -1;</span>
+        }
+        int b;
+<span class="fc bfc" id="L341" title="All 2 branches covered.">        if (isSkippingCurrentValue()) {</span>
+            // If the value is being skipped, the byte will not have been buffered.
+<span class="fc" id="L343">            b = getInput().read();</span>
+        } else {
+<span class="fc" id="L345">            b = pipe.peek(peekIndex);</span>
+<span class="fc" id="L346">            pipe.extendBoundary(1);</span>
+<span class="fc" id="L347">            peekIndex++;</span>
+        }
+<span class="fc" id="L349">        return b;</span>
+    }
+
+    /**
+     * Reads a VarUInt. NOTE: the VarUInt must fit in a `long`. This is not a true limitation, as IonJava requires
+     * VarUInts to fit in an `int`.
+     * @throws Exception if thrown by a handler method or if an IOException is thrown by the underlying InputStream.
+     */
+    private void readVarUInt() throws Exception {
+        int currentByte;
+<span class="fc bfc" id="L359" title="All 2 branches covered.">        while (inProgressVarUInt.numberOfBytesRead &lt; MAXIMUM_SUPPORTED_VAR_UINT_BYTES) {</span>
+<span class="fc" id="L360">            currentByte = readByte();</span>
+<span class="fc bfc" id="L361" title="All 2 branches covered.">            if (currentByte &lt; 0) {</span>
+<span class="fc" id="L362">                return;</span>
+            }
+<span class="fc" id="L364">            inProgressVarUInt.numberOfBytesRead++;</span>
+<span class="fc" id="L365">            inProgressVarUInt.value =</span>
+<span class="fc" id="L366">                    (inProgressVarUInt.value &lt;&lt; VALUE_BITS_PER_VARUINT_BYTE) | (currentByte &amp; LOWER_SEVEN_BITS_BITMASK);</span>
+<span class="fc bfc" id="L367" title="All 2 branches covered.">            if ((currentByte &amp; HIGHEST_BIT_BITMASK) != 0) {</span>
+<span class="fc" id="L368">                inProgressVarUInt.isComplete = true;</span>
+<span class="fc" id="L369">                dataHandler.onData(inProgressVarUInt.numberOfBytesRead);</span>
+<span class="fc" id="L370">                return;</span>
+            }
+        }
+<span class="fc" id="L373">        throw new IonException(&quot;Found a VarUInt that was too large to fit in a `long`&quot;);</span>
+    }
+
+    /**
+     * Sets `additionalBytesNeeded` if and only if the value is not within an annotation wrapper. When the
+     * value is contained in an annotation wrapper, `additionalBytesNeeded` was set when reading the annotation
+     * wrapper's length and already includes the value's length.
+     * @param value the new value of `additionalBytesNeeded`.
+     * @param isUnannotated true if this type ID is not on a value within an annotation wrapper; false if it is.
+     */
+    private void setAdditionalBytesNeeded(final long value, final boolean isUnannotated) {
+<span class="fc bfc" id="L384" title="All 2 branches covered.">        if (isUnannotated) {</span>
+<span class="fc" id="L385">            additionalBytesNeeded = value;</span>
+        }
+<span class="fc" id="L387">    }</span>
+
+    /**
+     * Conveys the result of {@link #readTypeID(boolean)}.
+     */
+<span class="fc" id="L392">    private enum ReadTypeIdResult {</span>
+        /**
+         * The type ID is for a struct value.
+         */
+<span class="fc" id="L396">        STRUCT,</span>
+        /**
+         * The type ID is not for a struct value.
+         */
+<span class="fc" id="L400">        NOT_STRUCT,</span>
+        /**
+         * The type ID could not be read because there is no data available. `readTypeID` should be called
+         * again when more data is available.
+         */
+<span class="fc" id="L405">        NO_DATA</span>
+    }
+
+    /**
+     * Reads the type ID byte.
+     * @param isUnannotated true if this type ID is not on a value within an annotation wrapper; false if it is.
+     * @return the result as a {@link ReadTypeIdResult}.
+     * @throws Exception if thrown by a handler method or if an IOException is thrown by the underlying InputStream.
+     */
+    private ReadTypeIdResult readTypeID(final boolean isUnannotated) throws Exception {
+<span class="fc" id="L415">        int header = readByte();</span>
+<span class="fc bfc" id="L416" title="All 2 branches covered.">        if (header &lt; 0) {</span>
+<span class="fc" id="L417">            return ReadTypeIdResult.NO_DATA;</span>
+        }
+<span class="fc" id="L419">        valueTid = IonTypeID.TYPE_IDS[header];</span>
+<span class="fc" id="L420">        dataHandler.onData(1);</span>
+<span class="fc bfc" id="L421" title="All 2 branches covered.">        if (header == IVM_START_BYTE) {</span>
+<span class="fc bfc" id="L422" title="All 2 branches covered.">            if (!isUnannotated) {</span>
+<span class="fc" id="L423">                throw new IonException(&quot;Invalid annotation header.&quot;);</span>
+            }
+<span class="fc" id="L425">            additionalBytesNeeded = IVM_REMAINING_LENGTH;</span>
+<span class="fc" id="L426">            isSystemValue = true;</span>
+            // Encountering an IVM resets the symbol table context; no need to parse any previous symbol tables.
+<span class="fc" id="L428">            resetSymbolTableMarkers();</span>
+<span class="fc" id="L429">            ivmSecondByteIndex = peekIndex;</span>
+<span class="fc" id="L430">            state = State.SKIPPING_VALUE;</span>
+<span class="fc bfc" id="L431" title="All 2 branches covered.">        } else if (!valueTid.isValid) {</span>
+<span class="fc" id="L432">            throw new IonException(&quot;Invalid type ID.&quot;);</span>
+<span class="fc bfc" id="L433" title="All 2 branches covered.">        } else if (valueTid.type == IonType.BOOL) {</span>
+            // bool values are always a single byte.
+<span class="fc" id="L435">            state = State.BEFORE_TYPE_ID;</span>
+<span class="fc bfc" id="L436" title="All 2 branches covered.">        } else if (valueTid.type == IonTypeID.ION_TYPE_ANNOTATION_WRAPPER) {</span>
+            // Annotation.
+<span class="fc bfc" id="L438" title="All 2 branches covered.">            if (valueTid.variableLength) {</span>
+<span class="fc" id="L439">                initializeVarUInt(VarUInt.Location.ANNOTATION_WRAPPER_LENGTH);</span>
+            } else {
+<span class="fc" id="L441">                setAdditionalBytesNeeded(valueTid.length, isUnannotated);</span>
+<span class="fc" id="L442">                initializeVarUInt(VarUInt.Location.ANNOTATION_WRAPPER_SIDS_LENGTH);</span>
+            }
+        } else {
+<span class="fc bfc" id="L445" title="All 2 branches covered.">            if (valueTid.isNull) {</span>
+                // null values are always a single byte.
+<span class="fc" id="L447">                state = State.BEFORE_TYPE_ID;</span>
+            } else {
+                // Not null
+<span class="fc bfc" id="L450" title="All 2 branches covered.">                if (valueTid.variableLength) {</span>
+<span class="fc" id="L451">                    initializeVarUInt(VarUInt.Location.VALUE_LENGTH);</span>
+                } else {
+<span class="fc" id="L453">                    setAdditionalBytesNeeded(valueTid.length, isUnannotated);</span>
+<span class="fc" id="L454">                    state = State.SKIPPING_VALUE;</span>
+                }
+            }
+        }
+<span class="fc bfc" id="L458" title="All 2 branches covered.">        if (valueTid.type == IonType.STRUCT) {</span>
+<span class="fc" id="L459">            return ReadTypeIdResult.STRUCT;</span>
+        }
+<span class="fc" id="L461">        return ReadTypeIdResult.NOT_STRUCT;</span>
+    }
+
+    /**
+     * Reads the bytes of the value header that occur after the type ID byte and before the first value byte.
+     * @throws Exception if thrown by a handler method or if an IOException is thrown by the underlying InputStream.
+     */
+    private void readHeader() throws Exception {
+<span class="fc bfc" id="L469" title="All 2 branches covered.">        if (inProgressVarUInt.location == VarUInt.Location.VALUE_LENGTH) {</span>
+<span class="fc" id="L470">            readVarUInt();</span>
+<span class="fc bfc" id="L471" title="All 2 branches covered.">            if (inProgressVarUInt.isComplete) {</span>
+<span class="fc" id="L472">                additionalBytesNeeded = inProgressVarUInt.value;</span>
+<span class="fc" id="L473">                state = State.SKIPPING_VALUE;</span>
+            }
+<span class="fc" id="L475">            return;</span>
+        }
+<span class="fc bfc" id="L477" title="All 2 branches covered.">        if (inProgressVarUInt.location == VarUInt.Location.ANNOTATION_WRAPPER_LENGTH) {</span>
+<span class="fc" id="L478">            readVarUInt();</span>
+<span class="fc bfc" id="L479" title="All 2 branches covered.">            if (!inProgressVarUInt.isComplete) {</span>
+<span class="fc" id="L480">                return;</span>
+            }
+<span class="fc" id="L482">            additionalBytesNeeded = inProgressVarUInt.value;</span>
+<span class="fc" id="L483">            initializeVarUInt(VarUInt.Location.ANNOTATION_WRAPPER_SIDS_LENGTH);</span>
+        }
+<span class="fc bfc" id="L485" title="All 2 branches covered.">        if (inProgressVarUInt.location == VarUInt.Location.ANNOTATION_WRAPPER_SIDS_LENGTH) {</span>
+<span class="fc" id="L486">            readVarUInt();</span>
+<span class="fc bfc" id="L487" title="All 2 branches covered.">            if (!inProgressVarUInt.isComplete) {</span>
+<span class="fc" id="L488">                return;</span>
+            }
+<span class="fc" id="L490">            additionalBytesNeeded -= inProgressVarUInt.numberOfBytesRead;</span>
+<span class="fc" id="L491">            numberOfAnnotationSidBytesRemaining = inProgressVarUInt.value;</span>
+<span class="fc" id="L492">            initializeVarUInt(VarUInt.Location.ANNOTATION_WRAPPER_SID);</span>
+        }
+<span class="pc bpc" id="L494" title="1 of 2 branches missed.">        if (inProgressVarUInt.location == VarUInt.Location.ANNOTATION_WRAPPER_SID) {</span>
+            while (true) {
+<span class="fc" id="L496">                readVarUInt();</span>
+<span class="fc bfc" id="L497" title="All 2 branches covered.">                if (inProgressVarUInt.isComplete) {</span>
+<span class="fc" id="L498">                    currentNumberOfAnnotations++;</span>
+<span class="fc bfc" id="L499" title="All 4 branches covered.">                    if (currentNumberOfAnnotations == 1 &amp;&amp; inProgressVarUInt.value == ION_SYMBOL_TABLE_SID) {</span>
+<span class="fc" id="L500">                        isSymbolTableAnnotationFirst = true;</span>
+                    }
+<span class="fc" id="L502">                    annotationSids.add((int) inProgressVarUInt.value);</span>
+<span class="fc" id="L503">                    numberOfAnnotationSidBytesRemaining -= inProgressVarUInt.numberOfBytesRead;</span>
+<span class="fc" id="L504">                    additionalBytesNeeded -= inProgressVarUInt.numberOfBytesRead;</span>
+<span class="fc bfc" id="L505" title="All 2 branches covered.">                    if (numberOfAnnotationSidBytesRemaining &lt;= 0) {</span>
+<span class="fc" id="L506">                        state = State.SKIPPING_VALUE;</span>
+                    } else {
+<span class="fc" id="L508">                        initializeVarUInt(VarUInt.Location.ANNOTATION_WRAPPER_SID);</span>
+<span class="fc" id="L509">                        continue;</span>
+                    }
+<span class="fc bfc" id="L511" title="All 2 branches covered.">                    if (isSymbolTableAnnotationFirst) {</span>
+<span class="fc" id="L512">                        state = State.READING_VALUE_WITH_SYMBOL_TABLE_ANNOTATION;</span>
+                    }
+                }
+                break;
+            }
+        }
+<span class="fc" id="L518">    }</span>
+
+    /**
+     * Shift all indices after 'afterIndex' left by the given amount. This is used when data is moved in the underlying
+     * buffer either due to buffer growth or NOP padding being reclaimed to make room for a value that would otherwise
+     * exceed the buffer's maximum size.
+     * @param afterIndex all indices after this index will be shifted (-1 indicates that all indices should be shifted).
+     * @param shiftAmount the amount to shift left.
+     */
+    private void shiftIndicesLeft(int afterIndex, int shiftAmount) {
+<span class="fc" id="L528">        peekIndex = Math.max(peekIndex - shiftAmount, 0);</span>
+<span class="fc" id="L529">        valuePreHeaderIndex -= shiftAmount;</span>
+<span class="fc" id="L530">        valuePostHeaderIndex -= shiftAmount;</span>
+<span class="fc bfc" id="L531" title="All 2 branches covered.">        for (SymbolTableMarker symbolTableMarker : symbolTableMarkers) {</span>
+<span class="fc bfc" id="L532" title="All 2 branches covered.">            if (symbolTableMarker.startIndex &gt; afterIndex) {</span>
+<span class="fc" id="L533">                symbolTableMarker.startIndex -= shiftAmount;</span>
+<span class="fc" id="L534">                symbolTableMarker.endIndex -= shiftAmount;</span>
+            }
+<span class="fc" id="L536">        }</span>
+<span class="fc bfc" id="L537" title="All 2 branches covered.">        if (ivmSecondByteIndex &gt; afterIndex) {</span>
+<span class="fc" id="L538">            ivmSecondByteIndex -= shiftAmount;</span>
+        }
+<span class="fc" id="L540">    }</span>
+
+    /**
+     * Reclaim the NOP padding that occurred before the current value, making space for the value in the buffer.
+     */
+    private void reclaimNopPadding() {
+<span class="fc" id="L546">        pipe.consolidate(valuePreHeaderIndex, nopPadStartIndex);</span>
+<span class="fc" id="L547">        shiftIndicesLeft(nopPadStartIndex, valuePreHeaderIndex - nopPadStartIndex);</span>
+<span class="fc" id="L548">        resetNopPadIndex();</span>
+<span class="fc" id="L549">    }</span>
+
+    /**
+     * Skip bytes from the underlying InputStream without ever buffering them.
+     * @param numberOfBytesToSkip the number of bytes to attempt to skip.
+     * @return the number of bytes actually skipped.
+     * @throws IOException if thrown by the underlying InputStream.
+     */
+    private int skipBytesFromInput(int numberOfBytesToSkip) throws IOException {
+        try {
+<span class="fc" id="L559">            return (int) getInput().skip(numberOfBytesToSkip);</span>
+<span class="nc" id="L560">        } catch (EOFException e) {</span>
+            // Certain InputStream implementations (e.g. GZIPInputStream) throw EOFException if more bytes are requested
+            // to skip than are currently available (e.g. if a header or trailer is incomplete).
+<span class="nc" id="L563">            return 0;</span>
+        }
+    }
+
+    /**
+     * Retrieve and buffer up to {@link #pageSize} bytes from the input.
+     * @param numberOfBytesRequested the minimum amount of space that must be available before the buffer reaches
+     *                               its configured maximum size.
+     * @return the number of bytes buffered by this operation.
+     * @throws Exception if thrown by the underlying InputStream.
+     */
+    private int fillPage(int numberOfBytesRequested) throws Exception {
+<span class="fc" id="L575">        int amountToFill = pipe.capacity() - pipe.size();</span>
+<span class="fc bfc" id="L576" title="All 2 branches covered.">        if (amountToFill &lt;= 0) {</span>
+            // Try to fill the remainder of the existing buffer to avoid growing unnecessarily. If there is no
+            // space, that indicates that a single value exceeds the size of a page. In that case, fill another page,
+            // growing the buffer only up to the configured maximum size.
+<span class="fc" id="L580">            int spaceAvailable = getMaximumBufferSize() - pipe.capacity();</span>
+<span class="fc bfc" id="L581" title="All 2 branches covered.">            if (numberOfBytesRequested &gt; spaceAvailable) {</span>
+<span class="pc bpc" id="L582" title="1 of 4 branches missed.">                if (nopPadStartIndex &gt; -1 &amp;&amp; valuePreHeaderIndex - nopPadStartIndex &gt;= numberOfBytesRequested) {</span>
+                    // Reclaim the NOP pad space if doing so would allow the value to fit.
+<span class="fc" id="L584">                    reclaimNopPadding();</span>
+                } else {
+<span class="fc" id="L586">                    startSkippingValue();</span>
+                }
+<span class="fc" id="L588">                amountToFill = numberOfBytesRequested;</span>
+            } else {
+<span class="fc" id="L590">                amountToFill = Math.min(pageSize, spaceAvailable);</span>
+            }
+        }
+        int received;
+<span class="fc bfc" id="L594" title="All 2 branches covered.">        if (isSkippingCurrentValue()) {</span>
+<span class="fc bfc" id="L595" title="All 2 branches covered.">            if (state == State.SKIPPING_VALUE) {</span>
+                // This is a seek operation, meaning that the bytes don't need to be interpreted.
+<span class="fc" id="L597">                received = skipBytesFromInput(amountToFill);</span>
+            } else {
+                // The bytes need to be interpreted, so they cannot be skipped. The caller must retrieve them from
+                // the input.
+<span class="fc" id="L601">                received = amountToFill;</span>
+            }
+        } else {
+<span class="fc" id="L604">            received = pipe.receive(getInput(), amountToFill);</span>
+        }
+<span class="fc" id="L606">        return received;</span>
+    }
+
+    /**
+     * Notifies the event handler that the current value is oversized, if the handler has not already been notified.
+     * @throws Exception if thrown by the handler.
+     */
+    private void notifyHandlerOfOversizedValue() throws Exception {
+<span class="fc bfc" id="L614" title="All 2 branches covered.">        if (handlerNeedsToBeNotifiedOfOversizedValue) {</span>
+<span class="fc bfc" id="L615" title="All 2 branches covered.">            if (isSystemValue) {</span>
+                // Processing cannot continue after system values (symbol tables) are truncated because subsequent
+                // values may be unreadable. Notify the user.
+<span class="fc" id="L618">                oversizedSymbolTableHandler.onOversizedSymbolTable();</span>
+            } else {
+                // An oversized user value has been encountered. Notify the user so they can decide whether to continue
+                // or abort.
+<span class="fc" id="L622">                oversizedValueHandler.onOversizedValue();</span>
+            }
+        }
+<span class="fc" id="L625">        handlerNeedsToBeNotifiedOfOversizedValue = false;</span>
+<span class="fc" id="L626">    }</span>
+
+    /**
+     * Attempt to retrieve at least `additionalBytesNeeded` bytes from the input and either buffer them (if the value
+     * is being consumed) or skip them (if the value is being skipped due to being oversize).
+     * @return the number of bytes filled or skipped.
+     * @throws Exception if thrown by the event handler.
+     */
+    private int fillOrSkip() throws Exception {
+        // Clamping at the number of buffered bytes available guarantees that the buffer
+        // will never grow beyond its initial size.
+<span class="fc" id="L637">        int bytesRequested = (int) additionalBytesNeeded - pipe.availableBeyondBoundary();</span>
+        int bytesFilled;
+<span class="fc bfc" id="L639" title="All 2 branches covered.">        if (isSkippingCurrentValue()) {</span>
+<span class="fc" id="L640">            bytesFilled = skipBytesFromInput(bytesRequested);</span>
+        } else {
+<span class="fc" id="L642">            bytesFilled = fillPage(bytesRequested);</span>
+        }
+<span class="fc bfc" id="L644" title="All 2 branches covered.">        if (bytesFilled &lt; 1) {</span>
+<span class="fc" id="L645">            return 0;</span>
+        }
+<span class="fc bfc" id="L647" title="All 2 branches covered.">        if (isSkippingCurrentValue()) {</span>
+            // The user cannot be notified of a size violation until it has been determined whether
+            // the value is a symbol table or user value, which is only true in the SKIPPING_VALUE
+            // state.
+<span class="fc" id="L651">            notifyHandlerOfOversizedValue();</span>
+            // Skip all of the bytes skipped from the InputStream as well as all bytes previously
+            // buffered.
+<span class="fc" id="L654">            bytesFilled = bytesFilled + ((int) additionalBytesNeeded - bytesRequested);</span>
+        } else {
+<span class="fc" id="L656">            bytesFilled = (int) Math.min(additionalBytesNeeded, bytesFilled);</span>
+<span class="fc" id="L657">            pipe.extendBoundary(bytesFilled);</span>
+<span class="fc" id="L658">            peekIndex += bytesFilled;</span>
+        }
+<span class="fc" id="L660">        return bytesFilled;</span>
+    }
+
+    /*
+     * The state transitions of the fillInput() method are summarized by the following diagram.
+     *
+     *                                 fillInput()
+     *                                       |
+     *                                       |   +----------------------------------------------------+
+     *                                       |   |                                                    |
+     *       Read first byte of IVM +--------v---v-+                                                  |
+     *   +--------------------------+BEFORE_TYPE_ID&lt;--+                                               |
+     *   |   Or length was inferred |              +--+1-byte value(null or bool) read                |
+     *   |    from the type ID    +&gt;+------+-------+                                                  |
+     *   |                        |        |                                                          |
+     *   |                        |        |No bytes available                                        |
+     *   |           1-byte value |        v                                                          |
+     *   |                        | +----------------+                                                |
+     *   |                        +-+READING_TYPE_ID &lt;-+                                              |
+     *   |                          |                +-+No bytes available                            |
+     *   |                          +------+---------+                                                |
+     *   |                                 |Read type-id of multi-byte value                          |
+     *   |                                 v                                                          |
+     *   |      Finished header     +----------------+                                                |
+     *   | +------------------------+READING_HEADER  &lt;--+                                             |
+     *   | |                        |                +--+Not enough bytes to complete header          |
+     *   | |                        +------+---------+                                                |
+     *   | |                               |Read annotation wrapper with symbol table annotation      |
+     *   | |                               v                                                          |
+     *   | |             +---------------------------------------------+                              |
+     *   | |             |READING_VALUE_WITH_SYMBOL_TABLE_ANNOTATION   &lt;--+                           |
+     *   | |             |                                             +--+No bytes available         |
+     *   | |             +--+--------------+---------------------------+                              |
+     *   | |                |              |The wrapped value is a struct                             |
+     *   | | The wrapped    |              v                                                          |
+     *   | |  value is not  |  +-----------------------------+                                        |
+     *   | |   a struct     |  | READING_SYMBOL_TABLE_LENGTH &lt;--+                                     |
+     *   | |                |  |                             +--+Not enough bytes to complete length  |
+     *   | |                |  +-----------+-----------------+                                        |
+     *   | |                |              |Read length                                               |
+     *   | |                |              v                                                          |
+     *   | |                |      +-----------------+                                                |
+     *   | +---------------&gt;+-----&gt;| SKIPPING_VALUE  &lt;--+                                             |
+     *   |                         |                 +--+More bytes needed to complete skip           |
+     *   +------------------------&gt;+-------+---------+                                                |
+     *                                     |                                                          |
+     *                                     |All bytes skipped                                         |
+     *                                     |                                                          |
+     *                                     +----------------------------------------------------------+
+     */
+    @Override
+    protected void fillInputHelper() throws Exception {
+        while (true) {
+<span class="fc bfc" id="L713" title="All 4 branches covered.">            if (state == State.BEFORE_TYPE_ID || state == State.READING_TYPE_ID) {</span>
+<span class="fc" id="L714">                reset();</span>
+<span class="fc" id="L715">                state = State.READING_TYPE_ID;</span>
+<span class="fc bfc" id="L716" title="All 2 branches covered.">                if (readTypeID(true) != ReadTypeIdResult.NO_DATA) {</span>
+                    // The previous line transfers at most one byte, so the pre-header index is the write index minus
+                    // one.
+<span class="fc" id="L719">                    valuePostHeaderIndex = peekIndex;</span>
+<span class="fc" id="L720">                    valuePreHeaderIndex = valuePostHeaderIndex - 1;</span>
+<span class="fc" id="L721">                    valueStartWriteIndex = valuePreHeaderIndex;</span>
+                }
+            }
+<span class="fc bfc" id="L724" title="All 2 branches covered.">            if (state == State.READING_HEADER) {</span>
+<span class="fc" id="L725">                readHeader();</span>
+<span class="fc bfc" id="L726" title="All 2 branches covered.">                if (!inProgressVarUInt.isComplete) {</span>
+<span class="fc" id="L727">                    return;</span>
+                }
+<span class="fc" id="L729">                valuePostHeaderIndex = peekIndex;</span>
+            }
+<span class="fc bfc" id="L731" title="All 2 branches covered.">            if (state == State.READING_VALUE_WITH_SYMBOL_TABLE_ANNOTATION) {</span>
+<span class="fc" id="L732">                ReadTypeIdResult result = readTypeID(false);</span>
+<span class="fc bfc" id="L733" title="All 2 branches covered.">                if (result == ReadTypeIdResult.NO_DATA) {</span>
+<span class="fc" id="L734">                    return;</span>
+                }
+                // When successful, readTypeID reads exactly one byte.
+<span class="fc" id="L737">                additionalBytesNeeded--;</span>
+<span class="fc bfc" id="L738" title="All 2 branches covered.">                if (result == ReadTypeIdResult.STRUCT) {</span>
+<span class="fc" id="L739">                    state = State.READING_SYMBOL_TABLE_LENGTH;</span>
+                } else {
+<span class="fc" id="L741">                    state = State.SKIPPING_VALUE;</span>
+                }
+            }
+<span class="fc bfc" id="L744" title="All 2 branches covered.">            if (state == State.READING_SYMBOL_TABLE_LENGTH) {</span>
+<span class="fc" id="L745">                isSystemValue = true;</span>
+<span class="fc bfc" id="L746" title="All 2 branches covered.">                if (inProgressVarUInt.location == VarUInt.Location.VALUE_LENGTH) {</span>
+<span class="fc" id="L747">                    readVarUInt();</span>
+<span class="fc bfc" id="L748" title="All 2 branches covered.">                    if (!inProgressVarUInt.isComplete) {</span>
+<span class="fc" id="L749">                        return;</span>
+                    }
+<span class="fc" id="L751">                    additionalBytesNeeded = inProgressVarUInt.value;</span>
+                }
+<span class="fc" id="L753">                symbolTableMarkers.add(new SymbolTableMarker(peekIndex, (int) additionalBytesNeeded));</span>
+<span class="fc" id="L754">                state = State.SKIPPING_VALUE;</span>
+            }
+<span class="fc bfc" id="L756" title="All 2 branches covered.">            if (state == State.SKIPPING_VALUE) {</span>
+<span class="fc bfc" id="L757" title="All 2 branches covered.">                if (valueTid.isNopPad) {</span>
+<span class="fc bfc" id="L758" title="All 2 branches covered.">                    if (pipe.availableBeyondBoundary() &lt;= additionalBytesNeeded) {</span>
+                        // There cannot be any meaningful data beyond the NOP pad, so the buffer can be truncated
+                        // immediately and the rest of the NOP pad skipped.
+<span class="fc" id="L761">                        additionalBytesNeeded -= pipe.availableBeyondBoundary();</span>
+<span class="fc" id="L762">                        startSkippingValue();</span>
+                        // NOP padding will not be buffered, so it is never considered oversized.
+<span class="fc" id="L764">                        handlerNeedsToBeNotifiedOfOversizedValue = false;</span>
+                    }
+                    // Else, the rest of the NOP pad is already buffered, and there is a value at least partially
+                    // buffered beyond it. The NOP pad will only be deleted from the buffer if the next value is
+                    // large enough that it doesn't fit within the buffer's configured maximum size.
+                }
+<span class="fc bfc" id="L770" title="All 2 branches covered.">                while (additionalBytesNeeded &gt; 0) {</span>
+                    int numberOfBytesToRead;
+<span class="fc bfc" id="L772" title="All 2 branches covered.">                    if (pipe.availableBeyondBoundary() &gt;= additionalBytesNeeded) {</span>
+<span class="fc" id="L773">                        numberOfBytesToRead = (int) additionalBytesNeeded;</span>
+<span class="fc" id="L774">                        pipe.extendBoundary(numberOfBytesToRead);</span>
+<span class="fc" id="L775">                        peekIndex += numberOfBytesToRead;</span>
+                    } else {
+<span class="fc" id="L777">                        numberOfBytesToRead = fillOrSkip();</span>
+<span class="fc bfc" id="L778" title="All 2 branches covered.">                        if (numberOfBytesToRead &lt; 1) {</span>
+<span class="fc" id="L779">                            return;</span>
+                        }
+                    }
+<span class="fc" id="L782">                    dataHandler.onData(numberOfBytesToRead);</span>
+<span class="fc" id="L783">                    additionalBytesNeeded -= numberOfBytesToRead;</span>
+<span class="fc" id="L784">                }</span>
+<span class="fc" id="L785">                state = State.BEFORE_TYPE_ID;</span>
+            }
+<span class="fc bfc" id="L787" title="All 2 branches covered.">            if (state == State.BEFORE_TYPE_ID) {</span>
+<span class="fc" id="L788">                valueEndIndex = peekIndex;</span>
+<span class="fc bfc" id="L789" title="All 6 branches covered.">                if (isSystemValue || isSkippingCurrentValue() || valueTid.isNopPad) {</span>
+<span class="fc bfc" id="L790" title="All 4 branches covered.">                    if (valueTid.isNopPad &amp;&amp; nopPadStartIndex &lt; 0) {</span>
+                        // This is the first NOP before the next value. Mark the start index in case the space needs to
+                        // be reclaimed later.
+<span class="fc" id="L793">                        nopPadStartIndex = valuePreHeaderIndex;</span>
+                    }
+<span class="fc bfc" id="L795" title="All 4 branches covered.">                    if (isSystemValue &amp;&amp; isSkippingCurrentValue()) {</span>
+                        // The symbol table(s) currently buffered exceed the maximum buffer size. This is not
+                        // recoverable; future invocations of fillInput() will do nothing.
+<span class="fc" id="L798">                        reset();</span>
+<span class="fc" id="L799">                        state = State.DONE;</span>
+                    } else {
+<span class="fc bfc" id="L801" title="All 4 branches covered.">                        if (isSystemValue &amp;&amp; nopPadStartIndex &gt; -1) {</span>
+                            // Reclaim any NOP pad space that precedes system values. This will usually not be strictly
+                            // necessary, but it simplifies the implementation and will be rare in practice. Without
+                            // this simplification, we would need to keep track of a list of NOP pad start/end indexes
+                            // as we do with the symbol table markers. This way, we know that there can only be one
+                            // uninterrupted run of NOP pad bytes immediately preceding any user value, making it easy
+                            // to reclaim this space if necessary.
+<span class="fc" id="L808">                            reclaimNopPadding();</span>
+                        }
+                        // Just skipped over system value or an oversized value. Consume the next value too so that a
+                        // call to reader.next() won't return null.
+                        continue;
+                    }
+                }
+            }
+            break;
+        }
+<span class="fc" id="L818">    }</span>
+
+    @Override
+    void truncateToEndOfPreviousValue() {
+<span class="fc" id="L822">        peekIndex = valueStartWriteIndex;</span>
+<span class="fc" id="L823">        pipe.truncate(valueStartWriteIndex, valueStartAvailable);</span>
+<span class="fc" id="L824">        handlerNeedsToBeNotifiedOfOversizedValue = true;</span>
+<span class="fc" id="L825">    }</span>
+
+    @Override
+    public boolean moreDataRequired() {
+<span class="fc bfc" id="L829" title="All 4 branches covered.">        return pipe.available() &lt;= 0 || state != State.BEFORE_TYPE_ID;</span>
+    }
+
+    /**
+     * Rewinds to the start of the value currently buffered. Does not include any system values that may precede
+     * the value. This method is not called in conjunction with {@link #mark()} / {@link #rewind()}, which may be
+     * used if the caller wants to rewind to the start of any system values that precede the current value. This
+     * method may be used to re-read the current value and may only be called after {@code IonReader.next()}
+     * has been called on the current value; otherwise, the data representing any system values that precede the
+     * current value would be lost.
+     *
+     * @throws IllegalStateException if there is no value currently buffered or if system value data would be lost
+     *   as a result of calling this method before {@code IonReader.next()} was called.
+     */
+    public void rewindToValueStart() {
+<span class="fc bfc" id="L844" title="All 2 branches covered.">        if (valuePreHeaderIndex &lt; 0) {</span>
+<span class="fc" id="L845">            throw new IllegalStateException(&quot;A value must be buffered before calling rewindToValueStart().&quot;);</span>
+        }
+<span class="fc" id="L847">        int availableAtValueStart = pipe.getBoundary() - valuePreHeaderIndex;</span>
+        // If rewinding would reduce the amount of data available, that indicates that system value data would be lost.
+<span class="fc bfc" id="L849" title="All 2 branches covered.">        if (availableAtValueStart &lt; available()) {</span>
+<span class="fc" id="L850">            throw new IllegalStateException(</span>
+                &quot;IonReader.next() must be called on the current value before calling rewindToValueStart().&quot;
+            );
+        }
+<span class="fc" id="L854">        pipe.rewind(valuePreHeaderIndex, availableAtValueStart);</span>
+<span class="fc" id="L855">        peekIndex = valuePreHeaderIndex;</span>
+<span class="fc" id="L856">    }</span>
+
+    /**
+     * @return the index of the second byte of the IVM.
+     */
+    int getIvmIndex() {
+<span class="fc" id="L862">        return ivmSecondByteIndex;</span>
+    }
+
+    /**
+     * Clears the IVM index. Should be called between user values.
+     */
+    void resetIvmIndex() {
+<span class="fc" id="L869">        ivmSecondByteIndex = -1;</span>
+<span class="fc" id="L870">    }</span>
+
+    /**
+     * Clears the NOP pad index. Should be called between user values.
+     */
+    void resetNopPadIndex() {
+<span class="fc" id="L876">        nopPadStartIndex = -1;</span>
+<span class="fc" id="L877">    }</span>
+
+    /**
+     * @return the index of the first byte of the value representation (past the type ID and the optional length field).
+     */
+    int getValueStart() {
+<span class="fc" id="L883">        return valuePostHeaderIndex;</span>
+    }
+
+    /**
+     * @return the type ID of the current value.
+     */
+    IonTypeID getValueTid() {
+<span class="fc" id="L890">        return valueTid;</span>
+    }
+
+    /**
+     * @return the index of the first byte after the end of the current value.
+     */
+    int getValueEnd() {
+<span class="fc" id="L897">        return valueEndIndex;</span>
+    }
+
+    /**
+     * @return markers for any symbol tables that occurred in the stream between the last value and the current value.
+     */
+    List&lt;SymbolTableMarker&gt; getSymbolTableMarkers() {
+<span class="fc" id="L904">        return symbolTableMarkers;</span>
+    }
+
+    /**
+     * Clears the symbol table markers.
+     */
+    void resetSymbolTableMarkers() {
+<span class="fc" id="L911">        symbolTableMarkers.clear();</span>
+<span class="fc" id="L912">    }</span>
+
+    /**
+     * @return the symbol IDs of any annotations on the current value.
+     */
+    List&lt;Integer&gt; getAnnotationSids() {
+<span class="fc" id="L918">        return annotationSids;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

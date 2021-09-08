@@ -289,11 +289,11 @@ import java.util.Iterator;
 <span class="fc bfc" id="L289" title="All 2 branches covered.">        if (_curr instanceof IonInt)  {</span>
 <span class="fc" id="L290">            return ((IonInt)_curr).intValue();</span>
         }
-<span class="pc bpc" id="L292" title="1 of 2 branches missed.">        if (_curr instanceof IonFloat)  {</span>
-<span class="nc" id="L293">            return (int)((IonFloat)_curr).doubleValue();</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">        if (_curr instanceof IonFloat)  {</span>
+<span class="fc" id="L293">            return (int)((IonFloat)_curr).doubleValue();</span>
         }
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">        if (_curr instanceof IonDecimal)  {</span>
-<span class="nc" id="L296">            return (int)((IonDecimal)_curr).doubleValue();</span>
+<span class="fc bfc" id="L295" title="All 2 branches covered.">        if (_curr instanceof IonDecimal)  {</span>
+<span class="fc" id="L296">            return (int)((IonDecimal)_curr).doubleValue();</span>
         }
 <span class="fc" id="L298">        throw new IllegalStateException(&quot;current value is not an ion int, float, or decimal&quot;);</span>
     }
@@ -303,8 +303,8 @@ import java.util.Iterator;
 <span class="fc bfc" id="L303" title="All 2 branches covered.">        if (_curr instanceof IonInt)  {</span>
 <span class="fc" id="L304">            return ((IonInt)_curr).longValue();</span>
         }
-<span class="pc bpc" id="L306" title="1 of 2 branches missed.">        if (_curr instanceof IonFloat)  {</span>
-<span class="nc" id="L307">            return (long)((IonFloat)_curr).doubleValue();</span>
+<span class="fc bfc" id="L306" title="All 2 branches covered.">        if (_curr instanceof IonFloat)  {</span>
+<span class="fc" id="L307">            return (long)((IonFloat)_curr).doubleValue();</span>
         }
 <span class="fc bfc" id="L309" title="All 2 branches covered.">        if (_curr instanceof IonDecimal)  {</span>
 <span class="fc" id="L310">            return (long)((IonDecimal)_curr).doubleValue();</span>

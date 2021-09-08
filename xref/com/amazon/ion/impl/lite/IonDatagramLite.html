@@ -1048,7 +1048,7 @@
 <a class="jxr_linenumber" name="L1040" href="#L1040">1040</a>                     }
 <a class="jxr_linenumber" name="L1041" href="#L1041">1041</a>                     <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L1042" href="#L1042">1042</a>                         <a name="IonSystem" href="../../../../../com/amazon/ion/IonSystem.html#IonSystem">IonSystem</a> sys = __iterator.get_datagram_system();
-<a class="jxr_linenumber" name="L1043" href="#L1043">1043</a>                         rep = _Private_Utils.symtabTree(<strong class="jxr_keyword">new</strong>_symbol_table);
+<a class="jxr_linenumber" name="L1043" href="#L1043">1043</a>                         rep = _Private_Utils.symtabTree(<strong class="jxr_keyword">new</strong>_symbol_table, sys);
 <a class="jxr_linenumber" name="L1044" href="#L1044">1044</a>                     }
 <a class="jxr_linenumber" name="L1045" href="#L1045">1045</a>                     assert(rep != <strong class="jxr_keyword">null</strong> &amp;&amp; __iterator.get_datagram_system() == rep.getSystem());
 <a class="jxr_linenumber" name="L1046" href="#L1046">1046</a> 
@@ -1155,7 +1155,7 @@
 <a class="jxr_linenumber" name="L1147" href="#L1147">1147</a>             <strong class="jxr_keyword">int</strong> count = 0;
 <a class="jxr_linenumber" name="L1148" href="#L1148">1148</a>             <strong class="jxr_keyword">while</strong> (curr.isLocalTable()) {
 <a class="jxr_linenumber" name="L1149" href="#L1149">1149</a>                 count++;
-<a class="jxr_linenumber" name="L1150" href="#L1150">1150</a>                 curr = _Private_Utils.symtabTree(curr).getSymbolTable();
+<a class="jxr_linenumber" name="L1150" href="#L1150">1150</a>                 curr = _Private_Utils.symtabTree(curr, sys).getSymbolTable();
 <a class="jxr_linenumber" name="L1151" href="#L1151">1151</a>             }
 <a class="jxr_linenumber" name="L1152" href="#L1152">1152</a>             <em class="jxr_comment">// we should terminate when the symbol tables symbol table is the system symbol table</em>
 <a class="jxr_linenumber" name="L1153" href="#L1153">1153</a>             assert(curr != <strong class="jxr_keyword">null</strong>);
@@ -1168,6 +1168,6 @@
 <a class="jxr_linenumber" name="L1160" href="#L1160">1160</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

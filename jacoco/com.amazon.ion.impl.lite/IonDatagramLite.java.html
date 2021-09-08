@@ -1040,7 +1040,7 @@ import java.util.NoSuchElementException;
                     }
                     else {
 <span class="fc" id="L1042">                        IonSystem sys = __iterator.get_datagram_system();</span>
-<span class="fc" id="L1043">                        rep = _Private_Utils.symtabTree(new_symbol_table);</span>
+<span class="fc" id="L1043">                        rep = _Private_Utils.symtabTree(new_symbol_table, sys);</span>
                     }
 <span class="pc bpc" id="L1045" title="3 of 6 branches missed.">                    assert(rep != null &amp;&amp; __iterator.get_datagram_system() == rep.getSystem());</span>
 
@@ -1147,7 +1147,7 @@ import java.util.NoSuchElementException;
 <span class="nc" id="L1147">            int count = 0;</span>
 <span class="nc bnc" id="L1148" title="All 2 branches missed.">            while (curr.isLocalTable()) {</span>
 <span class="nc" id="L1149">                count++;</span>
-<span class="nc" id="L1150">                curr = _Private_Utils.symtabTree(curr).getSymbolTable();</span>
+<span class="nc" id="L1150">                curr = _Private_Utils.symtabTree(curr, sys).getSymbolTable();</span>
             }
             // we should terminate when the symbol tables symbol table is the system symbol table
 <span class="nc bnc" id="L1153" title="All 4 branches missed.">            assert(curr != null);</span>

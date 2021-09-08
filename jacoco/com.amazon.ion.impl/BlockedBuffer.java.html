@@ -717,7 +717,7 @@ static final boolean test_with_no_version_checking = false;
     private void adjustOffsets(int lastidx, int addedBytes, int addedBlocks) {
         bbBlock b;
         // now we adjust the trailing offsets
-<span class="pc bpc" id="L720" title="3 of 4 branches missed.">        if (addedBytes != 0 || addedBlocks != 0) {</span>
+<span class="pc bpc" id="L720" title="1 of 4 branches missed.">        if (addedBytes != 0 || addedBlocks != 0) {</span>
 <span class="fc" id="L721">            this._next_block_position += addedBlocks;</span>
 <span class="fc bfc" id="L722" title="All 2 branches covered.">            for (int ii=lastidx + 1; ii &lt; this._next_block_position; ii++) {</span>
 <span class="fc" id="L723">                b = this._blocks.get(ii);</span>
@@ -743,7 +743,7 @@ static final boolean test_with_no_version_checking = false;
 <span class="pc bpc" id="L743" title="2 of 4 branches missed.">        assert (pos - curr._offset &lt;= curr._limit);</span>
 <span class="pc bpc" id="L744" title="2 of 4 branches missed.">        assert _validate();</span>
         // this is to simply eliminate a big edge case
-<span class="fc bfc" id="L746" title="All 4 branches covered.">        if (pos == 0 &amp;&amp; len == this._buf_limit) {</span>
+<span class="pc bpc" id="L746" title="1 of 4 branches missed.">        if (pos == 0 &amp;&amp; len == this._buf_limit) {</span>
 <span class="fc" id="L747">            this.clear(caller, version);</span>
 <span class="fc" id="L748">            notifyRemove(0, len);</span>
 <span class="fc" id="L749">            return null;</span>
@@ -1020,7 +1020,7 @@ static final boolean test_with_no_version_checking = false;
 <span class="nc" id="L1020">        _updatelist.remove(item);</span>
 <span class="nc" id="L1021">    }</span>
     public void notifyInsert(int pos, int len) {
-<span class="pc bpc" id="L1023" title="1 of 2 branches missed.">        if (len == 0) return;</span>
+<span class="fc bfc" id="L1023" title="All 2 branches covered.">        if (len == 0) return;</span>
 <span class="fc" id="L1024">        PositionMonitor pm = new PositionMonitor(pos);</span>
 <span class="fc" id="L1025">        SortedSet&lt;Monitor&gt; follows = _updatelist.tailSet(pm);</span>
 <span class="pc bpc" id="L1026" title="1 of 2 branches missed.">        for (Monitor m : follows) {</span>

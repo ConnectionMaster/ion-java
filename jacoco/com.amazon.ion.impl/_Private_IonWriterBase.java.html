@@ -44,10 +44,6 @@ import java.util.Date;
     static final String ERROR_FINISH_NOT_AT_TOP_LEVEL =
         &quot;IonWriter.finish() can only be called at top-level.&quot;;
 
-    private static final boolean _debug_on = false;
-
-
-
     /**
      * Returns the current depth of containers the writer is at.  This is
      * 0 if the writer is at top-level.
@@ -187,23 +183,23 @@ import java.util.Date;
     //
     public void writeBlob(byte[] value) throws IOException
     {
-<span class="fc bfc" id="L190" title="All 2 branches covered.">        if (value == null) {</span>
-<span class="fc" id="L191">            this.writeNull(IonType.BLOB);</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L187">            this.writeNull(IonType.BLOB);</span>
         }
         else {
-<span class="fc" id="L194">            this.writeBlob(value, 0, value.length);</span>
+<span class="fc" id="L190">            this.writeBlob(value, 0, value.length);</span>
         }
-<span class="fc" id="L196">        return;</span>
+<span class="fc" id="L192">        return;</span>
     }
     public void writeClob(byte[] value) throws IOException
     {
-<span class="fc bfc" id="L200" title="All 2 branches covered.">        if (value == null) {</span>
-<span class="fc" id="L201">            this.writeNull(IonType.CLOB);</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">        if (value == null) {</span>
+<span class="fc" id="L197">            this.writeNull(IonType.CLOB);</span>
         }
         else {
-<span class="fc" id="L204">            this.writeClob(value, 0, value.length);</span>
+<span class="fc" id="L200">            this.writeClob(value, 0, value.length);</span>
         }
-<span class="fc" id="L206">        return;</span>
+<span class="fc" id="L202">        return;</span>
     }
 
     abstract public void writeDecimal(BigDecimal value) throws IOException;
@@ -211,49 +207,49 @@ import java.util.Date;
 
     public void writeFloat(float value) throws IOException
     {
-<span class="nc" id="L214">        writeFloat((double)value);</span>
-<span class="nc" id="L215">    }</span>
+<span class="nc" id="L210">        writeFloat((double)value);</span>
+<span class="nc" id="L211">    }</span>
 
     public void writeNull() throws IOException
     {
-<span class="fc" id="L219">        writeNull(IonType.NULL);</span>
-<span class="fc" id="L220">    }</span>
+<span class="fc" id="L215">        writeNull(IonType.NULL);</span>
+<span class="fc" id="L216">    }</span>
 
     final void validateSymbolId(int sid) {
-<span class="fc bfc" id="L223" title="All 2 branches covered.">        if (sid &gt; getSymbolTable().getMaxId()) {</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        if (sid &gt; getSymbolTable().getMaxId()) {</span>
             // There is no slot for this symbol ID in the symbol table,
             // so an error would be raised on read. Fail early on write.
-<span class="fc" id="L226">            throw new UnknownSymbolException(sid);</span>
+<span class="fc" id="L222">            throw new UnknownSymbolException(sid);</span>
         }
-<span class="fc" id="L228">    }</span>
+<span class="fc" id="L224">    }</span>
 
     public final void writeSymbolToken(SymbolToken tok)
         throws IOException
     {
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (tok == null) {</span>
-<span class="nc" id="L234">            writeNull(IonType.SYMBOL);</span>
-<span class="nc" id="L235">            return;</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        if (tok == null) {</span>
+<span class="nc" id="L230">            writeNull(IonType.SYMBOL);</span>
+<span class="nc" id="L231">            return;</span>
         }
 
-<span class="fc" id="L238">        String text = tok.getText();</span>
-<span class="fc bfc" id="L239" title="All 2 branches covered.">        if (text != null)</span>
+<span class="fc" id="L234">        String text = tok.getText();</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">        if (text != null)</span>
         {
-<span class="fc" id="L241">            writeSymbol(text);</span>
+<span class="fc" id="L237">            writeSymbol(text);</span>
         }
         else
         {
-<span class="fc" id="L245">            int sid = tok.getSid();</span>
-<span class="fc" id="L246">            validateSymbolId(sid);</span>
-<span class="fc" id="L247">            writeSymbol(sid);</span>
+<span class="fc" id="L241">            int sid = tok.getSid();</span>
+<span class="fc" id="L242">            validateSymbolId(sid);</span>
+<span class="fc" id="L243">            writeSymbol(sid);</span>
         }
-<span class="fc" id="L249">    }</span>
+<span class="fc" id="L245">    }</span>
 
 
     public void writeTimestampUTC(Date value) throws IOException
     {
-<span class="nc" id="L254">        Timestamp time = Timestamp.forDateZ(value);</span>
-<span class="nc" id="L255">        writeTimestamp(time);</span>
-<span class="nc" id="L256">    }</span>
+<span class="nc" id="L250">        Timestamp time = Timestamp.forDateZ(value);</span>
+<span class="nc" id="L251">        writeTimestamp(time);</span>
+<span class="nc" id="L252">    }</span>
 
 
 
@@ -266,53 +262,53 @@ import java.util.Date;
     @Deprecated
     public void writeValue(IonValue value) throws IOException
     {
-<span class="fc bfc" id="L269" title="All 2 branches covered.">        if (value != null)</span>
+<span class="fc bfc" id="L265" title="All 2 branches covered.">        if (value != null)</span>
         {
-<span class="fc" id="L271">            value.writeTo(this);</span>
+<span class="fc" id="L267">            value.writeTo(this);</span>
         }
-<span class="fc" id="L273">    }</span>
+<span class="fc" id="L269">    }</span>
 
     public void writeValues(IonReader reader) throws IOException
     {
-<span class="pc bpc" id="L277" title="1 of 2 branches missed.">        if (reader.getDepth() == 0) {</span>
-<span class="fc" id="L278">            clear_system_value_stack();</span>
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        if (reader.getDepth() == 0) {</span>
+<span class="fc" id="L274">            clear_system_value_stack();</span>
         }
 
-<span class="fc bfc" id="L281" title="All 2 branches covered.">        if (reader.getType() == null) reader.next();</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">        if (reader.getType() == null) reader.next();</span>
 
-<span class="fc bfc" id="L283" title="All 4 branches covered.">        if (getDepth() == 0 &amp;&amp; reader instanceof _Private_ReaderWriter) {</span>
+<span class="fc bfc" id="L279" title="All 4 branches covered.">        if (getDepth() == 0 &amp;&amp; reader instanceof _Private_ReaderWriter) {</span>
             // Optimize symbol table copying
-<span class="fc" id="L285">            _Private_ReaderWriter private_reader =</span>
+<span class="fc" id="L281">            _Private_ReaderWriter private_reader =</span>
                 (_Private_ReaderWriter)reader;
-<span class="fc bfc" id="L287" title="All 2 branches covered.">            while (reader.getType() != null) {</span>
-<span class="fc" id="L288">                transfer_symbol_tables(private_reader);</span>
-<span class="fc" id="L289">                writeValue(reader);</span>
-<span class="fc" id="L290">                reader.next();</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">            while (reader.getType() != null) {</span>
+<span class="fc" id="L284">                transfer_symbol_tables(private_reader);</span>
+<span class="fc" id="L285">                writeValue(reader);</span>
+<span class="fc" id="L286">                reader.next();</span>
             }
-<span class="fc" id="L292">        }</span>
+<span class="fc" id="L288">        }</span>
         else {
-<span class="fc bfc" id="L294" title="All 2 branches covered.">            while (reader.getType() != null) {</span>
-<span class="fc" id="L295">                writeValue(reader);</span>
-<span class="fc" id="L296">                reader.next();</span>
+<span class="fc bfc" id="L290" title="All 2 branches covered.">            while (reader.getType() != null) {</span>
+<span class="fc" id="L291">                writeValue(reader);</span>
+<span class="fc" id="L292">                reader.next();</span>
             }
         }
-<span class="fc" id="L299">    }</span>
+<span class="fc" id="L295">    }</span>
 
     private final void transfer_symbol_tables(_Private_ReaderWriter reader)
         throws IOException
     {
-<span class="fc" id="L304">        SymbolTable reader_symbols = reader.pop_passed_symbol_table();</span>
-<span class="fc bfc" id="L305" title="All 2 branches covered.">        if (reader_symbols != null) {</span>
-<span class="fc" id="L306">            clear_system_value_stack();</span>
-<span class="fc" id="L307">            setSymbolTable(reader_symbols);</span>
-<span class="fc bfc" id="L308" title="All 2 branches covered.">            while (reader_symbols != null) {</span>
+<span class="fc" id="L300">        SymbolTable reader_symbols = reader.pop_passed_symbol_table();</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">        if (reader_symbols != null) {</span>
+<span class="fc" id="L302">            clear_system_value_stack();</span>
+<span class="fc" id="L303">            setSymbolTable(reader_symbols);</span>
+<span class="fc bfc" id="L304" title="All 2 branches covered.">            while (reader_symbols != null) {</span>
                 // TODO these symtabs are never popped!
                 // Why bother pushing them?
-<span class="fc" id="L311">                push_symbol_table(reader_symbols);</span>
-<span class="fc" id="L312">                reader_symbols = reader.pop_passed_symbol_table();</span>
+<span class="fc" id="L307">                push_symbol_table(reader_symbols);</span>
+<span class="fc" id="L308">                reader_symbols = reader.pop_passed_symbol_table();</span>
             }
         }
-<span class="fc" id="L315">    }</span>
+<span class="fc" id="L311">    }</span>
 
     /**
      * @throws UnknownSymbolException if the text of the field name is
@@ -320,33 +316,31 @@ import java.util.Date;
      */
     private final void write_value_field_name_helper(IonReader reader)
     {
-<span class="fc bfc" id="L323" title="All 4 branches covered.">        if (this.isInStruct() &amp;&amp; !isFieldNameSet())</span>
+<span class="fc bfc" id="L319" title="All 4 branches covered.">        if (this.isInStruct() &amp;&amp; !isFieldNameSet())</span>
         {
-<span class="fc" id="L325">            SymbolToken tok = reader.getFieldNameSymbol();</span>
-<span class="fc bfc" id="L326" title="All 2 branches covered.">            if (tok == null)</span>
+<span class="fc" id="L321">            SymbolToken tok = reader.getFieldNameSymbol();</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">            if (tok == null)</span>
             {
-<span class="fc" id="L328">                throw new IllegalStateException(&quot;Field name not set&quot;);</span>
+<span class="fc" id="L324">                throw new IllegalStateException(&quot;Field name not set&quot;);</span>
             }
 
-<span class="fc" id="L331">            setFieldNameSymbol(tok);</span>
-            if (_debug_on) System.out.print(&quot;:&quot;);
+<span class="fc" id="L327">            setFieldNameSymbol(tok);</span>
         }
-<span class="fc" id="L334">    }</span>
+<span class="fc" id="L329">    }</span>
 
     private final void write_value_annotations_helper(IonReader reader)
     {
-<span class="fc" id="L338">        SymbolToken[] a = reader.getTypeAnnotationSymbols();</span>
+<span class="fc" id="L333">        SymbolToken[] a = reader.getTypeAnnotationSymbols();</span>
         // At present, we must always call this, even when the list is empty,
         // because local symtab diversion leaves the $ion_symbol_table
         // dangling on the system writer!  TODO fix that, it's broken.
-<span class="fc" id="L342">        setTypeAnnotationSymbols(a);</span>
-        if (_debug_on) System.out.print(&quot;;&quot;);
-<span class="fc" id="L344">    }</span>
+<span class="fc" id="L337">        setTypeAnnotationSymbols(a);</span>
+<span class="fc" id="L338">    }</span>
 
 
     public boolean isStreamCopyOptimized()
     {
-<span class="nc" id="L349">        return false;</span>
+<span class="nc" id="L343">        return false;</span>
     }
 
     /**
@@ -355,100 +349,125 @@ import java.util.Date;
     public void writeValue(IonReader reader) throws IOException
     {
         // TODO this should do symtab optimization as per writeValues()
-<span class="fc" id="L358">        IonType type = reader.getType();</span>
-<span class="fc" id="L359">        writeValueRecursively(type, reader);</span>
-<span class="fc" id="L360">    }</span>
+<span class="fc" id="L352">        writeValueRecursively(reader);</span>
+<span class="fc" id="L353">    }</span>
 
     /**
-     * Unoptimized copy. This must not recurse back to the public
-     * {@link #writeValue(IonReader)} method since that will cause the
-     * optimization test to happen repeatedly.
+     * Writes the provided IonReader's current value including any annotations. This function will not advance the
+     * IonReader beyond the end of the current value; users wishing to continue using the IonReader at the current
+     * depth will need to call {@link IonReader#next()} again.
+     *
+     * - If the IonReader is not positioned over a value (for example: because it is at the beginning or end of a
+     *   stream), then this function does nothing.
+     * - If the current value is a container, this function will visit all of its child values and write those too,
+     *   advancing the IonReader to the end of the container in the process.
+     * - If both this writer and the IonReader are in a struct, the writer will write the current value's field name.
+     * - If the writer is not in a struct but the reader is, the writer will ignore the current value's field name.
+     * - If the writer is in a struct but the IonReader is not, this function throws an IllegalStateException.
+     *
+     * @param reader       The IonReader that will provide a value to write.
+     * @throws IOException if either the provided IonReader or this writer's underlying OutputStream throw an
+     *                     IOException.
+     * @throws IllegalStateException if this writer is inside a struct but the IonReader is not.
      */
-    final void writeValueRecursively(IonType type, IonReader reader)
-        throws IOException
+    final void writeValueRecursively(IonReader reader) throws IOException
     {
-<span class="fc" id="L370">        write_value_field_name_helper(reader);</span>
-<span class="fc" id="L371">        write_value_annotations_helper(reader);</span>
+        // The IonReader does not need to be at the top level (getDepth()==0) when the function is called.
+        // We take note of its initial depth so we can avoid advancing the IonReader beyond the starting value.
+<span class="fc" id="L377">        int startingDepth = getDepth();</span>
 
-<span class="fc bfc" id="L373" title="All 2 branches covered.">        if (reader.isNullValue()) {</span>
-<span class="fc" id="L374">            this.writeNull(type);</span>
-        }
-        else {
-<span class="pc bpc" id="L377" title="2 of 14 branches missed.">            switch (type) {</span>
-            case NULL:
-<span class="nc" id="L379">                writeNull();</span>
-                if (_debug_on) System.out.print(&quot;-&quot;);
-<span class="nc" id="L381">                break;</span>
-            case BOOL:
-<span class="fc" id="L383">                writeBool(reader.booleanValue());</span>
-                if (_debug_on) System.out.print(&quot;b&quot;);
-<span class="fc" id="L385">                break;</span>
-            case INT:
-<span class="fc" id="L387">                writeInt(reader.bigIntegerValue());</span>
-                if (_debug_on) System.out.print(&quot;i&quot;);
-<span class="fc" id="L389">                break;</span>
-            case FLOAT:
-<span class="fc" id="L391">                writeFloat(reader.doubleValue());</span>
-                if (_debug_on) System.out.print(&quot;f&quot;);
-<span class="fc" id="L393">                break;</span>
-            case DECIMAL:
-<span class="fc" id="L395">                writeDecimal(reader.decimalValue());</span>
-                if (_debug_on) System.out.print(&quot;d&quot;);
-<span class="fc" id="L397">                break;</span>
-            case TIMESTAMP:
-<span class="fc" id="L399">                writeTimestamp(reader.timestampValue());</span>
-                if (_debug_on) System.out.print(&quot;t&quot;);
-<span class="fc" id="L401">                break;</span>
-            case STRING:
-<span class="fc" id="L403">                writeString(reader.stringValue());</span>
-                if (_debug_on) System.out.print(&quot;$&quot;);
-<span class="fc" id="L405">                break;</span>
-            case SYMBOL:
-<span class="fc" id="L407">                writeSymbolToken(reader.symbolValue());</span>
-                if (_debug_on) System.out.print(&quot;y&quot;);
-<span class="fc" id="L409">                break;</span>
-            case BLOB:
-<span class="fc" id="L411">                writeBlob(reader.newBytes());</span>
-                if (_debug_on) System.out.print(&quot;B&quot;);
-<span class="fc" id="L413">                break;</span>
-            case CLOB:
-<span class="fc" id="L415">                writeClob(reader.newBytes());</span>
-                if (_debug_on) System.out.print(&quot;L&quot;);
-<span class="fc" id="L417">                break;</span>
-            case STRUCT:
-                if (_debug_on) System.out.print(&quot;{&quot;);
-<span class="fc" id="L420">                writeContainerRecursively(IonType.STRUCT, reader);</span>
-                if (_debug_on) System.out.print(&quot;}&quot;);
-<span class="fc" id="L422">                break;</span>
-            case LIST:
-                if (_debug_on) System.out.print(&quot;[&quot;);
-<span class="fc" id="L425">                writeContainerRecursively(IonType.LIST, reader);</span>
-                if (_debug_on) System.out.print(&quot;]&quot;);
-<span class="fc" id="L427">                break;</span>
-            case SEXP:
-                if (_debug_on) System.out.print(&quot;(&quot;);
-<span class="fc" id="L430">                writeContainerRecursively(IonType.SEXP, reader);</span>
-                if (_debug_on) System.out.print(&quot;)&quot;);
-<span class="fc" id="L432">                break;</span>
-            default:
-<span class="nc" id="L434">                throw new IllegalStateException(&quot;Unknown value type: &quot; + type);</span>
+        // The IonReader will be at `startingDepth` when the function is first called and then again when we
+        // have finished traversing all of its children. This boolean tracks which of those two states we are
+        // in when `getDepth() == startingDepth`.
+<span class="fc" id="L382">        boolean alreadyProcessedTheStartingValue = false;</span>
+
+        // The IonType of the IonReader's current value.
+        IonType type;
+
+        while (true) {
+            // Each time we reach the top of the loop we are in one of three states:
+            // 1. We have not yet begun processing the starting value.
+            // 2. We are currently traversing the starting value's children.
+            // 3. We have finished processing the starting value.
+<span class="fc bfc" id="L392" title="All 2 branches covered.">            if (getDepth() == startingDepth) {</span>
+                // The IonReader is at the starting depth. We're either beginning our traversal or finishing it.
+<span class="fc bfc" id="L394" title="All 2 branches covered.">                if (alreadyProcessedTheStartingValue) {</span>
+                    // We're finishing our traversal.
+<span class="fc" id="L396">                    break;</span>
+                }
+                // We're beginning our traversal. Don't advance the cursor; instead, use the current
+                // value's IonType.
+<span class="fc" id="L400">                type = reader.getType();</span>
+                // We've begun processing the starting value.
+<span class="fc" id="L402">                alreadyProcessedTheStartingValue = true;</span>
+            } else {
+                // We're traversing the starting value's children (that is: values at greater depths). We need to
+                // advance the cursor by calling next().
+<span class="fc" id="L406">                type = reader.next();</span>
+            }
+
+<span class="fc bfc" id="L409" title="All 2 branches covered.">            if (type == null) {</span>
+                // There are no more values at this level. If we're at the starting level, we're done.
+<span class="pc bpc" id="L411" title="1 of 2 branches missed.">                if (getDepth() == startingDepth) {</span>
+<span class="nc" id="L412">                    break;</span>
+                }
+                // Otherwise, step out once and then try to move forward again.
+<span class="fc" id="L415">                reader.stepOut();</span>
+<span class="fc" id="L416">                stepOut();</span>
+<span class="fc" id="L417">                continue;</span>
+            }
+
+            // We found a value. Write out its field name and annotations, if any.
+<span class="fc" id="L421">            write_value_field_name_helper(reader);</span>
+<span class="fc" id="L422">            write_value_annotations_helper(reader);</span>
+
+<span class="fc bfc" id="L424" title="All 2 branches covered.">            if (reader.isNullValue()) {</span>
+<span class="fc" id="L425">                this.writeNull(type);</span>
+<span class="fc" id="L426">                continue;</span>
+            }
+
+<span class="pc bpc" id="L429" title="2 of 12 branches missed.">            switch (type) {</span>
+                case NULL:
+                    // The isNullValue() check above will handle this.
+<span class="nc" id="L432">                    throw new IllegalStateException(&quot;isNullValue() was false but IonType was NULL.&quot;);</span>
+                case BOOL:
+<span class="fc" id="L434">                    writeBool(reader.booleanValue());</span>
+<span class="fc" id="L435">                    break;</span>
+                case INT:
+<span class="fc" id="L437">                    writeInt(reader.bigIntegerValue());</span>
+<span class="fc" id="L438">                    break;</span>
+                case FLOAT:
+<span class="fc" id="L440">                    writeFloat(reader.doubleValue());</span>
+<span class="fc" id="L441">                    break;</span>
+                case DECIMAL:
+<span class="fc" id="L443">                    writeDecimal(reader.decimalValue());</span>
+<span class="fc" id="L444">                    break;</span>
+                case TIMESTAMP:
+<span class="fc" id="L446">                    writeTimestamp(reader.timestampValue());</span>
+<span class="fc" id="L447">                    break;</span>
+                case STRING:
+<span class="fc" id="L449">                    writeString(reader.stringValue());</span>
+<span class="fc" id="L450">                    break;</span>
+                case SYMBOL:
+<span class="fc" id="L452">                    writeSymbolToken(reader.symbolValue());</span>
+<span class="fc" id="L453">                    break;</span>
+                case BLOB:
+<span class="fc" id="L455">                    writeBlob(reader.newBytes());</span>
+<span class="fc" id="L456">                    break;</span>
+                case CLOB:
+<span class="fc" id="L458">                    writeClob(reader.newBytes());</span>
+<span class="fc" id="L459">                    break;</span>
+                case STRUCT: // Intentional fallthrough
+                case LIST:   // Intentional fallthrough
+                case SEXP:
+<span class="fc" id="L463">                    reader.stepIn();</span>
+<span class="fc" id="L464">                    stepIn(type);</span>
+<span class="fc" id="L465">                    break;</span>
+                default:
+<span class="nc" id="L467">                    throw new IllegalStateException(&quot;Unknown value type: &quot; + type);</span>
             }
         }
-<span class="fc" id="L437">    }</span>
-
-    private void writeContainerRecursively(IonType type, IonReader reader)
-        throws IOException
-    {
-<span class="fc" id="L442">        stepIn(type);</span>
-<span class="fc" id="L443">        reader.stepIn();</span>
-<span class="fc bfc" id="L444" title="All 2 branches covered.">        while ((type = reader.next()) != null)</span>
-        {
-<span class="fc" id="L446">            writeValueRecursively(type, reader);</span>
-        }
-<span class="fc" id="L448">        reader.stepOut();</span>
-<span class="fc" id="L449">        stepOut();</span>
-<span class="fc" id="L450">    }</span>
-
+<span class="fc" id="L470">    }</span>
 
     //
     //  This code handles the skipped symbol table
@@ -458,41 +477,41 @@ import java.util.Date;
     //  SO ANY FIXES HERE WILL BE NEEDED IN THOSE
     //  THREE LOCATIONS AS WELL.
     //
-<span class="fc" id="L461">    private int _symbol_table_top = 0;</span>
-<span class="fc" id="L462">    private SymbolTable[] _symbol_table_stack = new SymbolTable[3]; // 3 is rare, IVM followed by a local sym tab with open content</span>
+<span class="fc" id="L480">    private int _symbol_table_top = 0;</span>
+<span class="fc" id="L481">    private SymbolTable[] _symbol_table_stack = new SymbolTable[3]; // 3 is rare, IVM followed by a local sym tab with open content</span>
     private void clear_system_value_stack()
     {
-<span class="fc bfc" id="L465" title="All 2 branches covered.">        while (_symbol_table_top &gt; 0) {</span>
-<span class="fc" id="L466">            _symbol_table_top--;</span>
-<span class="fc" id="L467">            _symbol_table_stack[_symbol_table_top] = null;</span>
+<span class="fc bfc" id="L484" title="All 2 branches covered.">        while (_symbol_table_top &gt; 0) {</span>
+<span class="fc" id="L485">            _symbol_table_top--;</span>
+<span class="fc" id="L486">            _symbol_table_stack[_symbol_table_top] = null;</span>
         }
-<span class="fc" id="L469">    }</span>
+<span class="fc" id="L488">    }</span>
     private void push_symbol_table(SymbolTable symbols)
     {
-<span class="pc bpc" id="L472" title="2 of 4 branches missed.">        assert(symbols != null);</span>
-<span class="pc bpc" id="L473" title="1 of 2 branches missed.">        if (_symbol_table_top &gt;= _symbol_table_stack.length) {</span>
-<span class="nc" id="L474">            int new_len = _symbol_table_stack.length * 2;</span>
-<span class="nc" id="L475">            SymbolTable[] temp = new SymbolTable[new_len];</span>
-<span class="nc" id="L476">            System.arraycopy(_symbol_table_stack, 0, temp, 0, _symbol_table_stack.length);</span>
-<span class="nc" id="L477">            _symbol_table_stack = temp;</span>
+<span class="pc bpc" id="L491" title="2 of 4 branches missed.">        assert(symbols != null);</span>
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">        if (_symbol_table_top &gt;= _symbol_table_stack.length) {</span>
+<span class="nc" id="L493">            int new_len = _symbol_table_stack.length * 2;</span>
+<span class="nc" id="L494">            SymbolTable[] temp = new SymbolTable[new_len];</span>
+<span class="nc" id="L495">            System.arraycopy(_symbol_table_stack, 0, temp, 0, _symbol_table_stack.length);</span>
+<span class="nc" id="L496">            _symbol_table_stack = temp;</span>
         }
-<span class="fc" id="L479">        _symbol_table_stack[_symbol_table_top++] = symbols;</span>
-<span class="fc" id="L480">    }</span>
+<span class="fc" id="L498">        _symbol_table_stack[_symbol_table_top++] = symbols;</span>
+<span class="fc" id="L499">    }</span>
     public final SymbolTable pop_passed_symbol_table()
     {
-<span class="nc bnc" id="L483" title="All 2 branches missed.">        if (_symbol_table_top &lt;= 0) {</span>
-<span class="nc" id="L484">            return null;</span>
+<span class="nc bnc" id="L502" title="All 2 branches missed.">        if (_symbol_table_top &lt;= 0) {</span>
+<span class="nc" id="L503">            return null;</span>
         }
-<span class="nc" id="L486">        _symbol_table_top--;</span>
-<span class="nc" id="L487">        SymbolTable symbols = _symbol_table_stack[_symbol_table_top];</span>
-<span class="nc" id="L488">        _symbol_table_stack[_symbol_table_top] = null;</span>
-<span class="nc" id="L489">        return symbols;</span>
+<span class="nc" id="L505">        _symbol_table_top--;</span>
+<span class="nc" id="L506">        SymbolTable symbols = _symbol_table_stack[_symbol_table_top];</span>
+<span class="nc" id="L507">        _symbol_table_stack[_symbol_table_top] = null;</span>
+<span class="nc" id="L508">        return symbols;</span>
     }
 
     public &lt;T&gt; T asFacet(Class&lt;T&gt; facetType)
     {
         // This implementation has no facets.
-<span class="nc" id="L495">        return null;</span>
+<span class="nc" id="L514">        return null;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

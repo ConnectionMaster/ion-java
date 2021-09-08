@@ -460,7 +460,7 @@ import java.util.Set;
 
     public ValueFactory add(final String fieldName)
     {
-<span class="fc" id="L463">        return new _Private_CurriedValueFactory(_context.getSystem())</span>
+<span class="fc" id="L463">        return new _Private_CurriedValueFactory(getSystem())</span>
 <span class="fc" id="L464">        {</span>
             @Override
             protected void handle(IonValue newValue)
@@ -531,7 +531,7 @@ import java.util.Set;
 
     public ValueFactory put(final String fieldName)
     {
-<span class="fc" id="L534">        return new _Private_CurriedValueFactory(_context.getSystem())</span>
+<span class="fc" id="L534">        return new _Private_CurriedValueFactory(getSystem())</span>
 <span class="fc" id="L535">        {</span>
             @Override
             protected void handle(IonValue newValue)

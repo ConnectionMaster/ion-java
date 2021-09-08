@@ -52,7 +52,7 @@ public final class _Private_IonManagedBinaryWriterBuilder
             @Override
             BlockAllocatorProvider createAllocatorProvider()
             {
-<span class="fc" id="L55">                return new PooledBlockAllocatorProvider();</span>
+<span class="fc" id="L55">                return PooledBlockAllocatorProvider.getInstance();</span>
             }
         },
 <span class="fc" id="L58">        BASIC</span>
@@ -60,7 +60,7 @@ public final class _Private_IonManagedBinaryWriterBuilder
             @Override
             BlockAllocatorProvider createAllocatorProvider()
             {
-<span class="nc" id="L63">                return BlockAllocatorProviders.basicProvider();</span>
+<span class="fc" id="L63">                return BlockAllocatorProviders.basicProvider();</span>
             }
         };
 

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReaderLookaheadBufferBase.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.amazon.ion:ion-java</a> &gt; <a href="index.source.html" class="el_package">com.amazon.ion.impl</a> &gt; <span class="el_source">ReaderLookaheadBufferBase.java</span></div><h1>ReaderLookaheadBufferBase.java</h1><pre class="source lang-java linenums">package com.amazon.ion.impl;
+
+import com.amazon.ion.BufferConfiguration;
+import com.amazon.ion.IonReader;
+import com.amazon.ion.system.IonReaderBuilder;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Base class for lookahead buffers that enable incremental reading of streaming data.
+ */
+abstract class ReaderLookaheadBufferBase implements ReaderLookaheadBuffer {
+
+    /**
+     * An InputStream over binary Ion data.
+     */
+    private final InputStream input;
+
+    /**
+     * A buffer for the bytes required for a successful call to {@link IonReader#next()}.
+     */
+    protected final ResizingPipedInputStream pipe;
+
+    /**
+     * The maximum number of bytes that will be buffered.
+     */
+    private final int maximumBufferSize;
+
+    /**
+     * The handler that will be notified when a value exceeds the maximum buffer size.
+     */
+    protected final BufferConfiguration.OversizedValueHandler oversizedValueHandler;
+
+    /**
+     * The handler that will be notified when data is processed.
+     */
+    protected final BufferConfiguration.DataHandler dataHandler;
+
+    /**
+     * The current mark for the pipe's value of 'available'.
+     */
+    private int markedAvailable;
+
+    /**
+     * The current mark for the pipe's value of 'readIndex'.
+     */
+    private int markedReadIndex;
+
+    /**
+     * Indicates whether the current value is being skipped due to being oversized.
+     */
+    private boolean isSkippingCurrentValue;
+
+    /**
+     * Constructs a wrapper over the given stream using the given configuration.
+     * @param configuration the buffer configuration.
+     * @param inputStream an InputStream over Ion data.
+     */
+<span class="fc" id="L60">    ReaderLookaheadBufferBase(final BufferConfiguration&lt;?&gt; configuration, final InputStream inputStream) {</span>
+<span class="fc" id="L61">        input = inputStream;</span>
+<span class="fc" id="L62">        pipe = new ResizingPipedInputStream(</span>
+<span class="fc" id="L63">            configuration.getInitialBufferSize(),</span>
+<span class="fc" id="L64">            configuration.getMaximumBufferSize(),</span>
+            true
+        );
+<span class="fc" id="L67">        maximumBufferSize = configuration.getMaximumBufferSize();</span>
+<span class="fc" id="L68">        oversizedValueHandler = configuration.getOversizedValueHandler();</span>
+<span class="fc" id="L69">        dataHandler = configuration.getDataHandler();</span>
+<span class="fc" id="L70">        clearMark();</span>
+<span class="fc" id="L71">    }</span>
+
+    /**
+     * @inheritDoc
+     * @throws Exception if thrown by a handler method or if an IOException is thrown by the underlying InputStream.
+     */
+    @Override
+    public final void fillInput() throws Exception {
+<span class="fc" id="L79">        clearMark();</span>
+<span class="fc" id="L80">        fillInputHelper();</span>
+<span class="fc" id="L81">    }</span>
+
+    /**
+     * Implements the behavior described in {@link #fillInput()}, except for clearing the mark.
+     * @throws IOException if thrown by the underlying input stream.
+     * @throws Exception if thrown by a handler method.
+     */
+    protected abstract void fillInputHelper() throws Exception;
+
+    @Override
+    public final int available() {
+<span class="fc" id="L92">        return pipe.available();</span>
+    }
+
+    @Override
+    public final IonReader newIonReader(final IonReaderBuilder builder) {
+<span class="fc" id="L97">        return builder.build(pipe);</span>
+    }
+
+    /**
+     * Marks the current read position in the underlying buffer. This mark remains valid only until the next call
+     * to {@link #fillInput()}.
+     * @throws IllegalStateException if more data is required to complete a value.
+     */
+    public final void mark() {
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        if (moreDataRequired()) {</span>
+<span class="fc" id="L107">            throw new IllegalStateException(&quot;moreDataRequired() must be false before calling mark().&quot;);</span>
+        }
+<span class="fc" id="L109">        uncheckedMark();</span>
+<span class="fc" id="L110">    }</span>
+
+    /**
+     * Sets the mark without verifying that a complete value is buffered.
+     */
+    final void uncheckedMark() {
+<span class="fc" id="L116">        markedAvailable = available();</span>
+<span class="fc" id="L117">        markedReadIndex = pipe.getReadIndex();</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Rewinds the underlying buffer to the mark.
+     * @see #mark()
+     * @throws IllegalStateException if there is no valid mark.
+     */
+    public final void rewind() {
+<span class="pc bpc" id="L126" title="1 of 4 branches missed.">        if (markedReadIndex &lt; 0 || markedAvailable &lt; 0) {</span>
+<span class="fc" id="L127">            throw new IllegalStateException(&quot;Must call mark() before rewind().&quot;);</span>
+        }
+<span class="fc" id="L129">        pipe.rewind(markedReadIndex, markedAvailable);</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * Truncates the buffer to the end of the last complete value.
+     * @throws Exception if thrown by a handler.
+     */
+    abstract void truncateToEndOfPreviousValue() throws Exception;
+
+    /**
+     * Clears the mark.
+     * @see #mark()
+     */
+    public final void clearMark() {
+<span class="fc" id="L143">        markedAvailable = -1;</span>
+<span class="fc" id="L144">        markedReadIndex = -1;</span>
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * @return the underlying pipe.
+     */
+    protected InputStream getPipe() {
+<span class="fc" id="L151">        return pipe;</span>
+    }
+
+    /**
+     * @return the underlying input.
+     */
+    protected InputStream getInput() {
+<span class="fc" id="L158">        return input;</span>
+    }
+
+    /**
+     * Prepares for the start of a new value by clearing the {@link #isSkippingCurrentValue} flag.
+     */
+    protected void startNewValue() {
+<span class="fc" id="L165">        isSkippingCurrentValue = false;</span>
+<span class="fc" id="L166">    }</span>
+
+    /**
+     * Start skipping the current value, if it is not already being skipped. This should be called when the value
+     * is determined to be oversize. This truncates the buffer to the end of the previous value, reclaiming the space.
+     * @throws Exception if thrown by the event handler.
+     */
+    protected void startSkippingValue() throws Exception {
+<span class="fc bfc" id="L174" title="All 2 branches covered.">        if (!isSkippingCurrentValue) {</span>
+<span class="fc" id="L175">            isSkippingCurrentValue = true;</span>
+<span class="fc" id="L176">            truncateToEndOfPreviousValue();</span>
+        }
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Indicates whether the current value is being skipped due to being oversized.
+     * @return true if the value is being skipped; otherwise, false.
+     */
+    protected boolean isSkippingCurrentValue() {
+<span class="fc" id="L185">        return isSkippingCurrentValue;</span>
+    }
+
+    /**
+     * @return the maximum size of the buffer.
+     */
+    protected int getMaximumBufferSize() {
+<span class="fc" id="L192">        return maximumBufferSize;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

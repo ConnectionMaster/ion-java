@@ -53,18 +53,39 @@ import java.math.BigDecimal;
      */
     public static boolean isWhitespace(int codePoint)
     {
-<span class="nc bnc" id="L56" title="All 2 branches missed.">        switch (codePoint)</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        switch (codePoint)</span>
         {
             // FIXME look for BOM
             case ' ':  case '\t':  case '\n':  case '\r':
             {
-<span class="nc" id="L61">                return true;</span>
+<span class="fc" id="L61">                return true;</span>
             }
             default:
             {
-<span class="nc" id="L65">                return false;</span>
+<span class="fc" id="L65">                return false;</span>
             }
         }
+    }
+
+    /**
+     * Ion whitespace is defined as one of the characters space, tab, newline,
+     * and carriage-return.  This matches the definition of whitespace used by
+     * JSON.
+     *
+     * @param charSequence the CharSequence to test.
+     * @return {@code true} if {@code charSequence} consists entirely of the four legal
+     * Ion whitespace characters.
+     *
+     * @see #isWhitespace(int)
+     * @see &lt;a href=&quot;http://tools.ietf.org/html/rfc4627&quot;&gt;RFC 4627&lt;/a&gt;
+     */
+    public static boolean isAllWhitespace(CharSequence charSequence) {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (int i = 0; i &lt; charSequence.length(); i++) {</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            if (!IonTextUtils.isWhitespace(Character.codePointAt(charSequence, i))) {</span>
+<span class="fc" id="L85">                return false;</span>
+            }
+        }
+<span class="fc" id="L88">        return true;</span>
     }
 
     /**
@@ -84,7 +105,7 @@ import java.math.BigDecimal;
      */
     public static boolean isNumericStop(int codePoint)
     {
-<span class="fc bfc" id="L87" title="All 2 branches covered.">        switch (codePoint) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        switch (codePoint) {</span>
         case -1:
         case '{':  case '}':
         case '[':  case ']':
@@ -94,39 +115,39 @@ import java.math.BigDecimal;
         case ' ':  case '\t':  case '\n':  case '\r':  // Whitespace
         // case '/': // we check start of comment in the caller where we
         //              can peek ahead for the following slash or asterisk
-<span class="fc" id="L97">            return true;</span>
+<span class="fc" id="L118">            return true;</span>
 
         default:
-<span class="fc" id="L100">            return false;</span>
+<span class="fc" id="L121">            return false;</span>
         }
     }
 
 
     public static boolean isDigit(int codePoint, int radix)
     {
-<span class="nc bnc" id="L107" title="All 4 branches missed.">        switch (codePoint) {</span>
+<span class="nc bnc" id="L128" title="All 4 branches missed.">        switch (codePoint) {</span>
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7':
-<span class="nc bnc" id="L110" title="All 6 branches missed.">            return (radix == 8 || radix == 10 || radix == 16);</span>
+<span class="nc bnc" id="L131" title="All 6 branches missed.">            return (radix == 8 || radix == 10 || radix == 16);</span>
         case '8': case '9':
-<span class="nc bnc" id="L112" title="All 4 branches missed.">            return (radix == 10 || radix == 16);</span>
+<span class="nc bnc" id="L133" title="All 4 branches missed.">            return (radix == 10 || radix == 16);</span>
         case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
         case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-<span class="nc bnc" id="L115" title="All 2 branches missed.">            return (radix == 16);</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            return (radix == 16);</span>
         }
-<span class="nc" id="L117">        return false;</span>
+<span class="nc" id="L138">        return false;</span>
     }
 
     public static boolean isIdentifierStart(int codePoint) {
-<span class="fc" id="L121">        return _Private_IonTextAppender.isIdentifierStart(codePoint);</span>
+<span class="fc" id="L142">        return _Private_IonTextAppender.isIdentifierStart(codePoint);</span>
     }
 
     public static boolean isIdentifierPart(int codePoint) {
-<span class="fc" id="L125">        return _Private_IonTextAppender.isIdentifierPart(codePoint);</span>
+<span class="fc" id="L146">        return _Private_IonTextAppender.isIdentifierPart(codePoint);</span>
     }
 
     public static boolean isOperatorPart(int codePoint) {
-<span class="fc" id="L129">        return _Private_IonTextAppender.isOperatorPart(codePoint);</span>
+<span class="fc" id="L150">        return _Private_IonTextAppender.isOperatorPart(codePoint);</span>
     }
 
 
@@ -144,47 +165,47 @@ import java.math.BigDecimal;
      */
     public static SymbolVariant symbolVariant(CharSequence symbol)
     {
-<span class="fc" id="L147">        int length = symbol.length(); // acts as null check</span>
+<span class="fc" id="L168">        int length = symbol.length(); // acts as null check</span>
 
         // If the symbol's text matches an Ion keyword or it's an empty symbol, we must quote it.
         // Eg, the symbol 'false' and '' must be rendered quoted.
-<span class="fc bfc" id="L151" title="All 4 branches covered.">        if(length == 0 || isIdentifierKeyword(symbol))</span>
+<span class="fc bfc" id="L172" title="All 4 branches covered.">        if(length == 0 || isIdentifierKeyword(symbol))</span>
         {
-<span class="fc" id="L153">            return SymbolVariant.QUOTED;</span>
+<span class="fc" id="L174">            return SymbolVariant.QUOTED;</span>
         }
 
-<span class="fc" id="L156">        char c = symbol.charAt(0);</span>
+<span class="fc" id="L177">        char c = symbol.charAt(0);</span>
         // Surrogates are neither identifierStart nor operatorPart, so the
         // first one we hit will fall through and return QUOTED.
         // TODO test that
 
-<span class="fc bfc" id="L161" title="All 2 branches covered.">        if (isIdentifierStart(c))</span>
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (isIdentifierStart(c))</span>
         {
-<span class="fc bfc" id="L163" title="All 2 branches covered.">            for (int ii = 0; ii &lt; length; ii++) {</span>
-<span class="fc" id="L164">                c = symbol.charAt(ii);</span>
-<span class="pc bpc" id="L165" title="2 of 6 branches missed.">                if ((c == '\'' || c &lt; 32 || c &gt; 126)</span>
-<span class="fc bfc" id="L166" title="All 2 branches covered.">                    || !isIdentifierPart(c))</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">            for (int ii = 0; ii &lt; length; ii++) {</span>
+<span class="fc" id="L185">                c = symbol.charAt(ii);</span>
+<span class="pc bpc" id="L186" title="2 of 6 branches missed.">                if ((c == '\'' || c &lt; 32 || c &gt; 126)</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">                    || !isIdentifierPart(c))</span>
                 {
-<span class="fc" id="L168">                    return SymbolVariant.QUOTED;</span>
+<span class="fc" id="L189">                    return SymbolVariant.QUOTED;</span>
                 }
             }
-<span class="fc" id="L171">            return SymbolVariant.IDENTIFIER;</span>
+<span class="fc" id="L192">            return SymbolVariant.IDENTIFIER;</span>
         }
 
-<span class="fc bfc" id="L174" title="All 2 branches covered.">        if (isOperatorPart(c))</span>
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        if (isOperatorPart(c))</span>
         {
-<span class="fc bfc" id="L176" title="All 2 branches covered.">            for (int ii = 0; ii &lt; length; ii++) {</span>
-<span class="fc" id="L177">                c = symbol.charAt(ii);</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">            for (int ii = 0; ii &lt; length; ii++) {</span>
+<span class="fc" id="L198">                c = symbol.charAt(ii);</span>
                 // We don't need to look for escapes since all
                 // operator characters are ASCII.
-<span class="fc bfc" id="L180" title="All 2 branches covered.">                if (!isOperatorPart(c)) {</span>
-<span class="fc" id="L181">                    return SymbolVariant.QUOTED;</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">                if (!isOperatorPart(c)) {</span>
+<span class="fc" id="L202">                    return SymbolVariant.QUOTED;</span>
                 }
             }
-<span class="fc" id="L184">            return SymbolVariant.OPERATOR;</span>
+<span class="fc" id="L205">            return SymbolVariant.OPERATOR;</span>
         }
 
-<span class="fc" id="L187">        return SymbolVariant.QUOTED;</span>
+<span class="fc" id="L208">        return SymbolVariant.QUOTED;</span>
     }
 
 
@@ -200,8 +221,8 @@ import java.math.BigDecimal;
     public static void printStringCodePoint(Appendable out, int codePoint)
         throws IOException
     {
-<span class="fc" id="L203">        printCodePoint(out, codePoint, EscapeMode.ION_STRING);</span>
-<span class="fc" id="L204">    }</span>
+<span class="fc" id="L224">        printCodePoint(out, codePoint, EscapeMode.ION_STRING);</span>
+<span class="fc" id="L225">    }</span>
 
     /**
      * Prints a single Unicode code point for use in an ASCII-safe Ion symbol.
@@ -212,8 +233,8 @@ import java.math.BigDecimal;
     public static void printSymbolCodePoint(Appendable out, int codePoint)
         throws IOException
     {
-<span class="nc" id="L215">        printCodePoint(out, codePoint, EscapeMode.ION_SYMBOL);</span>
-<span class="nc" id="L216">    }</span>
+<span class="nc" id="L236">        printCodePoint(out, codePoint, EscapeMode.ION_SYMBOL);</span>
+<span class="nc" id="L237">    }</span>
 
     /**
      * Prints a single Unicode code point for use in an ASCII-safe JSON string.
@@ -225,8 +246,8 @@ import java.math.BigDecimal;
         throws IOException
     {
         // JSON only allows double-quote strings.
-<span class="fc" id="L228">        printCodePoint(out, codePoint, EscapeMode.JSON);</span>
-<span class="fc" id="L229">    }</span>
+<span class="fc" id="L249">        printCodePoint(out, codePoint, EscapeMode.JSON);</span>
+<span class="fc" id="L250">    }</span>
 
 
     /**
@@ -236,81 +257,81 @@ import java.math.BigDecimal;
         throws IOException
     {
         // JSON only allows uHHHH numeric escapes.
-<span class="fc bfc" id="L239" title="All 12 branches covered.">        switch (c) {</span>
+<span class="fc bfc" id="L260" title="All 12 branches covered.">        switch (c) {</span>
             case 0:
-<span class="fc bfc" id="L241" title="All 2 branches covered.">                out.append(mode == EscapeMode.JSON ? &quot;\\u0000&quot; : &quot;\\0&quot;);</span>
-<span class="fc" id="L242">                return;</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">                out.append(mode == EscapeMode.JSON ? &quot;\\u0000&quot; : &quot;\\0&quot;);</span>
+<span class="fc" id="L263">                return;</span>
             case '\t':
-<span class="fc" id="L244">                out.append(&quot;\\t&quot;);</span>
-<span class="fc" id="L245">                return;</span>
+<span class="fc" id="L265">                out.append(&quot;\\t&quot;);</span>
+<span class="fc" id="L266">                return;</span>
             case '\n':
-<span class="fc bfc" id="L247" title="All 2 branches covered.">                if (mode == EscapeMode.ION_LONG_STRING) {</span>
-<span class="fc" id="L248">                    out.append('\n');</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">                if (mode == EscapeMode.ION_LONG_STRING) {</span>
+<span class="fc" id="L269">                    out.append('\n');</span>
                 }
                 else {
-<span class="fc" id="L251">                    out.append(&quot;\\n&quot;);</span>
+<span class="fc" id="L272">                    out.append(&quot;\\n&quot;);</span>
                 }
-<span class="fc" id="L253">                return;</span>
+<span class="fc" id="L274">                return;</span>
             case '\r':
-<span class="fc" id="L255">                out.append(&quot;\\r&quot;);</span>
-<span class="fc" id="L256">                return;</span>
+<span class="fc" id="L276">                out.append(&quot;\\r&quot;);</span>
+<span class="fc" id="L277">                return;</span>
             case '\f':
-<span class="fc" id="L258">                out.append(&quot;\\f&quot;);</span>
-<span class="fc" id="L259">                return;</span>
+<span class="fc" id="L279">                out.append(&quot;\\f&quot;);</span>
+<span class="fc" id="L280">                return;</span>
             case '\u0008':
-<span class="fc" id="L261">                out.append(&quot;\\b&quot;);</span>
-<span class="fc" id="L262">                return;</span>
+<span class="fc" id="L282">                out.append(&quot;\\b&quot;);</span>
+<span class="fc" id="L283">                return;</span>
             case '\u0007':
-<span class="fc bfc" id="L264" title="All 2 branches covered.">                out.append(mode == EscapeMode.JSON ? &quot;\\u0007&quot; : &quot;\\a&quot;);</span>
-<span class="fc" id="L265">                return;</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">                out.append(mode == EscapeMode.JSON ? &quot;\\u0007&quot; : &quot;\\a&quot;);</span>
+<span class="fc" id="L286">                return;</span>
             case '\u000B':
-<span class="fc bfc" id="L267" title="All 2 branches covered.">                out.append(mode == EscapeMode.JSON ? &quot;\\u000b&quot; : &quot;\\v&quot;);</span>
-<span class="fc" id="L268">                return;</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">                out.append(mode == EscapeMode.JSON ? &quot;\\u000b&quot; : &quot;\\v&quot;);</span>
+<span class="fc" id="L289">                return;</span>
             case '\&quot;':
-<span class="fc bfc" id="L270" title="All 4 branches covered.">                if (mode == EscapeMode.JSON || mode == EscapeMode.ION_STRING) {</span>
-<span class="fc" id="L271">                    out.append(&quot;\\\&quot;&quot;);</span>
-<span class="fc" id="L272">                    return;</span>
+<span class="fc bfc" id="L291" title="All 4 branches covered.">                if (mode == EscapeMode.JSON || mode == EscapeMode.ION_STRING) {</span>
+<span class="fc" id="L292">                    out.append(&quot;\\\&quot;&quot;);</span>
+<span class="fc" id="L293">                    return;</span>
                 }
                 break; // Treat as normal code point for long string or symbol.
             case '\'':
-<span class="fc bfc" id="L276" title="All 4 branches covered.">                if (mode == EscapeMode.ION_SYMBOL ||</span>
+<span class="fc bfc" id="L297" title="All 4 branches covered.">                if (mode == EscapeMode.ION_SYMBOL ||</span>
                     mode == EscapeMode.ION_LONG_STRING)
                 {
-<span class="fc" id="L279">                    out.append(&quot;\\\'&quot;);</span>
-<span class="fc" id="L280">                    return;</span>
+<span class="fc" id="L300">                    out.append(&quot;\\\'&quot;);</span>
+<span class="fc" id="L301">                    return;</span>
                 }
                 break;
             case '\\':
-<span class="fc" id="L284">                out.append(&quot;\\\\&quot;);</span>
-<span class="fc" id="L285">                return;</span>
+<span class="fc" id="L305">                out.append(&quot;\\\\&quot;);</span>
+<span class="fc" id="L306">                return;</span>
             default:
                 break;
         }
 
-<span class="fc bfc" id="L290" title="All 2 branches covered.">        if (c &lt; 32) {</span>
-<span class="pc bpc" id="L291" title="1 of 2 branches missed.">            if (mode == EscapeMode.JSON) {</span>
-<span class="nc" id="L292">                printCodePointAsFourHexDigits(out, c);</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        if (c &lt; 32) {</span>
+<span class="pc bpc" id="L312" title="1 of 2 branches missed.">            if (mode == EscapeMode.JSON) {</span>
+<span class="nc" id="L313">                printCodePointAsFourHexDigits(out, c);</span>
             }
             else {
-<span class="fc" id="L295">                printCodePointAsTwoHexDigits(out, c);</span>
+<span class="fc" id="L316">                printCodePointAsTwoHexDigits(out, c);</span>
             }
         }
-<span class="fc bfc" id="L298" title="All 2 branches covered.">        else if (c &lt; 0x7F) {  // Printable ASCII</span>
-<span class="fc" id="L299">            out.append((char)c);</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">        else if (c &lt; 0x7F) {  // Printable ASCII</span>
+<span class="fc" id="L320">            out.append((char)c);</span>
         }
-<span class="fc bfc" id="L301" title="All 2 branches covered.">        else if (c &lt;= 0xFF) {</span>
-<span class="pc bpc" id="L302" title="1 of 2 branches missed.">            if (mode == EscapeMode.JSON) {</span>
-<span class="nc" id="L303">                printCodePointAsFourHexDigits(out, c);</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">        else if (c &lt;= 0xFF) {</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">            if (mode == EscapeMode.JSON) {</span>
+<span class="nc" id="L324">                printCodePointAsFourHexDigits(out, c);</span>
             }
             else {
-<span class="fc" id="L306">                printCodePointAsTwoHexDigits(out, c);</span>
+<span class="fc" id="L327">                printCodePointAsTwoHexDigits(out, c);</span>
             }
         }
-<span class="fc bfc" id="L309" title="All 2 branches covered.">        else if (c &lt;= 0xFFFF) {</span>
-<span class="fc" id="L310">            printCodePointAsFourHexDigits(out, c);</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">        else if (c &lt;= 0xFFFF) {</span>
+<span class="fc" id="L331">            printCodePointAsFourHexDigits(out, c);</span>
         }
         else {
-<span class="fc bfc" id="L313" title="All 2 branches covered.">            if (mode == EscapeMode.JSON) {</span>
+<span class="fc bfc" id="L334" title="All 2 branches covered.">            if (mode == EscapeMode.JSON) {</span>
                 // JSON does not have a \Uxxxxyyyy escape, surrogates
                 // must be used as per RFC-4627
                 //
@@ -322,13 +343,13 @@ import java.math.BigDecimal;
                 //   containing only the G clef character (U+1D11E) may be represented as
                 //   &quot;\uD834\uDD1E&quot;.
                 // [...]
-<span class="fc" id="L325">                printCodePointAsSurrogatePairHexDigits(out, c);</span>
+<span class="fc" id="L346">                printCodePointAsSurrogatePairHexDigits(out, c);</span>
             }
             else {
-<span class="fc" id="L328">                printCodePointAsEightHexDigits(out, c);</span>
+<span class="fc" id="L349">                printCodePointAsEightHexDigits(out, c);</span>
             }
         }
-<span class="fc" id="L331">    }</span>
+<span class="fc" id="L352">    }</span>
 
 
     /**
@@ -339,13 +360,13 @@ import java.math.BigDecimal;
     private static void printCodePointAsTwoHexDigits(Appendable out, int c)
         throws IOException
     {
-<span class="fc" id="L342">        String s = Integer.toHexString(c);</span>
-<span class="fc" id="L343">        out.append(&quot;\\x&quot;);</span>
-<span class="fc bfc" id="L344" title="All 2 branches covered.">        if (s.length() &lt; 2) {</span>
-<span class="fc" id="L345">            out.append(ZERO_PADDING[2-s.length()]);</span>
+<span class="fc" id="L363">        String s = Integer.toHexString(c);</span>
+<span class="fc" id="L364">        out.append(&quot;\\x&quot;);</span>
+<span class="fc bfc" id="L365" title="All 2 branches covered.">        if (s.length() &lt; 2) {</span>
+<span class="fc" id="L366">            out.append(ZERO_PADDING[2-s.length()]);</span>
         }
-<span class="fc" id="L347">        out.append(s);</span>
-<span class="fc" id="L348">    }</span>
+<span class="fc" id="L368">        out.append(s);</span>
+<span class="fc" id="L369">    }</span>
 
     /**
      * Generates a four-digit hex escape sequence,
@@ -355,11 +376,11 @@ import java.math.BigDecimal;
     private static void printCodePointAsFourHexDigits(Appendable out, int c)
         throws IOException
     {
-<span class="fc" id="L358">        String s = Integer.toHexString(c);</span>
-<span class="fc" id="L359">        out.append(&quot;\\u&quot;);</span>
-<span class="fc" id="L360">        out.append(ZERO_PADDING[4-s.length()]);</span>
-<span class="fc" id="L361">        out.append(s);</span>
-<span class="fc" id="L362">    }</span>
+<span class="fc" id="L379">        String s = Integer.toHexString(c);</span>
+<span class="fc" id="L380">        out.append(&quot;\\u&quot;);</span>
+<span class="fc" id="L381">        out.append(ZERO_PADDING[4-s.length()]);</span>
+<span class="fc" id="L382">        out.append(s);</span>
+<span class="fc" id="L383">    }</span>
 
     /**
      * Prints an eight-digit hex escape sequence,
@@ -369,11 +390,11 @@ import java.math.BigDecimal;
     private static void printCodePointAsEightHexDigits(Appendable out, int c)
         throws IOException
     {
-<span class="fc" id="L372">        String s = Integer.toHexString(c);</span>
-<span class="fc" id="L373">        out.append(&quot;\\U&quot;);</span>
-<span class="fc" id="L374">        out.append(ZERO_PADDING[8-s.length()]);</span>
-<span class="fc" id="L375">        out.append(s);</span>
-<span class="fc" id="L376">    }</span>
+<span class="fc" id="L393">        String s = Integer.toHexString(c);</span>
+<span class="fc" id="L394">        out.append(&quot;\\U&quot;);</span>
+<span class="fc" id="L395">        out.append(ZERO_PADDING[8-s.length()]);</span>
+<span class="fc" id="L396">        out.append(s);</span>
+<span class="fc" id="L397">    }</span>
 
     /**
      * Generates a surrogate pair as two four-digit hex escape sequences,
@@ -384,10 +405,10 @@ import java.math.BigDecimal;
     private static void printCodePointAsSurrogatePairHexDigits(Appendable out, int c)
         throws IOException
     {
-<span class="fc bfc" id="L387" title="All 2 branches covered.">        for (final char unit : Character.toChars(c)) {</span>
-<span class="fc" id="L388">            printCodePointAsFourHexDigits(out, unit);</span>
+<span class="fc bfc" id="L408" title="All 2 branches covered.">        for (final char unit : Character.toChars(c)) {</span>
+<span class="fc" id="L409">            printCodePointAsFourHexDigits(out, unit);</span>
         }
-<span class="fc" id="L390">    }</span>
+<span class="fc" id="L411">    }</span>
 
 
     /**
@@ -405,17 +426,17 @@ import java.math.BigDecimal;
     public static void printString(Appendable out, CharSequence text)
         throws IOException
     {
-<span class="pc bpc" id="L408" title="1 of 2 branches missed.">        if (text == null)</span>
+<span class="pc bpc" id="L429" title="1 of 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L410">            out.append(&quot;null.string&quot;);</span>
+<span class="nc" id="L431">            out.append(&quot;null.string&quot;);</span>
         }
         else
         {
-<span class="fc" id="L414">            out.append('&quot;');</span>
-<span class="fc" id="L415">            printCodePoints(out, text, EscapeMode.ION_STRING);</span>
-<span class="fc" id="L416">            out.append('&quot;');</span>
+<span class="fc" id="L435">            out.append('&quot;');</span>
+<span class="fc" id="L436">            printCodePoints(out, text, EscapeMode.ION_STRING);</span>
+<span class="fc" id="L437">            out.append('&quot;');</span>
         }
-<span class="fc" id="L418">    }</span>
+<span class="fc" id="L439">    }</span>
 
     /**
      * Prints characters as an ASCII-encoded JSON string, including surrounding
@@ -432,17 +453,17 @@ import java.math.BigDecimal;
     public static void printJsonString(Appendable out, CharSequence text)
         throws IOException
     {
-<span class="pc bpc" id="L435" title="1 of 2 branches missed.">        if (text == null)</span>
+<span class="pc bpc" id="L456" title="1 of 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L437">            out.append(&quot;null&quot;);</span>
+<span class="nc" id="L458">            out.append(&quot;null&quot;);</span>
         }
         else
         {
-<span class="fc" id="L441">            out.append('&quot;');</span>
-<span class="fc" id="L442">            printCodePoints(out, text, EscapeMode.JSON);</span>
-<span class="fc" id="L443">            out.append('&quot;');</span>
+<span class="fc" id="L462">            out.append('&quot;');</span>
+<span class="fc" id="L463">            printCodePoints(out, text, EscapeMode.JSON);</span>
+<span class="fc" id="L464">            out.append('&quot;');</span>
         }
-<span class="fc" id="L445">    }</span>
+<span class="fc" id="L466">    }</span>
 
 
     /**
@@ -457,26 +478,26 @@ import java.math.BigDecimal;
      */
     public static String printString(CharSequence text)
     {
-<span class="pc bpc" id="L460" title="1 of 2 branches missed.">        if (text == null)</span>
+<span class="pc bpc" id="L481" title="1 of 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L462">            return &quot;null.string&quot;;</span>
+<span class="nc" id="L483">            return &quot;null.string&quot;;</span>
         }
-<span class="pc bpc" id="L464" title="1 of 2 branches missed.">        if (text.length() == 0)</span>
+<span class="pc bpc" id="L485" title="1 of 2 branches missed.">        if (text.length() == 0)</span>
         {
-<span class="nc" id="L466">            return &quot;\&quot;\&quot;&quot;;</span>
+<span class="nc" id="L487">            return &quot;\&quot;\&quot;&quot;;</span>
         }
 
-<span class="fc" id="L469">        StringBuilder builder = new StringBuilder(text.length() + 2);</span>
+<span class="fc" id="L490">        StringBuilder builder = new StringBuilder(text.length() + 2);</span>
         try
         {
-<span class="fc" id="L472">            printString(builder, text);</span>
+<span class="fc" id="L493">            printString(builder, text);</span>
         }
-<span class="nc" id="L474">        catch (IOException e)</span>
+<span class="nc" id="L495">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L477">            throw new Error(e);</span>
-<span class="fc" id="L478">        }</span>
-<span class="fc" id="L479">        return builder.toString();</span>
+<span class="nc" id="L498">            throw new Error(e);</span>
+<span class="fc" id="L499">        }</span>
+<span class="fc" id="L500">        return builder.toString();</span>
     }
 
 
@@ -492,21 +513,21 @@ import java.math.BigDecimal;
      */
     public static String printLongString(CharSequence text)
     {
-<span class="fc bfc" id="L495" title="All 2 branches covered.">        if (text == null) return &quot;null.string&quot;;</span>
+<span class="fc bfc" id="L516" title="All 2 branches covered.">        if (text == null) return &quot;null.string&quot;;</span>
 
-<span class="fc bfc" id="L497" title="All 2 branches covered.">        if (text.length() == 0) return &quot;''''''&quot;;</span>
+<span class="fc bfc" id="L518" title="All 2 branches covered.">        if (text.length() == 0) return &quot;''''''&quot;;</span>
 
-<span class="fc" id="L499">        StringBuilder builder = new StringBuilder(text.length() + 6);</span>
+<span class="fc" id="L520">        StringBuilder builder = new StringBuilder(text.length() + 6);</span>
         try
         {
-<span class="fc" id="L502">            printLongString(builder, text);</span>
+<span class="fc" id="L523">            printLongString(builder, text);</span>
         }
-<span class="nc" id="L504">        catch (IOException e)</span>
+<span class="nc" id="L525">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L507">            throw new Error(e);</span>
-<span class="fc" id="L508">        }</span>
-<span class="fc" id="L509">        return builder.toString();</span>
+<span class="nc" id="L528">            throw new Error(e);</span>
+<span class="fc" id="L529">        }</span>
+<span class="fc" id="L530">        return builder.toString();</span>
     }
 
 
@@ -525,17 +546,17 @@ import java.math.BigDecimal;
     public static void printLongString(Appendable out, CharSequence text)
         throws IOException
     {
-<span class="fc bfc" id="L528" title="All 2 branches covered.">        if (text == null)</span>
+<span class="fc bfc" id="L549" title="All 2 branches covered.">        if (text == null)</span>
         {
-<span class="fc" id="L530">            out.append(&quot;null.string&quot;);</span>
+<span class="fc" id="L551">            out.append(&quot;null.string&quot;);</span>
         }
         else
         {
-<span class="fc" id="L534">            out.append(&quot;'''&quot;);</span>
-<span class="fc" id="L535">            printCodePoints(out, text, EscapeMode.ION_LONG_STRING);</span>
-<span class="fc" id="L536">            out.append(&quot;'''&quot;);</span>
+<span class="fc" id="L555">            out.append(&quot;'''&quot;);</span>
+<span class="fc" id="L556">            printCodePoints(out, text, EscapeMode.ION_LONG_STRING);</span>
+<span class="fc" id="L557">            out.append(&quot;'''&quot;);</span>
         }
-<span class="fc" id="L538">    }</span>
+<span class="fc" id="L559">    }</span>
 
 
     /**
@@ -546,19 +567,19 @@ import java.math.BigDecimal;
      */
     public static String printCodePointAsString(int codePoint)
     {
-<span class="fc" id="L549">        StringBuilder builder = new StringBuilder(12);</span>
-<span class="fc" id="L550">        builder.append('&quot;');</span>
+<span class="fc" id="L570">        StringBuilder builder = new StringBuilder(12);</span>
+<span class="fc" id="L571">        builder.append('&quot;');</span>
         try
         {
-<span class="fc" id="L553">            printStringCodePoint(builder, codePoint);</span>
+<span class="fc" id="L574">            printStringCodePoint(builder, codePoint);</span>
         }
-<span class="nc" id="L555">        catch (IOException e)</span>
+<span class="nc" id="L576">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L558">            throw new Error(e);</span>
-<span class="fc" id="L559">        }</span>
-<span class="fc" id="L560">        builder.append('&quot;');</span>
-<span class="fc" id="L561">        return builder.toString();</span>
+<span class="nc" id="L579">            throw new Error(e);</span>
+<span class="fc" id="L580">        }</span>
+<span class="fc" id="L581">        builder.append('&quot;');</span>
+<span class="fc" id="L582">        return builder.toString();</span>
     }
 
 
@@ -577,19 +598,19 @@ import java.math.BigDecimal;
     public static void printSymbol(Appendable out, CharSequence text)
         throws IOException
     {
-<span class="pc bpc" id="L580" title="1 of 2 branches missed.">        if (text == null)</span>
+<span class="pc bpc" id="L601" title="1 of 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L582">            out.append(&quot;null.symbol&quot;);</span>
+<span class="nc" id="L603">            out.append(&quot;null.symbol&quot;);</span>
         }
-<span class="fc bfc" id="L584" title="All 2 branches covered.">        else if (symbolNeedsQuoting(text, true))</span>
+<span class="fc bfc" id="L605" title="All 2 branches covered.">        else if (symbolNeedsQuoting(text, true))</span>
         {
-<span class="fc" id="L586">            printQuotedSymbol(out, text);</span>
+<span class="fc" id="L607">            printQuotedSymbol(out, text);</span>
         }
         else
         {
-<span class="fc" id="L590">            out.append(text);</span>
+<span class="fc" id="L611">            out.append(text);</span>
         }
-<span class="fc" id="L592">    }</span>
+<span class="fc" id="L613">    }</span>
 
 
     /**
@@ -605,22 +626,22 @@ import java.math.BigDecimal;
      */
     public static String printSymbol(CharSequence text)
     {
-<span class="nc bnc" id="L608" title="All 2 branches missed.">        if (text == null)</span>
+<span class="nc bnc" id="L629" title="All 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L610">            return &quot;null.symbol&quot;;</span>
+<span class="nc" id="L631">            return &quot;null.symbol&quot;;</span>
         }
 
-<span class="nc" id="L613">        StringBuilder builder = new StringBuilder(text.length() + 2);</span>
+<span class="nc" id="L634">        StringBuilder builder = new StringBuilder(text.length() + 2);</span>
         try
         {
-<span class="nc" id="L616">            printSymbol(builder, text);</span>
+<span class="nc" id="L637">            printSymbol(builder, text);</span>
         }
-<span class="nc" id="L618">        catch (IOException e)</span>
+<span class="nc" id="L639">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L621">            throw new Error(e);</span>
-<span class="nc" id="L622">        }</span>
-<span class="nc" id="L623">        return builder.toString();</span>
+<span class="nc" id="L642">            throw new Error(e);</span>
+<span class="nc" id="L643">        }</span>
+<span class="nc" id="L644">        return builder.toString();</span>
     }
 
 
@@ -630,7 +651,7 @@ import java.math.BigDecimal;
      * @return a string representing the symboltoken.
      */
     public static String printSymbol(SymbolToken token){
-<span class="fc" id="L633">        return String.format(&quot;{$%s:%s}&quot;,  token.getText(), token.getSid());</span>
+<span class="fc" id="L654">        return String.format(&quot;{$%s:%s}&quot;,  token.getText(), token.getSid());</span>
     }
 
 
@@ -648,17 +669,17 @@ import java.math.BigDecimal;
     public static void printQuotedSymbol(Appendable out, CharSequence text)
         throws IOException
     {
-<span class="pc bpc" id="L651" title="1 of 2 branches missed.">        if (text == null)</span>
+<span class="pc bpc" id="L672" title="1 of 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L653">            out.append(&quot;null.symbol&quot;);</span>
+<span class="nc" id="L674">            out.append(&quot;null.symbol&quot;);</span>
         }
         else
         {
-<span class="fc" id="L657">            out.append('\'');</span>
-<span class="fc" id="L658">            printCodePoints(out, text, EscapeMode.ION_SYMBOL);</span>
-<span class="fc" id="L659">            out.append('\'');</span>
+<span class="fc" id="L678">            out.append('\'');</span>
+<span class="fc" id="L679">            printCodePoints(out, text, EscapeMode.ION_SYMBOL);</span>
+<span class="fc" id="L680">            out.append('\'');</span>
         }
-<span class="fc" id="L661">    }</span>
+<span class="fc" id="L682">    }</span>
 
 
     /**
@@ -672,22 +693,22 @@ import java.math.BigDecimal;
      */
     public static String printQuotedSymbol(CharSequence text)
     {
-<span class="nc bnc" id="L675" title="All 2 branches missed.">        if (text == null)</span>
+<span class="nc bnc" id="L696" title="All 2 branches missed.">        if (text == null)</span>
         {
-<span class="nc" id="L677">            return &quot;null.symbol&quot;;</span>
+<span class="nc" id="L698">            return &quot;null.symbol&quot;;</span>
         }
 
-<span class="nc" id="L680">        StringBuilder builder = new StringBuilder(text.length() + 2);</span>
+<span class="nc" id="L701">        StringBuilder builder = new StringBuilder(text.length() + 2);</span>
         try
         {
-<span class="nc" id="L683">            printQuotedSymbol(builder, text);</span>
+<span class="nc" id="L704">            printQuotedSymbol(builder, text);</span>
         }
-<span class="nc" id="L685">        catch (IOException e)</span>
+<span class="nc" id="L706">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L688">            throw new Error(e);</span>
-<span class="nc" id="L689">        }</span>
-<span class="nc" id="L690">        return builder.toString();</span>
+<span class="nc" id="L709">            throw new Error(e);</span>
+<span class="nc" id="L710">        }</span>
+<span class="nc" id="L711">        return builder.toString();</span>
     }
 
 
@@ -699,39 +720,39 @@ import java.math.BigDecimal;
                                         EscapeMode mode)
         throws IOException
     {
-<span class="fc" id="L702">        int len = text.length();</span>
-<span class="fc bfc" id="L703" title="All 2 branches covered.">        for (int i = 0; i &lt; len; i++)</span>
+<span class="fc" id="L723">        int len = text.length();</span>
+<span class="fc bfc" id="L724" title="All 2 branches covered.">        for (int i = 0; i &lt; len; i++)</span>
         {
-<span class="fc" id="L705">            int c = text.charAt(i);</span>
+<span class="fc" id="L726">            int c = text.charAt(i);</span>
 
-<span class="fc bfc" id="L707" title="All 2 branches covered.">            if (isHighSurrogate(c))</span>
+<span class="fc bfc" id="L728" title="All 2 branches covered.">            if (isHighSurrogate(c))</span>
             {
-<span class="fc" id="L709">                i++;</span>
+<span class="fc" id="L730">                i++;</span>
                 char c2;
                 // I apologize for the embedded assignment, but the alternative
                 // was worse.
-<span class="fc bfc" id="L713" title="All 4 branches covered.">                if (i &gt;= len || !isLowSurrogate(c2 = text.charAt(i)))</span>
+<span class="fc bfc" id="L734" title="All 4 branches covered.">                if (i &gt;= len || !isLowSurrogate(c2 = text.charAt(i)))</span>
                 {
-<span class="fc" id="L715">                    String message =</span>
+<span class="fc" id="L736">                    String message =</span>
                         &quot;text is invalid UTF-16. It contains an unmatched &quot; +
-<span class="fc" id="L717">                        &quot;high surrogate 0x&quot; + Integer.toHexString(c) +</span>
+<span class="fc" id="L738">                        &quot;high surrogate 0x&quot; + Integer.toHexString(c) +</span>
                         &quot; at index &quot; + i;
-<span class="fc" id="L719">                    throw new IllegalArgumentException(message);</span>
+<span class="fc" id="L740">                    throw new IllegalArgumentException(message);</span>
                 }
-<span class="fc" id="L721">                c = makeUnicodeScalar(c, c2);</span>
-<span class="fc" id="L722">            }</span>
-<span class="fc bfc" id="L723" title="All 2 branches covered.">            else if (isLowSurrogate(c))</span>
+<span class="fc" id="L742">                c = makeUnicodeScalar(c, c2);</span>
+<span class="fc" id="L743">            }</span>
+<span class="fc bfc" id="L744" title="All 2 branches covered.">            else if (isLowSurrogate(c))</span>
             {
-<span class="fc" id="L725">                String message =</span>
+<span class="fc" id="L746">                String message =</span>
                     &quot;text is invalid UTF-16. It contains an unmatched &quot; +
-<span class="fc" id="L727">                    &quot;low surrogate 0x&quot; + Integer.toHexString(c) +</span>
+<span class="fc" id="L748">                    &quot;low surrogate 0x&quot; + Integer.toHexString(c) +</span>
                     &quot; at index &quot; + i;
-<span class="fc" id="L729">                throw new IllegalArgumentException(message);</span>
+<span class="fc" id="L750">                throw new IllegalArgumentException(message);</span>
             }
 
-<span class="fc" id="L732">            printCodePoint(out, c, mode);</span>
+<span class="fc" id="L753">            printCodePoint(out, c, mode);</span>
         }
-<span class="fc" id="L734">    }</span>
+<span class="fc" id="L755">    }</span>
 
 
     ////////////////////////////////////
@@ -824,72 +845,72 @@ import java.math.BigDecimal;
     public static void printDecimal(Appendable out, BigDecimal decimal)
         throws IOException
     {
-<span class="fc" id="L827">        _Private_IonTextAppender appender =</span>
-<span class="fc" id="L828">            _Private_IonTextAppender.forAppendable(out);</span>
-<span class="fc" id="L829">        appender.printDecimal(STANDARD, decimal);</span>
-<span class="fc" id="L830">    }</span>
+<span class="fc" id="L848">        _Private_IonTextAppender appender =</span>
+<span class="fc" id="L849">            _Private_IonTextAppender.forAppendable(out);</span>
+<span class="fc" id="L850">        appender.printDecimal(STANDARD, decimal);</span>
+<span class="fc" id="L851">    }</span>
 
     public static String printDecimal(BigDecimal decimal)
     {
-<span class="fc bfc" id="L834" title="All 2 branches covered.">        if (decimal == null)</span>
+<span class="fc bfc" id="L855" title="All 2 branches covered.">        if (decimal == null)</span>
         {
-<span class="fc" id="L836">            return &quot;null.decimal&quot;;</span>
+<span class="fc" id="L857">            return &quot;null.decimal&quot;;</span>
         }
 
-<span class="fc" id="L839">        StringBuilder builder = new StringBuilder(64);</span>
+<span class="fc" id="L860">        StringBuilder builder = new StringBuilder(64);</span>
         try
         {
-<span class="fc" id="L842">            printDecimal(builder, decimal);</span>
+<span class="fc" id="L863">            printDecimal(builder, decimal);</span>
         }
-<span class="nc" id="L844">        catch (IOException e)</span>
+<span class="nc" id="L865">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L847">            throw new Error(e);</span>
-<span class="fc" id="L848">        }</span>
-<span class="fc" id="L849">        return builder.toString();</span>
+<span class="nc" id="L868">            throw new Error(e);</span>
+<span class="fc" id="L869">        }</span>
+<span class="fc" id="L870">        return builder.toString();</span>
     }
 
 
     public static void printFloat(Appendable out, double value)
         throws IOException
     {
-<span class="fc" id="L856">        _Private_IonTextAppender appender =</span>
-<span class="fc" id="L857">            _Private_IonTextAppender.forAppendable(out);</span>
-<span class="fc" id="L858">        appender.printFloat(value);</span>
-<span class="fc" id="L859">    }</span>
+<span class="fc" id="L877">        _Private_IonTextAppender appender =</span>
+<span class="fc" id="L878">            _Private_IonTextAppender.forAppendable(out);</span>
+<span class="fc" id="L879">        appender.printFloat(STANDARD, value);</span>
+<span class="fc" id="L880">    }</span>
 
     public static String printFloat(double value)
     {
-<span class="fc" id="L863">        StringBuilder builder = new StringBuilder(64);</span>
+<span class="fc" id="L884">        StringBuilder builder = new StringBuilder(64);</span>
         try
         {
-<span class="fc" id="L866">            printFloat(builder, value);</span>
+<span class="fc" id="L887">            printFloat(builder, value);</span>
         }
-<span class="nc" id="L868">        catch (IOException e)</span>
+<span class="nc" id="L889">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L871">            throw new Error(e);</span>
-<span class="fc" id="L872">        }</span>
-<span class="fc" id="L873">        return builder.toString();</span>
+<span class="nc" id="L892">            throw new Error(e);</span>
+<span class="fc" id="L893">        }</span>
+<span class="fc" id="L894">        return builder.toString();</span>
     }
 
 
     public static void printFloat(Appendable out, Double value)
         throws IOException
     {
-<span class="fc" id="L880">        _Private_IonTextAppender appender =</span>
-<span class="fc" id="L881">            _Private_IonTextAppender.forAppendable(out);</span>
-<span class="fc" id="L882">        appender.printFloat(value);</span>
-<span class="fc" id="L883">    }</span>
+<span class="fc" id="L901">        _Private_IonTextAppender appender =</span>
+<span class="fc" id="L902">            _Private_IonTextAppender.forAppendable(out);</span>
+<span class="fc" id="L903">        appender.printFloat(STANDARD, value);</span>
+<span class="fc" id="L904">    }</span>
 
     public static String printFloat(Double value)
     {
-<span class="fc bfc" id="L887" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L908" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L889">            return &quot;null.float&quot;;</span>
+<span class="fc" id="L910">            return &quot;null.float&quot;;</span>
         }
 
-<span class="fc" id="L892">        return printFloat(value.doubleValue());</span>
+<span class="fc" id="L913">        return printFloat(value.doubleValue());</span>
     }
 
 
@@ -900,72 +921,72 @@ import java.math.BigDecimal;
     public static void printBlob(Appendable out, byte[] value)
         throws IOException
     {
-<span class="fc bfc" id="L903" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L924" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L905">            out.append(&quot;null.blob&quot;);</span>
+<span class="fc" id="L926">            out.append(&quot;null.blob&quot;);</span>
         }
         else
         {
-<span class="fc" id="L909">            _Private_IonTextAppender appender =</span>
-<span class="fc" id="L910">                _Private_IonTextAppender.forAppendable(out);</span>
-<span class="fc" id="L911">            appender.printBlob(STANDARD, value, 0, value.length);</span>
+<span class="fc" id="L930">            _Private_IonTextAppender appender =</span>
+<span class="fc" id="L931">                _Private_IonTextAppender.forAppendable(out);</span>
+<span class="fc" id="L932">            appender.printBlob(STANDARD, value, 0, value.length);</span>
         }
-<span class="fc" id="L913">    }</span>
+<span class="fc" id="L934">    }</span>
 
     public static String printBlob(byte[] value)
     {
-<span class="fc bfc" id="L917" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L938" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L919">            return &quot;null.blob&quot;;</span>
+<span class="fc" id="L940">            return &quot;null.blob&quot;;</span>
         }
 
-<span class="fc" id="L922">        StringBuilder builder = new StringBuilder(64);</span>
+<span class="fc" id="L943">        StringBuilder builder = new StringBuilder(64);</span>
         try
         {
-<span class="fc" id="L925">            printBlob(builder, value);</span>
+<span class="fc" id="L946">            printBlob(builder, value);</span>
         }
-<span class="nc" id="L927">        catch (IOException e)</span>
+<span class="nc" id="L948">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L930">            throw new Error(e);</span>
-<span class="fc" id="L931">        }</span>
-<span class="fc" id="L932">        return builder.toString();</span>
+<span class="nc" id="L951">            throw new Error(e);</span>
+<span class="fc" id="L952">        }</span>
+<span class="fc" id="L953">        return builder.toString();</span>
     }
 
 
     public static void printClob(Appendable out, byte[] value)
         throws IOException
     {
-<span class="fc bfc" id="L939" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L960" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L941">            out.append(&quot;null.clob&quot;);</span>
+<span class="fc" id="L962">            out.append(&quot;null.clob&quot;);</span>
         }
         else
         {
-<span class="fc" id="L945">            _Private_IonTextAppender appender =</span>
-<span class="fc" id="L946">                _Private_IonTextAppender.forAppendable(out);</span>
-<span class="fc" id="L947">            appender.printClob(STANDARD, value, 0, value.length);</span>
+<span class="fc" id="L966">            _Private_IonTextAppender appender =</span>
+<span class="fc" id="L967">                _Private_IonTextAppender.forAppendable(out);</span>
+<span class="fc" id="L968">            appender.printClob(STANDARD, value, 0, value.length);</span>
         }
-<span class="fc" id="L949">    }</span>
+<span class="fc" id="L970">    }</span>
 
     public static String printClob(byte[] value)
     {
-<span class="fc bfc" id="L953" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L974" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L955">            return &quot;null.clob&quot;;</span>
+<span class="fc" id="L976">            return &quot;null.clob&quot;;</span>
         }
 
-<span class="fc" id="L958">        StringBuilder builder = new StringBuilder(64);</span>
+<span class="fc" id="L979">        StringBuilder builder = new StringBuilder(64);</span>
         try
         {
-<span class="fc" id="L961">            printClob(builder, value);</span>
+<span class="fc" id="L982">            printClob(builder, value);</span>
         }
-<span class="nc" id="L963">        catch (IOException e)</span>
+<span class="nc" id="L984">        catch (IOException e)</span>
         {
             // Shouldn't happen
-<span class="nc" id="L966">            throw new Error(e);</span>
-<span class="fc" id="L967">        }</span>
-<span class="fc" id="L968">        return builder.toString();</span>
+<span class="nc" id="L987">            throw new Error(e);</span>
+<span class="fc" id="L988">        }</span>
+<span class="fc" id="L989">        return builder.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

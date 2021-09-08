@@ -513,177 +513,182 @@ import com.amazon.ion.impl._Private_ScalarConversions.CantConvertException;
 <span class="pc bpc" id="L513" title="2 of 4 branches missed.">        assert length &gt; 1;</span>
 
 <span class="fc" id="L515">        String digits = sidToken.subSequence(1, length).toString();</span>
-<span class="fc" id="L516">        return Integer.parseInt(digits);</span>
+
+        try {
+<span class="fc" id="L518">            return Integer.parseInt(digits);</span>
+<span class="fc" id="L519">        } catch (Exception e) {</span>
+<span class="fc" id="L520">            throw new IonException(String.format(&quot;Unable to parse SID %s&quot;, digits), e);</span>
+        }
     }
 
     static public int keyword(CharSequence word, int start_word, int end_word)
     {
-<span class="fc" id="L521">        int c = word.charAt(start_word);</span>
-<span class="fc" id="L522">        int len = end_word - start_word; // +1 but we build that into the constants below</span>
-<span class="fc bfc" id="L523" title="All 11 branches covered.">        switch (c) {</span>
+<span class="fc" id="L526">        int c = word.charAt(start_word);</span>
+<span class="fc" id="L527">        int len = end_word - start_word; // +1 but we build that into the constants below</span>
+<span class="fc bfc" id="L528" title="All 11 branches covered.">        switch (c) {</span>
         case '$':
-<span class="fc bfc" id="L525" title="All 2 branches covered.">            if (len &gt; 1) {</span>
-<span class="fc bfc" id="L526" title="All 2 branches covered.">                for (int i = start_word + 1; i &lt; end_word; i++) {</span>
-<span class="fc bfc" id="L527" title="All 2 branches covered.">                    if (! isDigit(word.charAt(i))) return -1;</span>
+<span class="fc bfc" id="L530" title="All 2 branches covered.">            if (len &gt; 1) {</span>
+<span class="fc bfc" id="L531" title="All 2 branches covered.">                for (int i = start_word + 1; i &lt; end_word; i++) {</span>
+<span class="fc bfc" id="L532" title="All 2 branches covered.">                    if (! isDigit(word.charAt(i))) return -1;</span>
                 }
-<span class="fc" id="L529">                return KEYWORD_sid;</span>
+<span class="fc" id="L534">                return KEYWORD_sid;</span>
             }
-<span class="fc" id="L531">            return -1;</span>
+<span class="fc" id="L536">            return -1;</span>
         case 'b':
-<span class="fc bfc" id="L533" title="All 2 branches covered.">            if (len == 4) {</span>
-<span class="pc bpc" id="L534" title="1 of 2 branches missed.">                if (word.charAt(start_word+1) == 'o'</span>
-<span class="nc bnc" id="L535" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
-<span class="nc bnc" id="L536" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'l'</span>
+<span class="fc bfc" id="L538" title="All 2 branches covered.">            if (len == 4) {</span>
+<span class="fc bfc" id="L539" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'o'</span>
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
+<span class="pc bpc" id="L541" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'l'</span>
                 ) {
-<span class="nc" id="L538">                    return KEYWORD_BOOL;</span>
+<span class="fc" id="L543">                    return KEYWORD_BOOL;</span>
                 }
-<span class="fc bfc" id="L540" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'l'</span>
-<span class="pc bpc" id="L541" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
-<span class="pc bpc" id="L542" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'b'</span>
+<span class="fc bfc" id="L545" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'l'</span>
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
+<span class="pc bpc" id="L547" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'b'</span>
                 ) {
-<span class="fc" id="L544">                    return KEYWORD_BLOB;</span>
+<span class="fc" id="L549">                    return KEYWORD_BLOB;</span>
                 }
             }
-<span class="fc" id="L547">            return -1;</span>
+<span class="fc" id="L552">            return -1;</span>
         case 'c':
-<span class="pc bpc" id="L549" title="1 of 2 branches missed.">            if (len == 4) {</span>
-<span class="nc bnc" id="L550" title="All 2 branches missed.">                if (word.charAt(start_word+1) == 'l'</span>
-<span class="nc bnc" id="L551" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
-<span class="nc bnc" id="L552" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'b'</span>
+<span class="pc bpc" id="L554" title="1 of 2 branches missed.">            if (len == 4) {</span>
+<span class="nc bnc" id="L555" title="All 2 branches missed.">                if (word.charAt(start_word+1) == 'l'</span>
+<span class="nc bnc" id="L556" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
+<span class="nc bnc" id="L557" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'b'</span>
                 ) {
-<span class="nc" id="L554">                    return KEYWORD_CLOB;</span>
+<span class="nc" id="L559">                    return KEYWORD_CLOB;</span>
                 }
             }
-<span class="fc" id="L557">            return -1;</span>
+<span class="fc" id="L562">            return -1;</span>
         case 'd':
-<span class="pc bpc" id="L559" title="1 of 2 branches missed.">            if (len == 7) {</span>
-<span class="nc bnc" id="L560" title="All 2 branches missed.">                if (word.charAt(start_word+1) == 'e'</span>
-<span class="nc bnc" id="L561" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'c'</span>
-<span class="nc bnc" id="L562" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'i'</span>
-<span class="nc bnc" id="L563" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 'm'</span>
-<span class="nc bnc" id="L564" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+5) == 'a'</span>
-<span class="nc bnc" id="L565" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+6) == 'l'</span>
+<span class="pc bpc" id="L564" title="1 of 2 branches missed.">            if (len == 7) {</span>
+<span class="nc bnc" id="L565" title="All 2 branches missed.">                if (word.charAt(start_word+1) == 'e'</span>
+<span class="nc bnc" id="L566" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'c'</span>
+<span class="nc bnc" id="L567" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'i'</span>
+<span class="nc bnc" id="L568" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 'm'</span>
+<span class="nc bnc" id="L569" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+5) == 'a'</span>
+<span class="nc bnc" id="L570" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+6) == 'l'</span>
                 ) {
-<span class="nc" id="L567">                    return KEYWORD_DECIMAL;</span>
+<span class="nc" id="L572">                    return KEYWORD_DECIMAL;</span>
                 }
             }
-<span class="fc" id="L570">            return -1;</span>
+<span class="fc" id="L575">            return -1;</span>
         case 'f':
-<span class="fc bfc" id="L572" title="All 2 branches covered.">            if (len == 5) {</span>
-<span class="fc bfc" id="L573" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'a'</span>
-<span class="pc bpc" id="L574" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'l'</span>
-<span class="pc bpc" id="L575" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 's'</span>
-<span class="pc bpc" id="L576" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 'e'</span>
+<span class="fc bfc" id="L577" title="All 2 branches covered.">            if (len == 5) {</span>
+<span class="fc bfc" id="L578" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'a'</span>
+<span class="pc bpc" id="L579" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'l'</span>
+<span class="pc bpc" id="L580" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 's'</span>
+<span class="pc bpc" id="L581" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 'e'</span>
                 ) {
-<span class="fc" id="L578">                    return KEYWORD_FALSE;</span>
+<span class="fc" id="L583">                    return KEYWORD_FALSE;</span>
                 }
-<span class="pc bpc" id="L580" title="1 of 2 branches missed.">                if (word.charAt(start_word+1) == 'l'</span>
-<span class="nc bnc" id="L581" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
-<span class="nc bnc" id="L582" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'a'</span>
-<span class="nc bnc" id="L583" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 't'</span>
+<span class="pc bpc" id="L585" title="1 of 2 branches missed.">                if (word.charAt(start_word+1) == 'l'</span>
+<span class="nc bnc" id="L586" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'o'</span>
+<span class="nc bnc" id="L587" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'a'</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 't'</span>
                 ) {
-<span class="nc" id="L585">                    return KEYWORD_FLOAT;</span>
+<span class="nc" id="L590">                    return KEYWORD_FLOAT;</span>
                 }
             }
-<span class="fc" id="L588">            return -1;</span>
+<span class="fc" id="L593">            return -1;</span>
         case 'i':
-<span class="fc bfc" id="L590" title="All 2 branches covered.">            if (len == 3) {</span>
-<span class="fc bfc" id="L591" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'n') {</span>
-<span class="pc bpc" id="L592" title="1 of 2 branches missed.">                    if (word.charAt(start_word+2) == 't') {</span>
-<span class="nc" id="L593">                        return KEYWORD_INT;</span>
+<span class="fc bfc" id="L595" title="All 2 branches covered.">            if (len == 3) {</span>
+<span class="fc bfc" id="L596" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'n') {</span>
+<span class="pc bpc" id="L597" title="1 of 2 branches missed.">                    if (word.charAt(start_word+2) == 't') {</span>
+<span class="nc" id="L598">                        return KEYWORD_INT;</span>
                     }
                 }
             }
-<span class="fc" id="L597">            return -1;</span>
+<span class="fc" id="L602">            return -1;</span>
         case 'l':
-<span class="fc bfc" id="L599" title="All 2 branches covered.">            if (len == 4) {</span>
-<span class="fc bfc" id="L600" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'i'</span>
-<span class="pc bpc" id="L601" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 's'</span>
-<span class="pc bpc" id="L602" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 't'</span>
+<span class="fc bfc" id="L604" title="All 2 branches covered.">            if (len == 4) {</span>
+<span class="fc bfc" id="L605" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'i'</span>
+<span class="pc bpc" id="L606" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 's'</span>
+<span class="pc bpc" id="L607" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 't'</span>
                 ) {
-<span class="fc" id="L604">                    return KEYWORD_LIST;</span>
+<span class="fc" id="L609">                    return KEYWORD_LIST;</span>
                 }
             }
-<span class="fc" id="L607">            return -1;</span>
+<span class="fc" id="L612">            return -1;</span>
         case 'n':
-<span class="fc bfc" id="L609" title="All 2 branches covered.">            if (len == 4) {</span>
-<span class="fc bfc" id="L610" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'u'</span>
-<span class="pc bpc" id="L611" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'l'</span>
-<span class="pc bpc" id="L612" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'l'</span>
+<span class="fc bfc" id="L614" title="All 2 branches covered.">            if (len == 4) {</span>
+<span class="fc bfc" id="L615" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'u'</span>
+<span class="pc bpc" id="L616" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'l'</span>
+<span class="pc bpc" id="L617" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'l'</span>
                 ) {
-<span class="fc" id="L614">                    return KEYWORD_NULL;</span>
+<span class="fc" id="L619">                    return KEYWORD_NULL;</span>
                 }
             }
-<span class="fc bfc" id="L617" title="All 2 branches covered.">            else if (len == 3) {</span>
-<span class="fc bfc" id="L618" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'a'</span>
-<span class="pc bpc" id="L619" title="1 of 2 branches missed.">                    &amp;&amp; word.charAt(start_word+2) == 'n'</span>
+<span class="fc bfc" id="L622" title="All 2 branches covered.">            else if (len == 3) {</span>
+<span class="fc bfc" id="L623" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'a'</span>
+<span class="pc bpc" id="L624" title="1 of 2 branches missed.">                    &amp;&amp; word.charAt(start_word+2) == 'n'</span>
                    ) {
-<span class="fc" id="L621">                       return KEYWORD_NAN;</span>
+<span class="fc" id="L626">                       return KEYWORD_NAN;</span>
                    }
             }
-<span class="fc" id="L624">            return -1;</span>
+<span class="fc" id="L629">            return -1;</span>
         case 's':
-<span class="fc bfc" id="L626" title="All 2 branches covered.">            if (len == 4) {</span>
-<span class="fc bfc" id="L627" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'e'</span>
-<span class="pc bpc" id="L628" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'x'</span>
-<span class="pc bpc" id="L629" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'p'</span>
+<span class="fc bfc" id="L631" title="All 2 branches covered.">            if (len == 4) {</span>
+<span class="fc bfc" id="L632" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'e'</span>
+<span class="pc bpc" id="L633" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'x'</span>
+<span class="pc bpc" id="L634" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'p'</span>
                 ) {
-<span class="fc" id="L631">                    return KEYWORD_SEXP;</span>
+<span class="fc" id="L636">                    return KEYWORD_SEXP;</span>
                 }
             }
-<span class="fc bfc" id="L634" title="All 2 branches covered.">            else if (len == 6) {</span>
-<span class="fc bfc" id="L635" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 't'</span>
-<span class="pc bpc" id="L636" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'r'</span>
+<span class="fc bfc" id="L639" title="All 2 branches covered.">            else if (len == 6) {</span>
+<span class="fc bfc" id="L640" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 't'</span>
+<span class="pc bpc" id="L641" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'r'</span>
                 ) {
-<span class="pc bpc" id="L638" title="1 of 2 branches missed.">                    if (word.charAt(start_word+3) == 'i'</span>
-<span class="nc bnc" id="L639" title="All 2 branches missed.">                     &amp;&amp; word.charAt(start_word+4) == 'n'</span>
-<span class="nc bnc" id="L640" title="All 2 branches missed.">                     &amp;&amp; word.charAt(start_word+5) == 'g'</span>
+<span class="pc bpc" id="L643" title="1 of 2 branches missed.">                    if (word.charAt(start_word+3) == 'i'</span>
+<span class="nc bnc" id="L644" title="All 2 branches missed.">                     &amp;&amp; word.charAt(start_word+4) == 'n'</span>
+<span class="nc bnc" id="L645" title="All 2 branches missed.">                     &amp;&amp; word.charAt(start_word+5) == 'g'</span>
                     ) {
-<span class="nc" id="L642">                        return KEYWORD_STRING;</span>
+<span class="nc" id="L647">                        return KEYWORD_STRING;</span>
                     }
-<span class="pc bpc" id="L644" title="1 of 2 branches missed.">                    if (word.charAt(start_word+3) == 'u'</span>
-<span class="pc bpc" id="L645" title="1 of 2 branches missed.">                     &amp;&amp; word.charAt(start_word+4) == 'c'</span>
-<span class="pc bpc" id="L646" title="1 of 2 branches missed.">                     &amp;&amp; word.charAt(start_word+5) == 't'</span>
+<span class="pc bpc" id="L649" title="1 of 2 branches missed.">                    if (word.charAt(start_word+3) == 'u'</span>
+<span class="pc bpc" id="L650" title="1 of 2 branches missed.">                     &amp;&amp; word.charAt(start_word+4) == 'c'</span>
+<span class="pc bpc" id="L651" title="1 of 2 branches missed.">                     &amp;&amp; word.charAt(start_word+5) == 't'</span>
                     ) {
-<span class="fc" id="L648">                        return KEYWORD_STRUCT;</span>
+<span class="fc" id="L653">                        return KEYWORD_STRUCT;</span>
                     }
-<span class="nc" id="L650">                    return -1;</span>
+<span class="nc" id="L655">                    return -1;</span>
                 }
-<span class="fc bfc" id="L652" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'y'</span>
-<span class="pc bpc" id="L653" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'm'</span>
-<span class="pc bpc" id="L654" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'b'</span>
-<span class="pc bpc" id="L655" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 'o'</span>
-<span class="pc bpc" id="L656" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+5) == 'l'</span>
+<span class="fc bfc" id="L657" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'y'</span>
+<span class="pc bpc" id="L658" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'm'</span>
+<span class="pc bpc" id="L659" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'b'</span>
+<span class="pc bpc" id="L660" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 'o'</span>
+<span class="pc bpc" id="L661" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+5) == 'l'</span>
                 ) {
-<span class="fc" id="L658">                    return KEYWORD_SYMBOL;</span>
+<span class="fc" id="L663">                    return KEYWORD_SYMBOL;</span>
                 }
             }
-<span class="fc" id="L661">            return -1;</span>
+<span class="fc" id="L666">            return -1;</span>
         case 't':
-<span class="fc bfc" id="L663" title="All 2 branches covered.">            if (len == 4) {</span>
-<span class="fc bfc" id="L664" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'r'</span>
-<span class="pc bpc" id="L665" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'u'</span>
-<span class="pc bpc" id="L666" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'e'</span>
+<span class="fc bfc" id="L668" title="All 2 branches covered.">            if (len == 4) {</span>
+<span class="fc bfc" id="L669" title="All 2 branches covered.">                if (word.charAt(start_word+1) == 'r'</span>
+<span class="pc bpc" id="L670" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'u'</span>
+<span class="pc bpc" id="L671" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'e'</span>
                 ) {
-<span class="fc" id="L668">                    return KEYWORD_TRUE;</span>
+<span class="fc" id="L673">                    return KEYWORD_TRUE;</span>
                 }
             }
-<span class="fc bfc" id="L671" title="All 2 branches covered.">            else if (len == 9) {</span>
-<span class="pc bpc" id="L672" title="1 of 2 branches missed.">                if (word.charAt(start_word+1) == 'i'</span>
-<span class="pc bpc" id="L673" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'm'</span>
-<span class="nc bnc" id="L674" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'e'</span>
-<span class="nc bnc" id="L675" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 's'</span>
-<span class="nc bnc" id="L676" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+5) == 't'</span>
-<span class="nc bnc" id="L677" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+6) == 'a'</span>
-<span class="nc bnc" id="L678" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+7) == 'm'</span>
-<span class="nc bnc" id="L679" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+8) == 'p'</span>
+<span class="fc bfc" id="L676" title="All 2 branches covered.">            else if (len == 9) {</span>
+<span class="pc bpc" id="L677" title="1 of 2 branches missed.">                if (word.charAt(start_word+1) == 'i'</span>
+<span class="pc bpc" id="L678" title="1 of 2 branches missed.">                 &amp;&amp; word.charAt(start_word+2) == 'm'</span>
+<span class="nc bnc" id="L679" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+3) == 'e'</span>
+<span class="nc bnc" id="L680" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+4) == 's'</span>
+<span class="nc bnc" id="L681" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+5) == 't'</span>
+<span class="nc bnc" id="L682" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+6) == 'a'</span>
+<span class="nc bnc" id="L683" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+7) == 'm'</span>
+<span class="nc bnc" id="L684" title="All 2 branches missed.">                 &amp;&amp; word.charAt(start_word+8) == 'p'</span>
                 ) {
-<span class="nc" id="L681">                    return KEYWORD_TIMESTAMP;</span>
+<span class="nc" id="L686">                    return KEYWORD_TIMESTAMP;</span>
                 }
             }
-<span class="fc" id="L684">            return -1;</span>
+<span class="fc" id="L689">            return -1;</span>
         default:
-<span class="fc" id="L686">            return -1;</span>
+<span class="fc" id="L691">            return -1;</span>
         }
     }
 
@@ -718,7 +723,7 @@ import com.amazon.ion.impl._Private_ScalarConversions.CantConvertException;
     // is represented by a 1 dim int array and fn's used
     // to access it (since inline-ing final static small methods
     // is easy for the compiler)
-<span class="fc" id="L721">    static final int  TN_MAX_NAME_LENGTH = &quot;TIMESTAMP&quot;.length() + 1; // so anything too long will be 0</span>
+<span class="fc" id="L726">    static final int  TN_MAX_NAME_LENGTH = &quot;TIMESTAMP&quot;.length() + 1; // so anything too long will be 0</span>
     static final int  TN_LETTER_MAX_IDX = 19;
 
     static final int  KW_BIT_BLOB       = 0x0001;
@@ -736,7 +741,7 @@ import com.amazon.ion.impl._Private_ScalarConversions.CantConvertException;
     static final int  KW_BIT_TIMESTAMP  = 0x1000;
     static final int  KW_ALL_BITS       = 0x1fff;
 
-<span class="fc" id="L739">    static final int[] typeNameBits = new int[] {</span>
+<span class="fc" id="L744">    static final int[] typeNameBits = new int[] {</span>
         KW_BIT_BLOB,      KW_BIT_BOOL,    KW_BIT_CLOB,
         KW_BIT_DECIMAL,   KW_BIT_FLOAT,   KW_BIT_INT,
         KW_BIT_LIST,      KW_BIT_NULL,    KW_BIT_SEXP,
@@ -744,14 +749,14 @@ import com.amazon.ion.impl._Private_ScalarConversions.CantConvertException;
         KW_BIT_TIMESTAMP
     };
 
-<span class="fc" id="L747">    static final String[] typeNameNames = new String[] {</span>
+<span class="fc" id="L752">    static final String[] typeNameNames = new String[] {</span>
         &quot;blob&quot;,           &quot;bool&quot;,         &quot;clob&quot;,
         &quot;decimal&quot;,        &quot;float&quot;,        &quot;int&quot;,
         &quot;list&quot;,           &quot;null&quot;,         &quot;sexp&quot;,
         &quot;string&quot;,         &quot;struct&quot;,       &quot;symbol&quot;,
         &quot;timestamp&quot;
     };
-<span class="fc" id="L754">    static final int[] typeNameKeyWordIds = new int[] {</span>
+<span class="fc" id="L759">    static final int[] typeNameKeyWordIds = new int[] {</span>
         KEYWORD_BLOB,     KEYWORD_BOOL,   KEYWORD_CLOB,
         KEYWORD_DECIMAL,  KEYWORD_FLOAT,  KEYWORD_INT,
         KEYWORD_LIST,     KEYWORD_NULL,   KEYWORD_SEXP,
@@ -759,191 +764,191 @@ import com.amazon.ion.impl._Private_ScalarConversions.CantConvertException;
         KEYWORD_TIMESTAMP
     };
 
-<span class="fc" id="L762">    static final int[] TypeNameBitIndex = makeTypeNameBitIndex();</span>
+<span class="fc" id="L767">    static final int[] TypeNameBitIndex = makeTypeNameBitIndex();</span>
     static final int[] makeTypeNameBitIndex() {
-<span class="fc" id="L764">        int[] bits = new int[TN_MAX_NAME_LENGTH*TN_LETTER_MAX_IDX];</span>
+<span class="fc" id="L769">        int[] bits = new int[TN_MAX_NAME_LENGTH*TN_LETTER_MAX_IDX];</span>
         int   typename_bit;
-<span class="fc bfc" id="L766" title="All 2 branches covered.">        for (int tt=0; tt&lt;typeNameNames.length; tt++) {</span>
-<span class="fc" id="L767">            String typename = typeNameNames[tt];</span>
-<span class="fc" id="L768">            typename_bit = typeNameBits[tt];</span>
-<span class="fc bfc" id="L769" title="All 2 branches covered.">            for (int ii=0; ii&lt;typename.length(); ii++) {</span>
-<span class="fc" id="L770">                int c = typename.charAt(ii);</span>
-<span class="fc" id="L771">                int l = typeNameLetterIdx(c);</span>
-<span class="pc bpc" id="L772" title="2 of 4 branches missed.">                assert(l &gt; 0);</span>
-<span class="fc" id="L773">                typename_set_bit(bits, ii, l, typename_bit);</span>
+<span class="fc bfc" id="L771" title="All 2 branches covered.">        for (int tt=0; tt&lt;typeNameNames.length; tt++) {</span>
+<span class="fc" id="L772">            String typename = typeNameNames[tt];</span>
+<span class="fc" id="L773">            typename_bit = typeNameBits[tt];</span>
+<span class="fc bfc" id="L774" title="All 2 branches covered.">            for (int ii=0; ii&lt;typename.length(); ii++) {</span>
+<span class="fc" id="L775">                int c = typename.charAt(ii);</span>
+<span class="fc" id="L776">                int l = typeNameLetterIdx(c);</span>
+<span class="pc bpc" id="L777" title="2 of 4 branches missed.">                assert(l &gt; 0);</span>
+<span class="fc" id="L778">                typename_set_bit(bits, ii, l, typename_bit);</span>
             }
         }
-<span class="fc" id="L776">        return bits;</span>
+<span class="fc" id="L781">        return bits;</span>
     }
     private final static void typename_set_bit(int[] bits, int ii, int l, int typename_bit)
     {
         // bits[ii][l]
-<span class="fc" id="L781">        int idx = (ii * TN_LETTER_MAX_IDX) + l - 1;</span>
-<span class="fc" id="L782">        bits[idx] |= typename_bit;</span>
-<span class="fc" id="L783">    }</span>
+<span class="fc" id="L786">        int idx = (ii * TN_LETTER_MAX_IDX) + l - 1;</span>
+<span class="fc" id="L787">        bits[idx] |= typename_bit;</span>
+<span class="fc" id="L788">    }</span>
     public final static int typeNameLetterIdx(int c) {
-<span class="fc bfc" id="L785" title="All 20 branches covered.">        switch(c) {</span>
-<span class="fc" id="L786">        case 'a': return  1;</span>
-<span class="fc" id="L787">        case 'b': return  2;</span>
-<span class="fc" id="L788">        case 'c': return  3;</span>
-<span class="fc" id="L789">        case 'd': return  4;</span>
-<span class="fc" id="L790">        case 'e': return  5;</span>
-<span class="fc" id="L791">        case 'f': return  6;</span>
-<span class="fc" id="L792">        case 'g': return  7;</span>
-<span class="fc" id="L793">        case 'i': return  8;</span>
-<span class="fc" id="L794">        case 'l': return  9;</span>
-<span class="fc" id="L795">        case 'm': return 10;</span>
-<span class="fc" id="L796">        case 'n': return 11;</span>
-<span class="fc" id="L797">        case 'o': return 12;</span>
-<span class="fc" id="L798">        case 'p': return 13;</span>
-<span class="fc" id="L799">        case 'r': return 14;</span>
-<span class="fc" id="L800">        case 's': return 15;</span>
-<span class="fc" id="L801">        case 't': return 16;</span>
-<span class="fc" id="L802">        case 'u': return 17;</span>
-<span class="fc" id="L803">        case 'x': return 18;</span>
-<span class="fc" id="L804">        case 'y': return 19;</span>
-<span class="fc" id="L805">        default:  return -1;</span>
+<span class="fc bfc" id="L790" title="All 20 branches covered.">        switch(c) {</span>
+<span class="fc" id="L791">        case 'a': return  1;</span>
+<span class="fc" id="L792">        case 'b': return  2;</span>
+<span class="fc" id="L793">        case 'c': return  3;</span>
+<span class="fc" id="L794">        case 'd': return  4;</span>
+<span class="fc" id="L795">        case 'e': return  5;</span>
+<span class="fc" id="L796">        case 'f': return  6;</span>
+<span class="fc" id="L797">        case 'g': return  7;</span>
+<span class="fc" id="L798">        case 'i': return  8;</span>
+<span class="fc" id="L799">        case 'l': return  9;</span>
+<span class="fc" id="L800">        case 'm': return 10;</span>
+<span class="fc" id="L801">        case 'n': return 11;</span>
+<span class="fc" id="L802">        case 'o': return 12;</span>
+<span class="fc" id="L803">        case 'p': return 13;</span>
+<span class="fc" id="L804">        case 'r': return 14;</span>
+<span class="fc" id="L805">        case 's': return 15;</span>
+<span class="fc" id="L806">        case 't': return 16;</span>
+<span class="fc" id="L807">        case 'u': return 17;</span>
+<span class="fc" id="L808">        case 'x': return 18;</span>
+<span class="fc" id="L809">        case 'y': return 19;</span>
+<span class="fc" id="L810">        default:  return -1;</span>
         }
     }
     public final static int typeNamePossibilityMask(int pos, int letter_idx) {
-<span class="fc" id="L809">        int idx = (pos * TN_LETTER_MAX_IDX) + letter_idx - 1;</span>
-<span class="fc" id="L810">        int mask = TypeNameBitIndex[idx];</span>
-<span class="fc" id="L811">        return mask;</span>
+<span class="fc" id="L814">        int idx = (pos * TN_LETTER_MAX_IDX) + letter_idx - 1;</span>
+<span class="fc" id="L815">        int mask = TypeNameBitIndex[idx];</span>
+<span class="fc" id="L816">        return mask;</span>
     }
     // this can be faster but it's pretty unusual to be called.
     public final static int typeNameKeyWordFromMask(int possible_names, int length) {
-<span class="fc" id="L815">        int kw = KEYWORD_unrecognized;</span>
-<span class="fc bfc" id="L816" title="All 2 branches covered.">        if (possible_names != IonTokenConstsX.KW_ALL_BITS) {</span>
-<span class="pc bpc" id="L817" title="1 of 2 branches missed.">            for (int ii=0; ii&lt;typeNameBits.length; ii++) {</span>
-<span class="fc" id="L818">                int tb = typeNameBits[ii];</span>
-<span class="fc bfc" id="L819" title="All 2 branches covered.">                if (tb == possible_names) {</span>
-<span class="pc bpc" id="L820" title="1 of 2 branches missed.">                    if (typeNameNames[ii].length() == length) {</span>
-<span class="fc" id="L821">                        kw = typeNameKeyWordIds[ii];</span>
+<span class="fc" id="L820">        int kw = KEYWORD_unrecognized;</span>
+<span class="fc bfc" id="L821" title="All 2 branches covered.">        if (possible_names != IonTokenConstsX.KW_ALL_BITS) {</span>
+<span class="pc bpc" id="L822" title="1 of 2 branches missed.">            for (int ii=0; ii&lt;typeNameBits.length; ii++) {</span>
+<span class="fc" id="L823">                int tb = typeNameBits[ii];</span>
+<span class="fc bfc" id="L824" title="All 2 branches covered.">                if (tb == possible_names) {</span>
+<span class="pc bpc" id="L825" title="1 of 2 branches missed.">                    if (typeNameNames[ii].length() == length) {</span>
+<span class="fc" id="L826">                        kw = typeNameKeyWordIds[ii];</span>
                     }
                     break;
                 }
             }
         }
-<span class="fc" id="L827">        return kw;</span>
+<span class="fc" id="L832">        return kw;</span>
     }
     public static final String getNullImage(IonType type)
     {
-<span class="nc" id="L831">        String nullimage = null;</span>
+<span class="nc" id="L836">        String nullimage = null;</span>
 
-<span class="nc bnc" id="L833" title="All 14 branches missed.">        switch (type) {</span>
-<span class="nc" id="L834">        case NULL:      nullimage = &quot;null&quot;;           break;</span>
-<span class="nc" id="L835">        case BOOL:      nullimage = &quot;null.bool&quot;;      break;</span>
-<span class="nc" id="L836">        case INT:       nullimage = &quot;null.int&quot;;       break;</span>
-<span class="nc" id="L837">        case FLOAT:     nullimage = &quot;null.float&quot;;     break;</span>
-<span class="nc" id="L838">        case DECIMAL:   nullimage = &quot;null.decimal&quot;;   break;</span>
-<span class="nc" id="L839">        case TIMESTAMP: nullimage = &quot;null.timestamp&quot;; break;</span>
-<span class="nc" id="L840">        case SYMBOL:    nullimage = &quot;null.symbol&quot;;    break;</span>
-<span class="nc" id="L841">        case STRING:    nullimage = &quot;null.string&quot;;    break;</span>
-<span class="nc" id="L842">        case BLOB:      nullimage = &quot;null.blob&quot;;      break;</span>
-<span class="nc" id="L843">        case CLOB:      nullimage = &quot;null.clob&quot;;      break;</span>
-<span class="nc" id="L844">        case SEXP:      nullimage = &quot;null.sexp&quot;;      break;</span>
-<span class="nc" id="L845">        case LIST:      nullimage = &quot;null.list&quot;;      break;</span>
-<span class="nc" id="L846">        case STRUCT:    nullimage = &quot;null.struct&quot;;    break;</span>
+<span class="nc bnc" id="L838" title="All 14 branches missed.">        switch (type) {</span>
+<span class="nc" id="L839">        case NULL:      nullimage = &quot;null&quot;;           break;</span>
+<span class="nc" id="L840">        case BOOL:      nullimage = &quot;null.bool&quot;;      break;</span>
+<span class="nc" id="L841">        case INT:       nullimage = &quot;null.int&quot;;       break;</span>
+<span class="nc" id="L842">        case FLOAT:     nullimage = &quot;null.float&quot;;     break;</span>
+<span class="nc" id="L843">        case DECIMAL:   nullimage = &quot;null.decimal&quot;;   break;</span>
+<span class="nc" id="L844">        case TIMESTAMP: nullimage = &quot;null.timestamp&quot;; break;</span>
+<span class="nc" id="L845">        case SYMBOL:    nullimage = &quot;null.symbol&quot;;    break;</span>
+<span class="nc" id="L846">        case STRING:    nullimage = &quot;null.string&quot;;    break;</span>
+<span class="nc" id="L847">        case BLOB:      nullimage = &quot;null.blob&quot;;      break;</span>
+<span class="nc" id="L848">        case CLOB:      nullimage = &quot;null.clob&quot;;      break;</span>
+<span class="nc" id="L849">        case SEXP:      nullimage = &quot;null.sexp&quot;;      break;</span>
+<span class="nc" id="L850">        case LIST:      nullimage = &quot;null.list&quot;;      break;</span>
+<span class="nc" id="L851">        case STRUCT:    nullimage = &quot;null.struct&quot;;    break;</span>
 
-<span class="nc" id="L848">        default: throw new IllegalStateException(&quot;unexpected type &quot; + type);</span>
+<span class="nc" id="L853">        default: throw new IllegalStateException(&quot;unexpected type &quot; + type);</span>
         }
 
-<span class="nc" id="L851">        return nullimage;</span>
+<span class="nc" id="L856">        return nullimage;</span>
     }
     public static final IonType getNullType(CharSequence s)
     {
-<span class="nc" id="L855">        IonType type = null;</span>
-<span class="nc" id="L856">        int     c, ii = 0;</span>
-<span class="nc" id="L857">        boolean stop = false;</span>
-<span class="nc bnc" id="L858" title="All 4 branches missed.">        while (!stop &amp;&amp; ii&lt;s.length()) {</span>
-<span class="nc" id="L859">            c = s.charAt(ii++);</span>
-<span class="nc bnc" id="L860" title="All 3 branches missed.">            switch (c) {</span>
+<span class="nc" id="L860">        IonType type = null;</span>
+<span class="nc" id="L861">        int     c, ii = 0;</span>
+<span class="nc" id="L862">        boolean stop = false;</span>
+<span class="nc bnc" id="L863" title="All 4 branches missed.">        while (!stop &amp;&amp; ii&lt;s.length()) {</span>
+<span class="nc" id="L864">            c = s.charAt(ii++);</span>
+<span class="nc bnc" id="L865" title="All 3 branches missed.">            switch (c) {</span>
             case ' ': case '\t': case '\r': case '\n':
-<span class="nc" id="L862">                break;</span>
+<span class="nc" id="L867">                break;</span>
             case 'n':
-<span class="nc" id="L864">                stop = true;</span>
-<span class="nc" id="L865">                break;</span>
+<span class="nc" id="L869">                stop = true;</span>
+<span class="nc" id="L870">                break;</span>
             default:
-<span class="nc" id="L867">                invalid_null_image(s);</span>
+<span class="nc" id="L872">                invalid_null_image(s);</span>
             }
         }
-<span class="nc bnc" id="L870" title="All 4 branches missed.">        if (ii&gt;=s.length() || s.charAt(ii++) != 'u') invalid_null_image(s);</span>
-<span class="nc bnc" id="L871" title="All 4 branches missed.">        if (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_null_image(s);</span>
-<span class="nc bnc" id="L872" title="All 4 branches missed.">        if (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_null_image(s);</span>
-<span class="nc" id="L873">        boolean dot = false;</span>
-<span class="nc bnc" id="L874" title="All 4 branches missed.">        while (!dot &amp;&amp; ii&lt;s.length()) {</span>
-<span class="nc" id="L875">            c = s.charAt(ii++);</span>
-<span class="nc bnc" id="L876" title="All 3 branches missed.">            switch (c) {</span>
+<span class="nc bnc" id="L875" title="All 4 branches missed.">        if (ii&gt;=s.length() || s.charAt(ii++) != 'u') invalid_null_image(s);</span>
+<span class="nc bnc" id="L876" title="All 4 branches missed.">        if (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_null_image(s);</span>
+<span class="nc bnc" id="L877" title="All 4 branches missed.">        if (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_null_image(s);</span>
+<span class="nc" id="L878">        boolean dot = false;</span>
+<span class="nc bnc" id="L879" title="All 4 branches missed.">        while (!dot &amp;&amp; ii&lt;s.length()) {</span>
+<span class="nc" id="L880">            c = s.charAt(ii++);</span>
+<span class="nc bnc" id="L881" title="All 3 branches missed.">            switch (c) {</span>
             case ' ': case '\t': case '\r': case '\n':
-<span class="nc" id="L878">                break;</span>
+<span class="nc" id="L883">                break;</span>
             case '.':
-<span class="nc" id="L880">                dot = true;</span>
-<span class="nc" id="L881">                break;</span>
+<span class="nc" id="L885">                dot = true;</span>
+<span class="nc" id="L886">                break;</span>
             default:
-<span class="nc" id="L883">                invalid_null_image(s);</span>
+<span class="nc" id="L888">                invalid_null_image(s);</span>
             }
         }
-<span class="nc bnc" id="L886" title="All 2 branches missed.">        if (dot) {</span>
-<span class="nc" id="L887">            int kw = IonTokenConstsX.keyword(s, ii, s.length());</span>
-<span class="nc bnc" id="L888" title="All 14 branches missed.">            switch (kw) {</span>
+<span class="nc bnc" id="L891" title="All 2 branches missed.">        if (dot) {</span>
+<span class="nc" id="L892">            int kw = IonTokenConstsX.keyword(s, ii, s.length());</span>
+<span class="nc bnc" id="L893" title="All 14 branches missed.">            switch (kw) {</span>
                 case IonTokenConstsX.KEYWORD_NULL:
-<span class="nc" id="L890">                    type = IonType.NULL;</span>
-<span class="nc" id="L891">                    break;</span>
+<span class="nc" id="L895">                    type = IonType.NULL;</span>
+<span class="nc" id="L896">                    break;</span>
                 case IonTokenConstsX.KEYWORD_BOOL:
-<span class="nc" id="L893">                    type = IonType.BOOL;</span>
-<span class="nc" id="L894">                    break;</span>
+<span class="nc" id="L898">                    type = IonType.BOOL;</span>
+<span class="nc" id="L899">                    break;</span>
                 case IonTokenConstsX.KEYWORD_INT:
-<span class="nc" id="L896">                    type = IonType.INT;</span>
-<span class="nc" id="L897">                    break;</span>
+<span class="nc" id="L901">                    type = IonType.INT;</span>
+<span class="nc" id="L902">                    break;</span>
                 case IonTokenConstsX.KEYWORD_FLOAT:
-<span class="nc" id="L899">                    type = IonType.FLOAT;</span>
-<span class="nc" id="L900">                    break;</span>
+<span class="nc" id="L904">                    type = IonType.FLOAT;</span>
+<span class="nc" id="L905">                    break;</span>
                 case IonTokenConstsX.KEYWORD_DECIMAL:
-<span class="nc" id="L902">                    type = IonType.DECIMAL;</span>
-<span class="nc" id="L903">                    break;</span>
+<span class="nc" id="L907">                    type = IonType.DECIMAL;</span>
+<span class="nc" id="L908">                    break;</span>
                 case IonTokenConstsX.KEYWORD_TIMESTAMP:
-<span class="nc" id="L905">                    type = IonType.TIMESTAMP;</span>
-<span class="nc" id="L906">                    break;</span>
+<span class="nc" id="L910">                    type = IonType.TIMESTAMP;</span>
+<span class="nc" id="L911">                    break;</span>
                 case IonTokenConstsX.KEYWORD_SYMBOL:
-<span class="nc" id="L908">                    type = IonType.SYMBOL;</span>
-<span class="nc" id="L909">                    break;</span>
+<span class="nc" id="L913">                    type = IonType.SYMBOL;</span>
+<span class="nc" id="L914">                    break;</span>
                 case IonTokenConstsX.KEYWORD_STRING:
-<span class="nc" id="L911">                    type = IonType.STRING;</span>
-<span class="nc" id="L912">                    break;</span>
+<span class="nc" id="L916">                    type = IonType.STRING;</span>
+<span class="nc" id="L917">                    break;</span>
                 case IonTokenConstsX.KEYWORD_CLOB:
-<span class="nc" id="L914">                    type = IonType.CLOB;</span>
-<span class="nc" id="L915">                    break;</span>
+<span class="nc" id="L919">                    type = IonType.CLOB;</span>
+<span class="nc" id="L920">                    break;</span>
                 case IonTokenConstsX.KEYWORD_BLOB:
-<span class="nc" id="L917">                    type = IonType.BLOB;</span>
-<span class="nc" id="L918">                    break;</span>
+<span class="nc" id="L922">                    type = IonType.BLOB;</span>
+<span class="nc" id="L923">                    break;</span>
                 case IonTokenConstsX.KEYWORD_STRUCT:
-<span class="nc" id="L920">                    type = IonType.STRUCT;</span>
-<span class="nc" id="L921">                    break;</span>
+<span class="nc" id="L925">                    type = IonType.STRUCT;</span>
+<span class="nc" id="L926">                    break;</span>
                 case IonTokenConstsX.KEYWORD_LIST:
-<span class="nc" id="L923">                    type = IonType.LIST;</span>
-<span class="nc" id="L924">                    break;</span>
+<span class="nc" id="L928">                    type = IonType.LIST;</span>
+<span class="nc" id="L929">                    break;</span>
                 case IonTokenConstsX.KEYWORD_SEXP:
-<span class="nc" id="L926">                    type = IonType.SEXP;</span>
-<span class="nc" id="L927">                    break;</span>
+<span class="nc" id="L931">                    type = IonType.SEXP;</span>
+<span class="nc" id="L932">                    break;</span>
                 default:
-<span class="nc" id="L929">                    invalid_null_image(s);</span>
+<span class="nc" id="L934">                    invalid_null_image(s);</span>
             }
         }
 
-<span class="nc bnc" id="L933" title="All 2 branches missed.">        while (ii&lt;s.length()) {</span>
-<span class="nc" id="L934">            c = s.charAt(ii++);</span>
-<span class="nc bnc" id="L935" title="All 2 branches missed.">            switch (c) {</span>
+<span class="nc bnc" id="L938" title="All 2 branches missed.">        while (ii&lt;s.length()) {</span>
+<span class="nc" id="L939">            c = s.charAt(ii++);</span>
+<span class="nc bnc" id="L940" title="All 2 branches missed.">            switch (c) {</span>
             case ' ': case '\t': case '\r': case '\n':
-<span class="nc" id="L937">                break;</span>
+<span class="nc" id="L942">                break;</span>
             default:
-<span class="nc" id="L939">                invalid_null_image(s);</span>
+<span class="nc" id="L944">                invalid_null_image(s);</span>
             }
         }
 
-<span class="nc" id="L943">        return type;</span>
+<span class="nc" id="L948">        return type;</span>
     }
     private static void invalid_null_image(CharSequence s) {
-<span class="nc" id="L946">        throw new CantConvertException(&quot;invalid image &quot;+s.toString());</span>
+<span class="nc" id="L951">        throw new CantConvertException(&quot;invalid image &quot;+s.toString());</span>
     }
 
 }

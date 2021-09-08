@@ -20,8 +20,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A simple pooling implementation of {@link BlockAllocatorProvider} with a global thread-safe free block list
+ * A singleton implementation of {@link BlockAllocatorProvider} offering a thread-safe free block list
  * for each block size.
+ *
  * &lt;p&gt;
  * This implementation is thread-safe.
  */
@@ -32,76 +33,84 @@ import java.util.concurrent.ConcurrentMap;
      * &lt;p&gt;
      * This implementation is thread-safe.
      */
-    private final class PooledBlockAllocator extends BlockAllocator
+    private static final class PooledBlockAllocator extends BlockAllocator
     {
         private final int blockSize, blockLimit;
         private final ConcurrentLinkedQueue&lt;Block&gt; freeBlocks;
         static final int FREE_CAPACITY = 1024 * 1024 * 64; // 64MB
 
         public PooledBlockAllocator(final int blockSize)
-<span class="fc" id="L42">        {</span>
-<span class="fc" id="L43">            this.blockSize = blockSize;</span>
-<span class="fc" id="L44">            this.freeBlocks = new ConcurrentLinkedQueue&lt;Block&gt;();</span>
-<span class="fc" id="L45">            this.blockLimit = FREE_CAPACITY / blockSize;</span>
-<span class="fc" id="L46">        }</span>
+<span class="fc" id="L43">        {</span>
+<span class="fc" id="L44">            this.blockSize = blockSize;</span>
+<span class="fc" id="L45">            this.freeBlocks = new ConcurrentLinkedQueue&lt;Block&gt;();</span>
+<span class="fc" id="L46">            this.blockLimit = FREE_CAPACITY / blockSize;</span>
+<span class="fc" id="L47">        }</span>
 
         @Override
         public Block allocateBlock()
         {
-<span class="fc" id="L51">            Block block = freeBlocks.poll();</span>
-<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (block == null)</span>
+<span class="fc" id="L52">            Block block = freeBlocks.poll();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">            if (block == null)</span>
             {
-<span class="fc" id="L54">                block = new Block(new byte[blockSize])</span>
-<span class="fc" id="L55">                {</span>
+<span class="fc" id="L55">                block = new Block(new byte[blockSize])</span>
+<span class="fc" id="L56">                {</span>
                     @Override
                     public void close()
                     {
-<span class="pc bpc" id="L59" title="1 of 2 branches missed.">                        if (freeBlocks.size() &lt; blockLimit) {</span>
-<span class="fc" id="L60">                            reset();</span>
-<span class="fc" id="L61">                            freeBlocks.add(this);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                        if (freeBlocks.size() &lt; blockLimit) {</span>
+<span class="fc" id="L61">                            reset();</span>
+<span class="fc" id="L62">                            freeBlocks.add(this);</span>
                         }
-<span class="fc" id="L63">                    }</span>
+<span class="fc" id="L64">                    }</span>
                 };
             }
-<span class="fc" id="L66">            return block;</span>
+<span class="fc" id="L67">            return block;</span>
         }
 
         @Override
         public int getBlockSize()
         {
-<span class="fc" id="L72">            return blockSize;</span>
+<span class="fc" id="L73">            return blockSize;</span>
         }
 
         @Override
-<span class="fc" id="L76">        public void close() {}</span>
+<span class="fc" id="L77">        public void close() {}</span>
     }
 
+    // A globally shared instance of the PooledBlockAllocatorProvider.
+    // This instance allows BlockAllocators to be re-used across instantiations of classes like
+    // the binary Ion writer, thereby avoiding costly array initializations.
+<span class="fc" id="L83">    private static final PooledBlockAllocatorProvider INSTANCE = new PooledBlockAllocatorProvider();</span>
     private final ConcurrentMap&lt;Integer, BlockAllocator&gt; allocators;
 
-    public PooledBlockAllocatorProvider()
-<span class="fc" id="L82">    {</span>
-<span class="fc" id="L83">        allocators = new ConcurrentHashMap&lt;Integer, BlockAllocator&gt;();</span>
-<span class="fc" id="L84">    }</span>
+    private PooledBlockAllocatorProvider()
+<span class="fc" id="L87">    {</span>
+<span class="fc" id="L88">        allocators = new ConcurrentHashMap&lt;Integer, BlockAllocator&gt;();</span>
+<span class="fc" id="L89">    }</span>
+
+    public static PooledBlockAllocatorProvider getInstance() {
+<span class="fc" id="L92">        return INSTANCE;</span>
+    }
 
     @Override
     public BlockAllocator vendAllocator(final int blockSize)
     {
-<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if (blockSize &lt;= 0)</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (blockSize &lt;= 0)</span>
         {
-<span class="nc" id="L91">            throw new IllegalArgumentException(&quot;Invalid block size: &quot; + blockSize);</span>
+<span class="nc" id="L100">            throw new IllegalArgumentException(&quot;Invalid block size: &quot; + blockSize);</span>
         }
 
-<span class="fc" id="L94">        BlockAllocator allocator = allocators.get(blockSize);</span>
-<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (allocator == null)</span>
+<span class="fc" id="L103">        BlockAllocator allocator = allocators.get(blockSize);</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (allocator == null)</span>
         {
-<span class="fc" id="L97">            allocator = new PooledBlockAllocator(blockSize);</span>
-<span class="fc" id="L98">            final BlockAllocator existingAllocator = allocators.putIfAbsent(blockSize, allocator);</span>
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">            if (existingAllocator != null)</span>
+<span class="fc" id="L106">            allocator = new PooledBlockAllocator(blockSize);</span>
+<span class="fc" id="L107">            final BlockAllocator existingAllocator = allocators.putIfAbsent(blockSize, allocator);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            if (existingAllocator != null)</span>
             {
-<span class="nc" id="L101">                allocator = existingAllocator;</span>
+<span class="nc" id="L110">                allocator = existingAllocator;</span>
             }
         }
-<span class="fc" id="L104">        return allocator;</span>
+<span class="fc" id="L113">        return allocator;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

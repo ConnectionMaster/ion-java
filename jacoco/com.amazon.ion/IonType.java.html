@@ -53,7 +53,7 @@ package com.amazon.ion;
      */
     public static boolean isContainer(IonType t)
     {
-<span class="pc bpc" id="L56" title="1 of 4 branches missed.">        return (t != null &amp;&amp; (t.ordinal() &gt;= LIST.ordinal()));</span>
+<span class="fc bfc" id="L56" title="All 4 branches covered.">        return (t != null &amp;&amp; (t.ordinal() &gt;= LIST.ordinal()));</span>
     }
 
     /**
@@ -83,7 +83,7 @@ package com.amazon.ion;
      */
     public static boolean isLob(IonType t)
     {
-<span class="nc bnc" id="L86" title="All 4 branches missed.">        return (t == BLOB) || (t == CLOB);</span>
+<span class="fc bfc" id="L86" title="All 4 branches covered.">        return (t == BLOB) || (t == CLOB);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

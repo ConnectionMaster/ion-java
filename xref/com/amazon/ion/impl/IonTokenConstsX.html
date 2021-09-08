@@ -521,442 +521,447 @@
 <a class="jxr_linenumber" name="L513" href="#L513">513</a>         assert length &gt; 1;
 <a class="jxr_linenumber" name="L514" href="#L514">514</a> 
 <a class="jxr_linenumber" name="L515" href="#L515">515</a>         String digits = sidToken.subSequence(1, length).toString();
-<a class="jxr_linenumber" name="L516" href="#L516">516</a>         <strong class="jxr_keyword">return</strong> Integer.parseInt(digits);
-<a class="jxr_linenumber" name="L517" href="#L517">517</a>     }
-<a class="jxr_linenumber" name="L518" href="#L518">518</a> 
-<a class="jxr_linenumber" name="L519" href="#L519">519</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> keyword(CharSequence word, <strong class="jxr_keyword">int</strong> start_word, <strong class="jxr_keyword">int</strong> end_word)
-<a class="jxr_linenumber" name="L520" href="#L520">520</a>     {
-<a class="jxr_linenumber" name="L521" href="#L521">521</a>         <strong class="jxr_keyword">int</strong> c = word.charAt(start_word);
-<a class="jxr_linenumber" name="L522" href="#L522">522</a>         <strong class="jxr_keyword">int</strong> len = end_word - start_word; <em class="jxr_comment">// +1 but we build that into the constants below</em>
-<a class="jxr_linenumber" name="L523" href="#L523">523</a>         <strong class="jxr_keyword">switch</strong> (c) {
-<a class="jxr_linenumber" name="L524" href="#L524">524</a>         <strong class="jxr_keyword">case</strong> '$':
-<a class="jxr_linenumber" name="L525" href="#L525">525</a>             <strong class="jxr_keyword">if</strong> (len &gt; 1) {
-<a class="jxr_linenumber" name="L526" href="#L526">526</a>                 <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = start_word + 1; i &lt; end_word; i++) {
-<a class="jxr_linenumber" name="L527" href="#L527">527</a>                     <strong class="jxr_keyword">if</strong> (! isDigit(word.charAt(i))) <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L528" href="#L528">528</a>                 }
-<a class="jxr_linenumber" name="L529" href="#L529">529</a>                 <strong class="jxr_keyword">return</strong> KEYWORD_sid;
-<a class="jxr_linenumber" name="L530" href="#L530">530</a>             }
-<a class="jxr_linenumber" name="L531" href="#L531">531</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L532" href="#L532">532</a>         <strong class="jxr_keyword">case</strong> 'b':
-<a class="jxr_linenumber" name="L533" href="#L533">533</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
-<a class="jxr_linenumber" name="L534" href="#L534">534</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'o'
-<a class="jxr_linenumber" name="L535" href="#L535">535</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
-<a class="jxr_linenumber" name="L536" href="#L536">536</a>                  &amp;&amp; word.charAt(start_word+3) == 'l'
-<a class="jxr_linenumber" name="L537" href="#L537">537</a>                 ) {
-<a class="jxr_linenumber" name="L538" href="#L538">538</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_BOOL;
-<a class="jxr_linenumber" name="L539" href="#L539">539</a>                 }
-<a class="jxr_linenumber" name="L540" href="#L540">540</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'l'
-<a class="jxr_linenumber" name="L541" href="#L541">541</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
-<a class="jxr_linenumber" name="L542" href="#L542">542</a>                  &amp;&amp; word.charAt(start_word+3) == 'b'
-<a class="jxr_linenumber" name="L543" href="#L543">543</a>                 ) {
-<a class="jxr_linenumber" name="L544" href="#L544">544</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_BLOB;
-<a class="jxr_linenumber" name="L545" href="#L545">545</a>                 }
-<a class="jxr_linenumber" name="L546" href="#L546">546</a>             }
-<a class="jxr_linenumber" name="L547" href="#L547">547</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L548" href="#L548">548</a>         <strong class="jxr_keyword">case</strong> 'c':
-<a class="jxr_linenumber" name="L549" href="#L549">549</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
-<a class="jxr_linenumber" name="L550" href="#L550">550</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'l'
-<a class="jxr_linenumber" name="L551" href="#L551">551</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
-<a class="jxr_linenumber" name="L552" href="#L552">552</a>                  &amp;&amp; word.charAt(start_word+3) == 'b'
-<a class="jxr_linenumber" name="L553" href="#L553">553</a>                 ) {
-<a class="jxr_linenumber" name="L554" href="#L554">554</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_CLOB;
-<a class="jxr_linenumber" name="L555" href="#L555">555</a>                 }
-<a class="jxr_linenumber" name="L556" href="#L556">556</a>             }
-<a class="jxr_linenumber" name="L557" href="#L557">557</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L558" href="#L558">558</a>         <strong class="jxr_keyword">case</strong> 'd':
-<a class="jxr_linenumber" name="L559" href="#L559">559</a>             <strong class="jxr_keyword">if</strong> (len == 7) {
-<a class="jxr_linenumber" name="L560" href="#L560">560</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'e'
-<a class="jxr_linenumber" name="L561" href="#L561">561</a>                  &amp;&amp; word.charAt(start_word+2) == 'c'
-<a class="jxr_linenumber" name="L562" href="#L562">562</a>                  &amp;&amp; word.charAt(start_word+3) == 'i'
-<a class="jxr_linenumber" name="L563" href="#L563">563</a>                  &amp;&amp; word.charAt(start_word+4) == 'm'
-<a class="jxr_linenumber" name="L564" href="#L564">564</a>                  &amp;&amp; word.charAt(start_word+5) == 'a'
-<a class="jxr_linenumber" name="L565" href="#L565">565</a>                  &amp;&amp; word.charAt(start_word+6) == 'l'
-<a class="jxr_linenumber" name="L566" href="#L566">566</a>                 ) {
-<a class="jxr_linenumber" name="L567" href="#L567">567</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_DECIMAL;
-<a class="jxr_linenumber" name="L568" href="#L568">568</a>                 }
-<a class="jxr_linenumber" name="L569" href="#L569">569</a>             }
-<a class="jxr_linenumber" name="L570" href="#L570">570</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L571" href="#L571">571</a>         <strong class="jxr_keyword">case</strong> 'f':
-<a class="jxr_linenumber" name="L572" href="#L572">572</a>             <strong class="jxr_keyword">if</strong> (len == 5) {
-<a class="jxr_linenumber" name="L573" href="#L573">573</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'a'
-<a class="jxr_linenumber" name="L574" href="#L574">574</a>                  &amp;&amp; word.charAt(start_word+2) == 'l'
-<a class="jxr_linenumber" name="L575" href="#L575">575</a>                  &amp;&amp; word.charAt(start_word+3) == 's'
-<a class="jxr_linenumber" name="L576" href="#L576">576</a>                  &amp;&amp; word.charAt(start_word+4) == 'e'
-<a class="jxr_linenumber" name="L577" href="#L577">577</a>                 ) {
-<a class="jxr_linenumber" name="L578" href="#L578">578</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_FALSE;
-<a class="jxr_linenumber" name="L579" href="#L579">579</a>                 }
-<a class="jxr_linenumber" name="L580" href="#L580">580</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'l'
-<a class="jxr_linenumber" name="L581" href="#L581">581</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
-<a class="jxr_linenumber" name="L582" href="#L582">582</a>                  &amp;&amp; word.charAt(start_word+3) == 'a'
-<a class="jxr_linenumber" name="L583" href="#L583">583</a>                  &amp;&amp; word.charAt(start_word+4) == 't'
-<a class="jxr_linenumber" name="L584" href="#L584">584</a>                 ) {
-<a class="jxr_linenumber" name="L585" href="#L585">585</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_FLOAT;
-<a class="jxr_linenumber" name="L586" href="#L586">586</a>                 }
-<a class="jxr_linenumber" name="L587" href="#L587">587</a>             }
-<a class="jxr_linenumber" name="L588" href="#L588">588</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L589" href="#L589">589</a>         <strong class="jxr_keyword">case</strong> 'i':
-<a class="jxr_linenumber" name="L590" href="#L590">590</a>             <strong class="jxr_keyword">if</strong> (len == 3) {
-<a class="jxr_linenumber" name="L591" href="#L591">591</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'n') {
-<a class="jxr_linenumber" name="L592" href="#L592">592</a>                     <strong class="jxr_keyword">if</strong> (word.charAt(start_word+2) == 't') {
-<a class="jxr_linenumber" name="L593" href="#L593">593</a>                         <strong class="jxr_keyword">return</strong> KEYWORD_INT;
-<a class="jxr_linenumber" name="L594" href="#L594">594</a>                     }
-<a class="jxr_linenumber" name="L595" href="#L595">595</a>                 }
-<a class="jxr_linenumber" name="L596" href="#L596">596</a>             }
-<a class="jxr_linenumber" name="L597" href="#L597">597</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L598" href="#L598">598</a>         <strong class="jxr_keyword">case</strong> 'l':
-<a class="jxr_linenumber" name="L599" href="#L599">599</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
-<a class="jxr_linenumber" name="L600" href="#L600">600</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'i'
-<a class="jxr_linenumber" name="L601" href="#L601">601</a>                  &amp;&amp; word.charAt(start_word+2) == 's'
-<a class="jxr_linenumber" name="L602" href="#L602">602</a>                  &amp;&amp; word.charAt(start_word+3) == 't'
-<a class="jxr_linenumber" name="L603" href="#L603">603</a>                 ) {
-<a class="jxr_linenumber" name="L604" href="#L604">604</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_LIST;
-<a class="jxr_linenumber" name="L605" href="#L605">605</a>                 }
-<a class="jxr_linenumber" name="L606" href="#L606">606</a>             }
-<a class="jxr_linenumber" name="L607" href="#L607">607</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L608" href="#L608">608</a>         <strong class="jxr_keyword">case</strong> 'n':
-<a class="jxr_linenumber" name="L609" href="#L609">609</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
-<a class="jxr_linenumber" name="L610" href="#L610">610</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'u'
-<a class="jxr_linenumber" name="L611" href="#L611">611</a>                  &amp;&amp; word.charAt(start_word+2) == 'l'
-<a class="jxr_linenumber" name="L612" href="#L612">612</a>                  &amp;&amp; word.charAt(start_word+3) == 'l'
-<a class="jxr_linenumber" name="L613" href="#L613">613</a>                 ) {
-<a class="jxr_linenumber" name="L614" href="#L614">614</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_NULL;
-<a class="jxr_linenumber" name="L615" href="#L615">615</a>                 }
-<a class="jxr_linenumber" name="L616" href="#L616">616</a>             }
-<a class="jxr_linenumber" name="L617" href="#L617">617</a>             <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (len == 3) {
-<a class="jxr_linenumber" name="L618" href="#L618">618</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'a'
-<a class="jxr_linenumber" name="L619" href="#L619">619</a>                     &amp;&amp; word.charAt(start_word+2) == 'n'
-<a class="jxr_linenumber" name="L620" href="#L620">620</a>                    ) {
-<a class="jxr_linenumber" name="L621" href="#L621">621</a>                        <strong class="jxr_keyword">return</strong> KEYWORD_NAN;
-<a class="jxr_linenumber" name="L622" href="#L622">622</a>                    }
-<a class="jxr_linenumber" name="L623" href="#L623">623</a>             }
-<a class="jxr_linenumber" name="L624" href="#L624">624</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L625" href="#L625">625</a>         <strong class="jxr_keyword">case</strong> 's':
-<a class="jxr_linenumber" name="L626" href="#L626">626</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
-<a class="jxr_linenumber" name="L627" href="#L627">627</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'e'
-<a class="jxr_linenumber" name="L628" href="#L628">628</a>                  &amp;&amp; word.charAt(start_word+2) == 'x'
-<a class="jxr_linenumber" name="L629" href="#L629">629</a>                  &amp;&amp; word.charAt(start_word+3) == 'p'
-<a class="jxr_linenumber" name="L630" href="#L630">630</a>                 ) {
-<a class="jxr_linenumber" name="L631" href="#L631">631</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_SEXP;
-<a class="jxr_linenumber" name="L632" href="#L632">632</a>                 }
-<a class="jxr_linenumber" name="L633" href="#L633">633</a>             }
-<a class="jxr_linenumber" name="L634" href="#L634">634</a>             <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (len == 6) {
-<a class="jxr_linenumber" name="L635" href="#L635">635</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 't'
-<a class="jxr_linenumber" name="L636" href="#L636">636</a>                  &amp;&amp; word.charAt(start_word+2) == 'r'
-<a class="jxr_linenumber" name="L637" href="#L637">637</a>                 ) {
-<a class="jxr_linenumber" name="L638" href="#L638">638</a>                     <strong class="jxr_keyword">if</strong> (word.charAt(start_word+3) == 'i'
-<a class="jxr_linenumber" name="L639" href="#L639">639</a>                      &amp;&amp; word.charAt(start_word+4) == 'n'
-<a class="jxr_linenumber" name="L640" href="#L640">640</a>                      &amp;&amp; word.charAt(start_word+5) == 'g'
-<a class="jxr_linenumber" name="L641" href="#L641">641</a>                     ) {
-<a class="jxr_linenumber" name="L642" href="#L642">642</a>                         <strong class="jxr_keyword">return</strong> KEYWORD_STRING;
-<a class="jxr_linenumber" name="L643" href="#L643">643</a>                     }
-<a class="jxr_linenumber" name="L644" href="#L644">644</a>                     <strong class="jxr_keyword">if</strong> (word.charAt(start_word+3) == 'u'
-<a class="jxr_linenumber" name="L645" href="#L645">645</a>                      &amp;&amp; word.charAt(start_word+4) == 'c'
-<a class="jxr_linenumber" name="L646" href="#L646">646</a>                      &amp;&amp; word.charAt(start_word+5) == 't'
-<a class="jxr_linenumber" name="L647" href="#L647">647</a>                     ) {
-<a class="jxr_linenumber" name="L648" href="#L648">648</a>                         <strong class="jxr_keyword">return</strong> KEYWORD_STRUCT;
-<a class="jxr_linenumber" name="L649" href="#L649">649</a>                     }
-<a class="jxr_linenumber" name="L650" href="#L650">650</a>                     <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L651" href="#L651">651</a>                 }
-<a class="jxr_linenumber" name="L652" href="#L652">652</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'y'
-<a class="jxr_linenumber" name="L653" href="#L653">653</a>                  &amp;&amp; word.charAt(start_word+2) == 'm'
-<a class="jxr_linenumber" name="L654" href="#L654">654</a>                  &amp;&amp; word.charAt(start_word+3) == 'b'
-<a class="jxr_linenumber" name="L655" href="#L655">655</a>                  &amp;&amp; word.charAt(start_word+4) == 'o'
-<a class="jxr_linenumber" name="L656" href="#L656">656</a>                  &amp;&amp; word.charAt(start_word+5) == 'l'
-<a class="jxr_linenumber" name="L657" href="#L657">657</a>                 ) {
-<a class="jxr_linenumber" name="L658" href="#L658">658</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_SYMBOL;
-<a class="jxr_linenumber" name="L659" href="#L659">659</a>                 }
-<a class="jxr_linenumber" name="L660" href="#L660">660</a>             }
-<a class="jxr_linenumber" name="L661" href="#L661">661</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L662" href="#L662">662</a>         <strong class="jxr_keyword">case</strong> 't':
-<a class="jxr_linenumber" name="L663" href="#L663">663</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
-<a class="jxr_linenumber" name="L664" href="#L664">664</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'r'
-<a class="jxr_linenumber" name="L665" href="#L665">665</a>                  &amp;&amp; word.charAt(start_word+2) == 'u'
-<a class="jxr_linenumber" name="L666" href="#L666">666</a>                  &amp;&amp; word.charAt(start_word+3) == 'e'
-<a class="jxr_linenumber" name="L667" href="#L667">667</a>                 ) {
-<a class="jxr_linenumber" name="L668" href="#L668">668</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_TRUE;
-<a class="jxr_linenumber" name="L669" href="#L669">669</a>                 }
-<a class="jxr_linenumber" name="L670" href="#L670">670</a>             }
-<a class="jxr_linenumber" name="L671" href="#L671">671</a>             <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (len == 9) {
-<a class="jxr_linenumber" name="L672" href="#L672">672</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'i'
-<a class="jxr_linenumber" name="L673" href="#L673">673</a>                  &amp;&amp; word.charAt(start_word+2) == 'm'
-<a class="jxr_linenumber" name="L674" href="#L674">674</a>                  &amp;&amp; word.charAt(start_word+3) == 'e'
-<a class="jxr_linenumber" name="L675" href="#L675">675</a>                  &amp;&amp; word.charAt(start_word+4) == 's'
-<a class="jxr_linenumber" name="L676" href="#L676">676</a>                  &amp;&amp; word.charAt(start_word+5) == 't'
-<a class="jxr_linenumber" name="L677" href="#L677">677</a>                  &amp;&amp; word.charAt(start_word+6) == 'a'
-<a class="jxr_linenumber" name="L678" href="#L678">678</a>                  &amp;&amp; word.charAt(start_word+7) == 'm'
-<a class="jxr_linenumber" name="L679" href="#L679">679</a>                  &amp;&amp; word.charAt(start_word+8) == 'p'
-<a class="jxr_linenumber" name="L680" href="#L680">680</a>                 ) {
-<a class="jxr_linenumber" name="L681" href="#L681">681</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_TIMESTAMP;
-<a class="jxr_linenumber" name="L682" href="#L682">682</a>                 }
-<a class="jxr_linenumber" name="L683" href="#L683">683</a>             }
-<a class="jxr_linenumber" name="L684" href="#L684">684</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L685" href="#L685">685</a>         <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L686" href="#L686">686</a>             <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L687" href="#L687">687</a>         }
-<a class="jxr_linenumber" name="L688" href="#L688">688</a>     }
-<a class="jxr_linenumber" name="L689" href="#L689">689</a> 
-<a class="jxr_linenumber" name="L690" href="#L690">690</a>     <em class="jxr_comment">/*</em>
-<a class="jxr_linenumber" name="L691" href="#L691">691</a> <em class="jxr_comment">    KW_BIT_BLOB       = 0x0001;</em>
-<a class="jxr_linenumber" name="L692" href="#L692">692</a> <em class="jxr_comment">    KW_BIT_BOOL       = 0x0002;</em>
-<a class="jxr_linenumber" name="L693" href="#L693">693</a> <em class="jxr_comment">    KW_BIT_CLOB       = 0x0004;</em>
-<a class="jxr_linenumber" name="L694" href="#L694">694</a> <em class="jxr_comment">    KW_BIT_DECIMAL    = 0x0008;</em>
-<a class="jxr_linenumber" name="L695" href="#L695">695</a> <em class="jxr_comment">    KW_BIT_FLOAT      = 0x0010;</em>
-<a class="jxr_linenumber" name="L696" href="#L696">696</a> <em class="jxr_comment">    KW_BIT_INT        = 0x0020;</em>
-<a class="jxr_linenumber" name="L697" href="#L697">697</a> <em class="jxr_comment">    KW_BIT_LIST       = 0x0030;</em>
-<a class="jxr_linenumber" name="L698" href="#L698">698</a> <em class="jxr_comment">    KW_BIT_NULL       = 0x0080;</em>
-<a class="jxr_linenumber" name="L699" href="#L699">699</a> <em class="jxr_comment">    KW_BIT_SEXP       = 0x0100;</em>
-<a class="jxr_linenumber" name="L700" href="#L700">700</a> <em class="jxr_comment">    KW_BIT_STRING     = 0x0200;</em>
-<a class="jxr_linenumber" name="L701" href="#L701">701</a> <em class="jxr_comment">    KW_BIT_STRUCT     = 0x0400;</em>
-<a class="jxr_linenumber" name="L702" href="#L702">702</a> <em class="jxr_comment">    KW_BIT_SYMBOL     = 0x0800;</em>
-<a class="jxr_linenumber" name="L703" href="#L703">703</a> <em class="jxr_comment">    KW_BIT_TIMESTAMP  = 0x1000;</em>
-<a class="jxr_linenumber" name="L704" href="#L704">704</a> <em class="jxr_comment">    datagram is not included (since these are types that can appear as a null type)</em>
-<a class="jxr_linenumber" name="L705" href="#L705">705</a> 
-<a class="jxr_linenumber" name="L706" href="#L706">706</a> <em class="jxr_comment">    A  1    F  6    N 11    T 16</em>
-<a class="jxr_linenumber" name="L707" href="#L707">707</a> <em class="jxr_comment">    B  2    G  7    O 12    U 17</em>
-<a class="jxr_linenumber" name="L708" href="#L708">708</a> <em class="jxr_comment">    C  3    I  8    P 13    X 18</em>
-<a class="jxr_linenumber" name="L709" href="#L709">709</a> <em class="jxr_comment">    D  4    L  9    R 14    Y 19</em>
-<a class="jxr_linenumber" name="L710" href="#L710">710</a> <em class="jxr_comment">    E  5    M 10    S 15</em>
-<a class="jxr_linenumber" name="L711" href="#L711">711</a> 
-<a class="jxr_linenumber" name="L712" href="#L712">712</a> <em class="jxr_comment">    */</em>
-<a class="jxr_linenumber" name="L713" href="#L713">713</a>     <em class="jxr_comment">// this array is [pos][letter_idx] - if this letter is</em>
-<a class="jxr_linenumber" name="L714" href="#L714">714</a>     <em class="jxr_comment">// valid in this position then all the type names that</em>
-<a class="jxr_linenumber" name="L715" href="#L715">715</a>     <em class="jxr_comment">// contain the letter at that position are on.  Each</em>
-<a class="jxr_linenumber" name="L716" href="#L716">716</a>     <em class="jxr_comment">// keyword is assigned a bit value.</em>
-<a class="jxr_linenumber" name="L717" href="#L717">717</a>     <em class="jxr_comment">// however due to the double index expense the index</em>
-<a class="jxr_linenumber" name="L718" href="#L718">718</a>     <em class="jxr_comment">// is represented by a 1 dim int array and fn's used</em>
-<a class="jxr_linenumber" name="L719" href="#L719">719</a>     <em class="jxr_comment">// to access it (since inline-ing final static small methods</em>
-<a class="jxr_linenumber" name="L720" href="#L720">720</a>     <em class="jxr_comment">// is easy for the compiler)</em>
-<a class="jxr_linenumber" name="L721" href="#L721">721</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  TN_MAX_NAME_LENGTH = <span class="jxr_string">"TIMESTAMP"</span>.length() + 1; <em class="jxr_comment">// so anything too long will be 0</em>
-<a class="jxr_linenumber" name="L722" href="#L722">722</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  TN_LETTER_MAX_IDX = 19;
-<a class="jxr_linenumber" name="L723" href="#L723">723</a> 
-<a class="jxr_linenumber" name="L724" href="#L724">724</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_BLOB       = 0x0001;
-<a class="jxr_linenumber" name="L725" href="#L725">725</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_BOOL       = 0x0002;
-<a class="jxr_linenumber" name="L726" href="#L726">726</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_CLOB       = 0x0004;
-<a class="jxr_linenumber" name="L727" href="#L727">727</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_DECIMAL    = 0x0008;
-<a class="jxr_linenumber" name="L728" href="#L728">728</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_FLOAT      = 0x0010;
-<a class="jxr_linenumber" name="L729" href="#L729">729</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_INT        = 0x0020;
-<a class="jxr_linenumber" name="L730" href="#L730">730</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_LIST       = 0x0030;
-<a class="jxr_linenumber" name="L731" href="#L731">731</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_NULL       = 0x0080;
-<a class="jxr_linenumber" name="L732" href="#L732">732</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_SEXP       = 0x0100;
-<a class="jxr_linenumber" name="L733" href="#L733">733</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_STRING     = 0x0200;
-<a class="jxr_linenumber" name="L734" href="#L734">734</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_STRUCT     = 0x0400;
-<a class="jxr_linenumber" name="L735" href="#L735">735</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_SYMBOL     = 0x0800;
-<a class="jxr_linenumber" name="L736" href="#L736">736</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_TIMESTAMP  = 0x1000;
-<a class="jxr_linenumber" name="L737" href="#L737">737</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_ALL_BITS       = 0x1fff;
-<a class="jxr_linenumber" name="L738" href="#L738">738</a> 
-<a class="jxr_linenumber" name="L739" href="#L739">739</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] typeNameBits = <strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[] {
-<a class="jxr_linenumber" name="L740" href="#L740">740</a>         KW_BIT_BLOB,      KW_BIT_BOOL,    KW_BIT_CLOB,
-<a class="jxr_linenumber" name="L741" href="#L741">741</a>         KW_BIT_DECIMAL,   KW_BIT_FLOAT,   KW_BIT_INT,
-<a class="jxr_linenumber" name="L742" href="#L742">742</a>         KW_BIT_LIST,      KW_BIT_NULL,    KW_BIT_SEXP,
-<a class="jxr_linenumber" name="L743" href="#L743">743</a>         KW_BIT_STRING,    KW_BIT_STRUCT,  KW_BIT_SYMBOL,
-<a class="jxr_linenumber" name="L744" href="#L744">744</a>         KW_BIT_TIMESTAMP
-<a class="jxr_linenumber" name="L745" href="#L745">745</a>     };
-<a class="jxr_linenumber" name="L746" href="#L746">746</a> 
-<a class="jxr_linenumber" name="L747" href="#L747">747</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String[] typeNameNames = <strong class="jxr_keyword">new</strong> String[] {
-<a class="jxr_linenumber" name="L748" href="#L748">748</a>         <span class="jxr_string">"blob"</span>,           <span class="jxr_string">"bool"</span>,         <span class="jxr_string">"clob"</span>,
-<a class="jxr_linenumber" name="L749" href="#L749">749</a>         <span class="jxr_string">"decimal"</span>,        <span class="jxr_string">"float"</span>,        <span class="jxr_string">"int"</span>,
-<a class="jxr_linenumber" name="L750" href="#L750">750</a>         <span class="jxr_string">"list"</span>,           <span class="jxr_string">"null"</span>,         <span class="jxr_string">"sexp"</span>,
-<a class="jxr_linenumber" name="L751" href="#L751">751</a>         <span class="jxr_string">"string"</span>,         <span class="jxr_string">"struct"</span>,       <span class="jxr_string">"symbol"</span>,
-<a class="jxr_linenumber" name="L752" href="#L752">752</a>         <span class="jxr_string">"timestamp"</span>
-<a class="jxr_linenumber" name="L753" href="#L753">753</a>     };
-<a class="jxr_linenumber" name="L754" href="#L754">754</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] typeNameKeyWordIds = <strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[] {
-<a class="jxr_linenumber" name="L755" href="#L755">755</a>         KEYWORD_BLOB,     KEYWORD_BOOL,   KEYWORD_CLOB,
-<a class="jxr_linenumber" name="L756" href="#L756">756</a>         KEYWORD_DECIMAL,  KEYWORD_FLOAT,  KEYWORD_INT,
-<a class="jxr_linenumber" name="L757" href="#L757">757</a>         KEYWORD_LIST,     KEYWORD_NULL,   KEYWORD_SEXP,
-<a class="jxr_linenumber" name="L758" href="#L758">758</a>         KEYWORD_STRING,   KEYWORD_STRUCT, KEYWORD_SYMBOL,
-<a class="jxr_linenumber" name="L759" href="#L759">759</a>         KEYWORD_TIMESTAMP
-<a class="jxr_linenumber" name="L760" href="#L760">760</a>     };
-<a class="jxr_linenumber" name="L761" href="#L761">761</a> 
-<a class="jxr_linenumber" name="L762" href="#L762">762</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] TypeNameBitIndex = makeTypeNameBitIndex();
-<a class="jxr_linenumber" name="L763" href="#L763">763</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] makeTypeNameBitIndex() {
-<a class="jxr_linenumber" name="L764" href="#L764">764</a>         <strong class="jxr_keyword">int</strong>[] bits = <strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[TN_MAX_NAME_LENGTH*TN_LETTER_MAX_IDX];
-<a class="jxr_linenumber" name="L765" href="#L765">765</a>         <strong class="jxr_keyword">int</strong>   typename_bit;
-<a class="jxr_linenumber" name="L766" href="#L766">766</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> tt=0; tt&lt;typeNameNames.length; tt++) {
-<a class="jxr_linenumber" name="L767" href="#L767">767</a>             String typename = typeNameNames[tt];
-<a class="jxr_linenumber" name="L768" href="#L768">768</a>             typename_bit = typeNameBits[tt];
-<a class="jxr_linenumber" name="L769" href="#L769">769</a>             <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> ii=0; ii&lt;typename.length(); ii++) {
-<a class="jxr_linenumber" name="L770" href="#L770">770</a>                 <strong class="jxr_keyword">int</strong> c = typename.charAt(ii);
-<a class="jxr_linenumber" name="L771" href="#L771">771</a>                 <strong class="jxr_keyword">int</strong> l = typeNameLetterIdx(c);
-<a class="jxr_linenumber" name="L772" href="#L772">772</a>                 assert(l &gt; 0);
-<a class="jxr_linenumber" name="L773" href="#L773">773</a>                 typename_set_bit(bits, ii, l, typename_bit);
-<a class="jxr_linenumber" name="L774" href="#L774">774</a>             }
-<a class="jxr_linenumber" name="L775" href="#L775">775</a>         }
-<a class="jxr_linenumber" name="L776" href="#L776">776</a>         <strong class="jxr_keyword">return</strong> bits;
-<a class="jxr_linenumber" name="L777" href="#L777">777</a>     }
-<a class="jxr_linenumber" name="L778" href="#L778">778</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> typename_set_bit(<strong class="jxr_keyword">int</strong>[] bits, <strong class="jxr_keyword">int</strong> ii, <strong class="jxr_keyword">int</strong> l, <strong class="jxr_keyword">int</strong> typename_bit)
-<a class="jxr_linenumber" name="L779" href="#L779">779</a>     {
-<a class="jxr_linenumber" name="L780" href="#L780">780</a>         <em class="jxr_comment">// bits[ii][l]</em>
-<a class="jxr_linenumber" name="L781" href="#L781">781</a>         <strong class="jxr_keyword">int</strong> idx = (ii * TN_LETTER_MAX_IDX) + l - 1;
-<a class="jxr_linenumber" name="L782" href="#L782">782</a>         bits[idx] |= typename_bit;
-<a class="jxr_linenumber" name="L783" href="#L783">783</a>     }
-<a class="jxr_linenumber" name="L784" href="#L784">784</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">int</strong> typeNameLetterIdx(<strong class="jxr_keyword">int</strong> c) {
-<a class="jxr_linenumber" name="L785" href="#L785">785</a>         <strong class="jxr_keyword">switch</strong>(c) {
-<a class="jxr_linenumber" name="L786" href="#L786">786</a>         <strong class="jxr_keyword">case</strong> 'a': <strong class="jxr_keyword">return</strong>  1;
-<a class="jxr_linenumber" name="L787" href="#L787">787</a>         <strong class="jxr_keyword">case</strong> 'b': <strong class="jxr_keyword">return</strong>  2;
-<a class="jxr_linenumber" name="L788" href="#L788">788</a>         <strong class="jxr_keyword">case</strong> 'c': <strong class="jxr_keyword">return</strong>  3;
-<a class="jxr_linenumber" name="L789" href="#L789">789</a>         <strong class="jxr_keyword">case</strong> 'd': <strong class="jxr_keyword">return</strong>  4;
-<a class="jxr_linenumber" name="L790" href="#L790">790</a>         <strong class="jxr_keyword">case</strong> 'e': <strong class="jxr_keyword">return</strong>  5;
-<a class="jxr_linenumber" name="L791" href="#L791">791</a>         <strong class="jxr_keyword">case</strong> 'f': <strong class="jxr_keyword">return</strong>  6;
-<a class="jxr_linenumber" name="L792" href="#L792">792</a>         <strong class="jxr_keyword">case</strong> 'g': <strong class="jxr_keyword">return</strong>  7;
-<a class="jxr_linenumber" name="L793" href="#L793">793</a>         <strong class="jxr_keyword">case</strong> 'i': <strong class="jxr_keyword">return</strong>  8;
-<a class="jxr_linenumber" name="L794" href="#L794">794</a>         <strong class="jxr_keyword">case</strong> 'l': <strong class="jxr_keyword">return</strong>  9;
-<a class="jxr_linenumber" name="L795" href="#L795">795</a>         <strong class="jxr_keyword">case</strong> 'm': <strong class="jxr_keyword">return</strong> 10;
-<a class="jxr_linenumber" name="L796" href="#L796">796</a>         <strong class="jxr_keyword">case</strong> 'n': <strong class="jxr_keyword">return</strong> 11;
-<a class="jxr_linenumber" name="L797" href="#L797">797</a>         <strong class="jxr_keyword">case</strong> 'o': <strong class="jxr_keyword">return</strong> 12;
-<a class="jxr_linenumber" name="L798" href="#L798">798</a>         <strong class="jxr_keyword">case</strong> 'p': <strong class="jxr_keyword">return</strong> 13;
-<a class="jxr_linenumber" name="L799" href="#L799">799</a>         <strong class="jxr_keyword">case</strong> 'r': <strong class="jxr_keyword">return</strong> 14;
-<a class="jxr_linenumber" name="L800" href="#L800">800</a>         <strong class="jxr_keyword">case</strong> 's': <strong class="jxr_keyword">return</strong> 15;
-<a class="jxr_linenumber" name="L801" href="#L801">801</a>         <strong class="jxr_keyword">case</strong> 't': <strong class="jxr_keyword">return</strong> 16;
-<a class="jxr_linenumber" name="L802" href="#L802">802</a>         <strong class="jxr_keyword">case</strong> 'u': <strong class="jxr_keyword">return</strong> 17;
-<a class="jxr_linenumber" name="L803" href="#L803">803</a>         <strong class="jxr_keyword">case</strong> 'x': <strong class="jxr_keyword">return</strong> 18;
-<a class="jxr_linenumber" name="L804" href="#L804">804</a>         <strong class="jxr_keyword">case</strong> 'y': <strong class="jxr_keyword">return</strong> 19;
-<a class="jxr_linenumber" name="L805" href="#L805">805</a>         <strong class="jxr_keyword">default</strong>:  <strong class="jxr_keyword">return</strong> -1;
-<a class="jxr_linenumber" name="L806" href="#L806">806</a>         }
-<a class="jxr_linenumber" name="L807" href="#L807">807</a>     }
-<a class="jxr_linenumber" name="L808" href="#L808">808</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">int</strong> typeNamePossibilityMask(<strong class="jxr_keyword">int</strong> pos, <strong class="jxr_keyword">int</strong> letter_idx) {
-<a class="jxr_linenumber" name="L809" href="#L809">809</a>         <strong class="jxr_keyword">int</strong> idx = (pos * TN_LETTER_MAX_IDX) + letter_idx - 1;
-<a class="jxr_linenumber" name="L810" href="#L810">810</a>         <strong class="jxr_keyword">int</strong> mask = TypeNameBitIndex[idx];
-<a class="jxr_linenumber" name="L811" href="#L811">811</a>         <strong class="jxr_keyword">return</strong> mask;
+<a class="jxr_linenumber" name="L516" href="#L516">516</a> 
+<a class="jxr_linenumber" name="L517" href="#L517">517</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L518" href="#L518">518</a>             <strong class="jxr_keyword">return</strong> Integer.parseInt(digits);
+<a class="jxr_linenumber" name="L519" href="#L519">519</a>         } <strong class="jxr_keyword">catch</strong> (Exception e) {
+<a class="jxr_linenumber" name="L520" href="#L520">520</a>             <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a name="IonException" href="../../../../com/amazon/ion/IonException.html#IonException">IonException</a>(String.format(<span class="jxr_string">"Unable to parse SID %s"</span>, digits), e);
+<a class="jxr_linenumber" name="L521" href="#L521">521</a>         }
+<a class="jxr_linenumber" name="L522" href="#L522">522</a>     }
+<a class="jxr_linenumber" name="L523" href="#L523">523</a> 
+<a class="jxr_linenumber" name="L524" href="#L524">524</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> keyword(CharSequence word, <strong class="jxr_keyword">int</strong> start_word, <strong class="jxr_keyword">int</strong> end_word)
+<a class="jxr_linenumber" name="L525" href="#L525">525</a>     {
+<a class="jxr_linenumber" name="L526" href="#L526">526</a>         <strong class="jxr_keyword">int</strong> c = word.charAt(start_word);
+<a class="jxr_linenumber" name="L527" href="#L527">527</a>         <strong class="jxr_keyword">int</strong> len = end_word - start_word; <em class="jxr_comment">// +1 but we build that into the constants below</em>
+<a class="jxr_linenumber" name="L528" href="#L528">528</a>         <strong class="jxr_keyword">switch</strong> (c) {
+<a class="jxr_linenumber" name="L529" href="#L529">529</a>         <strong class="jxr_keyword">case</strong> '$':
+<a class="jxr_linenumber" name="L530" href="#L530">530</a>             <strong class="jxr_keyword">if</strong> (len &gt; 1) {
+<a class="jxr_linenumber" name="L531" href="#L531">531</a>                 <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = start_word + 1; i &lt; end_word; i++) {
+<a class="jxr_linenumber" name="L532" href="#L532">532</a>                     <strong class="jxr_keyword">if</strong> (! isDigit(word.charAt(i))) <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L533" href="#L533">533</a>                 }
+<a class="jxr_linenumber" name="L534" href="#L534">534</a>                 <strong class="jxr_keyword">return</strong> KEYWORD_sid;
+<a class="jxr_linenumber" name="L535" href="#L535">535</a>             }
+<a class="jxr_linenumber" name="L536" href="#L536">536</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L537" href="#L537">537</a>         <strong class="jxr_keyword">case</strong> 'b':
+<a class="jxr_linenumber" name="L538" href="#L538">538</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
+<a class="jxr_linenumber" name="L539" href="#L539">539</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'o'
+<a class="jxr_linenumber" name="L540" href="#L540">540</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
+<a class="jxr_linenumber" name="L541" href="#L541">541</a>                  &amp;&amp; word.charAt(start_word+3) == 'l'
+<a class="jxr_linenumber" name="L542" href="#L542">542</a>                 ) {
+<a class="jxr_linenumber" name="L543" href="#L543">543</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_BOOL;
+<a class="jxr_linenumber" name="L544" href="#L544">544</a>                 }
+<a class="jxr_linenumber" name="L545" href="#L545">545</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'l'
+<a class="jxr_linenumber" name="L546" href="#L546">546</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
+<a class="jxr_linenumber" name="L547" href="#L547">547</a>                  &amp;&amp; word.charAt(start_word+3) == 'b'
+<a class="jxr_linenumber" name="L548" href="#L548">548</a>                 ) {
+<a class="jxr_linenumber" name="L549" href="#L549">549</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_BLOB;
+<a class="jxr_linenumber" name="L550" href="#L550">550</a>                 }
+<a class="jxr_linenumber" name="L551" href="#L551">551</a>             }
+<a class="jxr_linenumber" name="L552" href="#L552">552</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L553" href="#L553">553</a>         <strong class="jxr_keyword">case</strong> 'c':
+<a class="jxr_linenumber" name="L554" href="#L554">554</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
+<a class="jxr_linenumber" name="L555" href="#L555">555</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'l'
+<a class="jxr_linenumber" name="L556" href="#L556">556</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
+<a class="jxr_linenumber" name="L557" href="#L557">557</a>                  &amp;&amp; word.charAt(start_word+3) == 'b'
+<a class="jxr_linenumber" name="L558" href="#L558">558</a>                 ) {
+<a class="jxr_linenumber" name="L559" href="#L559">559</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_CLOB;
+<a class="jxr_linenumber" name="L560" href="#L560">560</a>                 }
+<a class="jxr_linenumber" name="L561" href="#L561">561</a>             }
+<a class="jxr_linenumber" name="L562" href="#L562">562</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L563" href="#L563">563</a>         <strong class="jxr_keyword">case</strong> 'd':
+<a class="jxr_linenumber" name="L564" href="#L564">564</a>             <strong class="jxr_keyword">if</strong> (len == 7) {
+<a class="jxr_linenumber" name="L565" href="#L565">565</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'e'
+<a class="jxr_linenumber" name="L566" href="#L566">566</a>                  &amp;&amp; word.charAt(start_word+2) == 'c'
+<a class="jxr_linenumber" name="L567" href="#L567">567</a>                  &amp;&amp; word.charAt(start_word+3) == 'i'
+<a class="jxr_linenumber" name="L568" href="#L568">568</a>                  &amp;&amp; word.charAt(start_word+4) == 'm'
+<a class="jxr_linenumber" name="L569" href="#L569">569</a>                  &amp;&amp; word.charAt(start_word+5) == 'a'
+<a class="jxr_linenumber" name="L570" href="#L570">570</a>                  &amp;&amp; word.charAt(start_word+6) == 'l'
+<a class="jxr_linenumber" name="L571" href="#L571">571</a>                 ) {
+<a class="jxr_linenumber" name="L572" href="#L572">572</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_DECIMAL;
+<a class="jxr_linenumber" name="L573" href="#L573">573</a>                 }
+<a class="jxr_linenumber" name="L574" href="#L574">574</a>             }
+<a class="jxr_linenumber" name="L575" href="#L575">575</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L576" href="#L576">576</a>         <strong class="jxr_keyword">case</strong> 'f':
+<a class="jxr_linenumber" name="L577" href="#L577">577</a>             <strong class="jxr_keyword">if</strong> (len == 5) {
+<a class="jxr_linenumber" name="L578" href="#L578">578</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'a'
+<a class="jxr_linenumber" name="L579" href="#L579">579</a>                  &amp;&amp; word.charAt(start_word+2) == 'l'
+<a class="jxr_linenumber" name="L580" href="#L580">580</a>                  &amp;&amp; word.charAt(start_word+3) == 's'
+<a class="jxr_linenumber" name="L581" href="#L581">581</a>                  &amp;&amp; word.charAt(start_word+4) == 'e'
+<a class="jxr_linenumber" name="L582" href="#L582">582</a>                 ) {
+<a class="jxr_linenumber" name="L583" href="#L583">583</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_FALSE;
+<a class="jxr_linenumber" name="L584" href="#L584">584</a>                 }
+<a class="jxr_linenumber" name="L585" href="#L585">585</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'l'
+<a class="jxr_linenumber" name="L586" href="#L586">586</a>                  &amp;&amp; word.charAt(start_word+2) == 'o'
+<a class="jxr_linenumber" name="L587" href="#L587">587</a>                  &amp;&amp; word.charAt(start_word+3) == 'a'
+<a class="jxr_linenumber" name="L588" href="#L588">588</a>                  &amp;&amp; word.charAt(start_word+4) == 't'
+<a class="jxr_linenumber" name="L589" href="#L589">589</a>                 ) {
+<a class="jxr_linenumber" name="L590" href="#L590">590</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_FLOAT;
+<a class="jxr_linenumber" name="L591" href="#L591">591</a>                 }
+<a class="jxr_linenumber" name="L592" href="#L592">592</a>             }
+<a class="jxr_linenumber" name="L593" href="#L593">593</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L594" href="#L594">594</a>         <strong class="jxr_keyword">case</strong> 'i':
+<a class="jxr_linenumber" name="L595" href="#L595">595</a>             <strong class="jxr_keyword">if</strong> (len == 3) {
+<a class="jxr_linenumber" name="L596" href="#L596">596</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'n') {
+<a class="jxr_linenumber" name="L597" href="#L597">597</a>                     <strong class="jxr_keyword">if</strong> (word.charAt(start_word+2) == 't') {
+<a class="jxr_linenumber" name="L598" href="#L598">598</a>                         <strong class="jxr_keyword">return</strong> KEYWORD_INT;
+<a class="jxr_linenumber" name="L599" href="#L599">599</a>                     }
+<a class="jxr_linenumber" name="L600" href="#L600">600</a>                 }
+<a class="jxr_linenumber" name="L601" href="#L601">601</a>             }
+<a class="jxr_linenumber" name="L602" href="#L602">602</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L603" href="#L603">603</a>         <strong class="jxr_keyword">case</strong> 'l':
+<a class="jxr_linenumber" name="L604" href="#L604">604</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
+<a class="jxr_linenumber" name="L605" href="#L605">605</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'i'
+<a class="jxr_linenumber" name="L606" href="#L606">606</a>                  &amp;&amp; word.charAt(start_word+2) == 's'
+<a class="jxr_linenumber" name="L607" href="#L607">607</a>                  &amp;&amp; word.charAt(start_word+3) == 't'
+<a class="jxr_linenumber" name="L608" href="#L608">608</a>                 ) {
+<a class="jxr_linenumber" name="L609" href="#L609">609</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_LIST;
+<a class="jxr_linenumber" name="L610" href="#L610">610</a>                 }
+<a class="jxr_linenumber" name="L611" href="#L611">611</a>             }
+<a class="jxr_linenumber" name="L612" href="#L612">612</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L613" href="#L613">613</a>         <strong class="jxr_keyword">case</strong> 'n':
+<a class="jxr_linenumber" name="L614" href="#L614">614</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
+<a class="jxr_linenumber" name="L615" href="#L615">615</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'u'
+<a class="jxr_linenumber" name="L616" href="#L616">616</a>                  &amp;&amp; word.charAt(start_word+2) == 'l'
+<a class="jxr_linenumber" name="L617" href="#L617">617</a>                  &amp;&amp; word.charAt(start_word+3) == 'l'
+<a class="jxr_linenumber" name="L618" href="#L618">618</a>                 ) {
+<a class="jxr_linenumber" name="L619" href="#L619">619</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_NULL;
+<a class="jxr_linenumber" name="L620" href="#L620">620</a>                 }
+<a class="jxr_linenumber" name="L621" href="#L621">621</a>             }
+<a class="jxr_linenumber" name="L622" href="#L622">622</a>             <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (len == 3) {
+<a class="jxr_linenumber" name="L623" href="#L623">623</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'a'
+<a class="jxr_linenumber" name="L624" href="#L624">624</a>                     &amp;&amp; word.charAt(start_word+2) == 'n'
+<a class="jxr_linenumber" name="L625" href="#L625">625</a>                    ) {
+<a class="jxr_linenumber" name="L626" href="#L626">626</a>                        <strong class="jxr_keyword">return</strong> KEYWORD_NAN;
+<a class="jxr_linenumber" name="L627" href="#L627">627</a>                    }
+<a class="jxr_linenumber" name="L628" href="#L628">628</a>             }
+<a class="jxr_linenumber" name="L629" href="#L629">629</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L630" href="#L630">630</a>         <strong class="jxr_keyword">case</strong> 's':
+<a class="jxr_linenumber" name="L631" href="#L631">631</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
+<a class="jxr_linenumber" name="L632" href="#L632">632</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'e'
+<a class="jxr_linenumber" name="L633" href="#L633">633</a>                  &amp;&amp; word.charAt(start_word+2) == 'x'
+<a class="jxr_linenumber" name="L634" href="#L634">634</a>                  &amp;&amp; word.charAt(start_word+3) == 'p'
+<a class="jxr_linenumber" name="L635" href="#L635">635</a>                 ) {
+<a class="jxr_linenumber" name="L636" href="#L636">636</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_SEXP;
+<a class="jxr_linenumber" name="L637" href="#L637">637</a>                 }
+<a class="jxr_linenumber" name="L638" href="#L638">638</a>             }
+<a class="jxr_linenumber" name="L639" href="#L639">639</a>             <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (len == 6) {
+<a class="jxr_linenumber" name="L640" href="#L640">640</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 't'
+<a class="jxr_linenumber" name="L641" href="#L641">641</a>                  &amp;&amp; word.charAt(start_word+2) == 'r'
+<a class="jxr_linenumber" name="L642" href="#L642">642</a>                 ) {
+<a class="jxr_linenumber" name="L643" href="#L643">643</a>                     <strong class="jxr_keyword">if</strong> (word.charAt(start_word+3) == 'i'
+<a class="jxr_linenumber" name="L644" href="#L644">644</a>                      &amp;&amp; word.charAt(start_word+4) == 'n'
+<a class="jxr_linenumber" name="L645" href="#L645">645</a>                      &amp;&amp; word.charAt(start_word+5) == 'g'
+<a class="jxr_linenumber" name="L646" href="#L646">646</a>                     ) {
+<a class="jxr_linenumber" name="L647" href="#L647">647</a>                         <strong class="jxr_keyword">return</strong> KEYWORD_STRING;
+<a class="jxr_linenumber" name="L648" href="#L648">648</a>                     }
+<a class="jxr_linenumber" name="L649" href="#L649">649</a>                     <strong class="jxr_keyword">if</strong> (word.charAt(start_word+3) == 'u'
+<a class="jxr_linenumber" name="L650" href="#L650">650</a>                      &amp;&amp; word.charAt(start_word+4) == 'c'
+<a class="jxr_linenumber" name="L651" href="#L651">651</a>                      &amp;&amp; word.charAt(start_word+5) == 't'
+<a class="jxr_linenumber" name="L652" href="#L652">652</a>                     ) {
+<a class="jxr_linenumber" name="L653" href="#L653">653</a>                         <strong class="jxr_keyword">return</strong> KEYWORD_STRUCT;
+<a class="jxr_linenumber" name="L654" href="#L654">654</a>                     }
+<a class="jxr_linenumber" name="L655" href="#L655">655</a>                     <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L656" href="#L656">656</a>                 }
+<a class="jxr_linenumber" name="L657" href="#L657">657</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'y'
+<a class="jxr_linenumber" name="L658" href="#L658">658</a>                  &amp;&amp; word.charAt(start_word+2) == 'm'
+<a class="jxr_linenumber" name="L659" href="#L659">659</a>                  &amp;&amp; word.charAt(start_word+3) == 'b'
+<a class="jxr_linenumber" name="L660" href="#L660">660</a>                  &amp;&amp; word.charAt(start_word+4) == 'o'
+<a class="jxr_linenumber" name="L661" href="#L661">661</a>                  &amp;&amp; word.charAt(start_word+5) == 'l'
+<a class="jxr_linenumber" name="L662" href="#L662">662</a>                 ) {
+<a class="jxr_linenumber" name="L663" href="#L663">663</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_SYMBOL;
+<a class="jxr_linenumber" name="L664" href="#L664">664</a>                 }
+<a class="jxr_linenumber" name="L665" href="#L665">665</a>             }
+<a class="jxr_linenumber" name="L666" href="#L666">666</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L667" href="#L667">667</a>         <strong class="jxr_keyword">case</strong> 't':
+<a class="jxr_linenumber" name="L668" href="#L668">668</a>             <strong class="jxr_keyword">if</strong> (len == 4) {
+<a class="jxr_linenumber" name="L669" href="#L669">669</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'r'
+<a class="jxr_linenumber" name="L670" href="#L670">670</a>                  &amp;&amp; word.charAt(start_word+2) == 'u'
+<a class="jxr_linenumber" name="L671" href="#L671">671</a>                  &amp;&amp; word.charAt(start_word+3) == 'e'
+<a class="jxr_linenumber" name="L672" href="#L672">672</a>                 ) {
+<a class="jxr_linenumber" name="L673" href="#L673">673</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_TRUE;
+<a class="jxr_linenumber" name="L674" href="#L674">674</a>                 }
+<a class="jxr_linenumber" name="L675" href="#L675">675</a>             }
+<a class="jxr_linenumber" name="L676" href="#L676">676</a>             <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (len == 9) {
+<a class="jxr_linenumber" name="L677" href="#L677">677</a>                 <strong class="jxr_keyword">if</strong> (word.charAt(start_word+1) == 'i'
+<a class="jxr_linenumber" name="L678" href="#L678">678</a>                  &amp;&amp; word.charAt(start_word+2) == 'm'
+<a class="jxr_linenumber" name="L679" href="#L679">679</a>                  &amp;&amp; word.charAt(start_word+3) == 'e'
+<a class="jxr_linenumber" name="L680" href="#L680">680</a>                  &amp;&amp; word.charAt(start_word+4) == 's'
+<a class="jxr_linenumber" name="L681" href="#L681">681</a>                  &amp;&amp; word.charAt(start_word+5) == 't'
+<a class="jxr_linenumber" name="L682" href="#L682">682</a>                  &amp;&amp; word.charAt(start_word+6) == 'a'
+<a class="jxr_linenumber" name="L683" href="#L683">683</a>                  &amp;&amp; word.charAt(start_word+7) == 'm'
+<a class="jxr_linenumber" name="L684" href="#L684">684</a>                  &amp;&amp; word.charAt(start_word+8) == 'p'
+<a class="jxr_linenumber" name="L685" href="#L685">685</a>                 ) {
+<a class="jxr_linenumber" name="L686" href="#L686">686</a>                     <strong class="jxr_keyword">return</strong> KEYWORD_TIMESTAMP;
+<a class="jxr_linenumber" name="L687" href="#L687">687</a>                 }
+<a class="jxr_linenumber" name="L688" href="#L688">688</a>             }
+<a class="jxr_linenumber" name="L689" href="#L689">689</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L690" href="#L690">690</a>         <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L691" href="#L691">691</a>             <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L692" href="#L692">692</a>         }
+<a class="jxr_linenumber" name="L693" href="#L693">693</a>     }
+<a class="jxr_linenumber" name="L694" href="#L694">694</a> 
+<a class="jxr_linenumber" name="L695" href="#L695">695</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L696" href="#L696">696</a> <em class="jxr_comment">    KW_BIT_BLOB       = 0x0001;</em>
+<a class="jxr_linenumber" name="L697" href="#L697">697</a> <em class="jxr_comment">    KW_BIT_BOOL       = 0x0002;</em>
+<a class="jxr_linenumber" name="L698" href="#L698">698</a> <em class="jxr_comment">    KW_BIT_CLOB       = 0x0004;</em>
+<a class="jxr_linenumber" name="L699" href="#L699">699</a> <em class="jxr_comment">    KW_BIT_DECIMAL    = 0x0008;</em>
+<a class="jxr_linenumber" name="L700" href="#L700">700</a> <em class="jxr_comment">    KW_BIT_FLOAT      = 0x0010;</em>
+<a class="jxr_linenumber" name="L701" href="#L701">701</a> <em class="jxr_comment">    KW_BIT_INT        = 0x0020;</em>
+<a class="jxr_linenumber" name="L702" href="#L702">702</a> <em class="jxr_comment">    KW_BIT_LIST       = 0x0030;</em>
+<a class="jxr_linenumber" name="L703" href="#L703">703</a> <em class="jxr_comment">    KW_BIT_NULL       = 0x0080;</em>
+<a class="jxr_linenumber" name="L704" href="#L704">704</a> <em class="jxr_comment">    KW_BIT_SEXP       = 0x0100;</em>
+<a class="jxr_linenumber" name="L705" href="#L705">705</a> <em class="jxr_comment">    KW_BIT_STRING     = 0x0200;</em>
+<a class="jxr_linenumber" name="L706" href="#L706">706</a> <em class="jxr_comment">    KW_BIT_STRUCT     = 0x0400;</em>
+<a class="jxr_linenumber" name="L707" href="#L707">707</a> <em class="jxr_comment">    KW_BIT_SYMBOL     = 0x0800;</em>
+<a class="jxr_linenumber" name="L708" href="#L708">708</a> <em class="jxr_comment">    KW_BIT_TIMESTAMP  = 0x1000;</em>
+<a class="jxr_linenumber" name="L709" href="#L709">709</a> <em class="jxr_comment">    datagram is not included (since these are types that can appear as a null type)</em>
+<a class="jxr_linenumber" name="L710" href="#L710">710</a> 
+<a class="jxr_linenumber" name="L711" href="#L711">711</a> <em class="jxr_comment">    A  1    F  6    N 11    T 16</em>
+<a class="jxr_linenumber" name="L712" href="#L712">712</a> <em class="jxr_comment">    B  2    G  7    O 12    U 17</em>
+<a class="jxr_linenumber" name="L713" href="#L713">713</a> <em class="jxr_comment">    C  3    I  8    P 13    X 18</em>
+<a class="jxr_linenumber" name="L714" href="#L714">714</a> <em class="jxr_comment">    D  4    L  9    R 14    Y 19</em>
+<a class="jxr_linenumber" name="L715" href="#L715">715</a> <em class="jxr_comment">    E  5    M 10    S 15</em>
+<a class="jxr_linenumber" name="L716" href="#L716">716</a> 
+<a class="jxr_linenumber" name="L717" href="#L717">717</a> <em class="jxr_comment">    */</em>
+<a class="jxr_linenumber" name="L718" href="#L718">718</a>     <em class="jxr_comment">// this array is [pos][letter_idx] - if this letter is</em>
+<a class="jxr_linenumber" name="L719" href="#L719">719</a>     <em class="jxr_comment">// valid in this position then all the type names that</em>
+<a class="jxr_linenumber" name="L720" href="#L720">720</a>     <em class="jxr_comment">// contain the letter at that position are on.  Each</em>
+<a class="jxr_linenumber" name="L721" href="#L721">721</a>     <em class="jxr_comment">// keyword is assigned a bit value.</em>
+<a class="jxr_linenumber" name="L722" href="#L722">722</a>     <em class="jxr_comment">// however due to the double index expense the index</em>
+<a class="jxr_linenumber" name="L723" href="#L723">723</a>     <em class="jxr_comment">// is represented by a 1 dim int array and fn's used</em>
+<a class="jxr_linenumber" name="L724" href="#L724">724</a>     <em class="jxr_comment">// to access it (since inline-ing final static small methods</em>
+<a class="jxr_linenumber" name="L725" href="#L725">725</a>     <em class="jxr_comment">// is easy for the compiler)</em>
+<a class="jxr_linenumber" name="L726" href="#L726">726</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  TN_MAX_NAME_LENGTH = <span class="jxr_string">"TIMESTAMP"</span>.length() + 1; <em class="jxr_comment">// so anything too long will be 0</em>
+<a class="jxr_linenumber" name="L727" href="#L727">727</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  TN_LETTER_MAX_IDX = 19;
+<a class="jxr_linenumber" name="L728" href="#L728">728</a> 
+<a class="jxr_linenumber" name="L729" href="#L729">729</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_BLOB       = 0x0001;
+<a class="jxr_linenumber" name="L730" href="#L730">730</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_BOOL       = 0x0002;
+<a class="jxr_linenumber" name="L731" href="#L731">731</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_CLOB       = 0x0004;
+<a class="jxr_linenumber" name="L732" href="#L732">732</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_DECIMAL    = 0x0008;
+<a class="jxr_linenumber" name="L733" href="#L733">733</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_FLOAT      = 0x0010;
+<a class="jxr_linenumber" name="L734" href="#L734">734</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_INT        = 0x0020;
+<a class="jxr_linenumber" name="L735" href="#L735">735</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_LIST       = 0x0030;
+<a class="jxr_linenumber" name="L736" href="#L736">736</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_NULL       = 0x0080;
+<a class="jxr_linenumber" name="L737" href="#L737">737</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_SEXP       = 0x0100;
+<a class="jxr_linenumber" name="L738" href="#L738">738</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_STRING     = 0x0200;
+<a class="jxr_linenumber" name="L739" href="#L739">739</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_STRUCT     = 0x0400;
+<a class="jxr_linenumber" name="L740" href="#L740">740</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_SYMBOL     = 0x0800;
+<a class="jxr_linenumber" name="L741" href="#L741">741</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_BIT_TIMESTAMP  = 0x1000;
+<a class="jxr_linenumber" name="L742" href="#L742">742</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>  KW_ALL_BITS       = 0x1fff;
+<a class="jxr_linenumber" name="L743" href="#L743">743</a> 
+<a class="jxr_linenumber" name="L744" href="#L744">744</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] typeNameBits = <strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[] {
+<a class="jxr_linenumber" name="L745" href="#L745">745</a>         KW_BIT_BLOB,      KW_BIT_BOOL,    KW_BIT_CLOB,
+<a class="jxr_linenumber" name="L746" href="#L746">746</a>         KW_BIT_DECIMAL,   KW_BIT_FLOAT,   KW_BIT_INT,
+<a class="jxr_linenumber" name="L747" href="#L747">747</a>         KW_BIT_LIST,      KW_BIT_NULL,    KW_BIT_SEXP,
+<a class="jxr_linenumber" name="L748" href="#L748">748</a>         KW_BIT_STRING,    KW_BIT_STRUCT,  KW_BIT_SYMBOL,
+<a class="jxr_linenumber" name="L749" href="#L749">749</a>         KW_BIT_TIMESTAMP
+<a class="jxr_linenumber" name="L750" href="#L750">750</a>     };
+<a class="jxr_linenumber" name="L751" href="#L751">751</a> 
+<a class="jxr_linenumber" name="L752" href="#L752">752</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String[] typeNameNames = <strong class="jxr_keyword">new</strong> String[] {
+<a class="jxr_linenumber" name="L753" href="#L753">753</a>         <span class="jxr_string">"blob"</span>,           <span class="jxr_string">"bool"</span>,         <span class="jxr_string">"clob"</span>,
+<a class="jxr_linenumber" name="L754" href="#L754">754</a>         <span class="jxr_string">"decimal"</span>,        <span class="jxr_string">"float"</span>,        <span class="jxr_string">"int"</span>,
+<a class="jxr_linenumber" name="L755" href="#L755">755</a>         <span class="jxr_string">"list"</span>,           <span class="jxr_string">"null"</span>,         <span class="jxr_string">"sexp"</span>,
+<a class="jxr_linenumber" name="L756" href="#L756">756</a>         <span class="jxr_string">"string"</span>,         <span class="jxr_string">"struct"</span>,       <span class="jxr_string">"symbol"</span>,
+<a class="jxr_linenumber" name="L757" href="#L757">757</a>         <span class="jxr_string">"timestamp"</span>
+<a class="jxr_linenumber" name="L758" href="#L758">758</a>     };
+<a class="jxr_linenumber" name="L759" href="#L759">759</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] typeNameKeyWordIds = <strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[] {
+<a class="jxr_linenumber" name="L760" href="#L760">760</a>         KEYWORD_BLOB,     KEYWORD_BOOL,   KEYWORD_CLOB,
+<a class="jxr_linenumber" name="L761" href="#L761">761</a>         KEYWORD_DECIMAL,  KEYWORD_FLOAT,  KEYWORD_INT,
+<a class="jxr_linenumber" name="L762" href="#L762">762</a>         KEYWORD_LIST,     KEYWORD_NULL,   KEYWORD_SEXP,
+<a class="jxr_linenumber" name="L763" href="#L763">763</a>         KEYWORD_STRING,   KEYWORD_STRUCT, KEYWORD_SYMBOL,
+<a class="jxr_linenumber" name="L764" href="#L764">764</a>         KEYWORD_TIMESTAMP
+<a class="jxr_linenumber" name="L765" href="#L765">765</a>     };
+<a class="jxr_linenumber" name="L766" href="#L766">766</a> 
+<a class="jxr_linenumber" name="L767" href="#L767">767</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] TypeNameBitIndex = makeTypeNameBitIndex();
+<a class="jxr_linenumber" name="L768" href="#L768">768</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong>[] makeTypeNameBitIndex() {
+<a class="jxr_linenumber" name="L769" href="#L769">769</a>         <strong class="jxr_keyword">int</strong>[] bits = <strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">int</strong>[TN_MAX_NAME_LENGTH*TN_LETTER_MAX_IDX];
+<a class="jxr_linenumber" name="L770" href="#L770">770</a>         <strong class="jxr_keyword">int</strong>   typename_bit;
+<a class="jxr_linenumber" name="L771" href="#L771">771</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> tt=0; tt&lt;typeNameNames.length; tt++) {
+<a class="jxr_linenumber" name="L772" href="#L772">772</a>             String typename = typeNameNames[tt];
+<a class="jxr_linenumber" name="L773" href="#L773">773</a>             typename_bit = typeNameBits[tt];
+<a class="jxr_linenumber" name="L774" href="#L774">774</a>             <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> ii=0; ii&lt;typename.length(); ii++) {
+<a class="jxr_linenumber" name="L775" href="#L775">775</a>                 <strong class="jxr_keyword">int</strong> c = typename.charAt(ii);
+<a class="jxr_linenumber" name="L776" href="#L776">776</a>                 <strong class="jxr_keyword">int</strong> l = typeNameLetterIdx(c);
+<a class="jxr_linenumber" name="L777" href="#L777">777</a>                 assert(l &gt; 0);
+<a class="jxr_linenumber" name="L778" href="#L778">778</a>                 typename_set_bit(bits, ii, l, typename_bit);
+<a class="jxr_linenumber" name="L779" href="#L779">779</a>             }
+<a class="jxr_linenumber" name="L780" href="#L780">780</a>         }
+<a class="jxr_linenumber" name="L781" href="#L781">781</a>         <strong class="jxr_keyword">return</strong> bits;
+<a class="jxr_linenumber" name="L782" href="#L782">782</a>     }
+<a class="jxr_linenumber" name="L783" href="#L783">783</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> typename_set_bit(<strong class="jxr_keyword">int</strong>[] bits, <strong class="jxr_keyword">int</strong> ii, <strong class="jxr_keyword">int</strong> l, <strong class="jxr_keyword">int</strong> typename_bit)
+<a class="jxr_linenumber" name="L784" href="#L784">784</a>     {
+<a class="jxr_linenumber" name="L785" href="#L785">785</a>         <em class="jxr_comment">// bits[ii][l]</em>
+<a class="jxr_linenumber" name="L786" href="#L786">786</a>         <strong class="jxr_keyword">int</strong> idx = (ii * TN_LETTER_MAX_IDX) + l - 1;
+<a class="jxr_linenumber" name="L787" href="#L787">787</a>         bits[idx] |= typename_bit;
+<a class="jxr_linenumber" name="L788" href="#L788">788</a>     }
+<a class="jxr_linenumber" name="L789" href="#L789">789</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">int</strong> typeNameLetterIdx(<strong class="jxr_keyword">int</strong> c) {
+<a class="jxr_linenumber" name="L790" href="#L790">790</a>         <strong class="jxr_keyword">switch</strong>(c) {
+<a class="jxr_linenumber" name="L791" href="#L791">791</a>         <strong class="jxr_keyword">case</strong> 'a': <strong class="jxr_keyword">return</strong>  1;
+<a class="jxr_linenumber" name="L792" href="#L792">792</a>         <strong class="jxr_keyword">case</strong> 'b': <strong class="jxr_keyword">return</strong>  2;
+<a class="jxr_linenumber" name="L793" href="#L793">793</a>         <strong class="jxr_keyword">case</strong> 'c': <strong class="jxr_keyword">return</strong>  3;
+<a class="jxr_linenumber" name="L794" href="#L794">794</a>         <strong class="jxr_keyword">case</strong> 'd': <strong class="jxr_keyword">return</strong>  4;
+<a class="jxr_linenumber" name="L795" href="#L795">795</a>         <strong class="jxr_keyword">case</strong> 'e': <strong class="jxr_keyword">return</strong>  5;
+<a class="jxr_linenumber" name="L796" href="#L796">796</a>         <strong class="jxr_keyword">case</strong> 'f': <strong class="jxr_keyword">return</strong>  6;
+<a class="jxr_linenumber" name="L797" href="#L797">797</a>         <strong class="jxr_keyword">case</strong> 'g': <strong class="jxr_keyword">return</strong>  7;
+<a class="jxr_linenumber" name="L798" href="#L798">798</a>         <strong class="jxr_keyword">case</strong> 'i': <strong class="jxr_keyword">return</strong>  8;
+<a class="jxr_linenumber" name="L799" href="#L799">799</a>         <strong class="jxr_keyword">case</strong> 'l': <strong class="jxr_keyword">return</strong>  9;
+<a class="jxr_linenumber" name="L800" href="#L800">800</a>         <strong class="jxr_keyword">case</strong> 'm': <strong class="jxr_keyword">return</strong> 10;
+<a class="jxr_linenumber" name="L801" href="#L801">801</a>         <strong class="jxr_keyword">case</strong> 'n': <strong class="jxr_keyword">return</strong> 11;
+<a class="jxr_linenumber" name="L802" href="#L802">802</a>         <strong class="jxr_keyword">case</strong> 'o': <strong class="jxr_keyword">return</strong> 12;
+<a class="jxr_linenumber" name="L803" href="#L803">803</a>         <strong class="jxr_keyword">case</strong> 'p': <strong class="jxr_keyword">return</strong> 13;
+<a class="jxr_linenumber" name="L804" href="#L804">804</a>         <strong class="jxr_keyword">case</strong> 'r': <strong class="jxr_keyword">return</strong> 14;
+<a class="jxr_linenumber" name="L805" href="#L805">805</a>         <strong class="jxr_keyword">case</strong> 's': <strong class="jxr_keyword">return</strong> 15;
+<a class="jxr_linenumber" name="L806" href="#L806">806</a>         <strong class="jxr_keyword">case</strong> 't': <strong class="jxr_keyword">return</strong> 16;
+<a class="jxr_linenumber" name="L807" href="#L807">807</a>         <strong class="jxr_keyword">case</strong> 'u': <strong class="jxr_keyword">return</strong> 17;
+<a class="jxr_linenumber" name="L808" href="#L808">808</a>         <strong class="jxr_keyword">case</strong> 'x': <strong class="jxr_keyword">return</strong> 18;
+<a class="jxr_linenumber" name="L809" href="#L809">809</a>         <strong class="jxr_keyword">case</strong> 'y': <strong class="jxr_keyword">return</strong> 19;
+<a class="jxr_linenumber" name="L810" href="#L810">810</a>         <strong class="jxr_keyword">default</strong>:  <strong class="jxr_keyword">return</strong> -1;
+<a class="jxr_linenumber" name="L811" href="#L811">811</a>         }
 <a class="jxr_linenumber" name="L812" href="#L812">812</a>     }
-<a class="jxr_linenumber" name="L813" href="#L813">813</a>     <em class="jxr_comment">// this can be faster but it's pretty unusual to be called.</em>
-<a class="jxr_linenumber" name="L814" href="#L814">814</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">int</strong> typeNameKeyWordFromMask(<strong class="jxr_keyword">int</strong> possible_names, <strong class="jxr_keyword">int</strong> length) {
-<a class="jxr_linenumber" name="L815" href="#L815">815</a>         <strong class="jxr_keyword">int</strong> kw = KEYWORD_unrecognized;
-<a class="jxr_linenumber" name="L816" href="#L816">816</a>         <strong class="jxr_keyword">if</strong> (possible_names != IonTokenConstsX.KW_ALL_BITS) {
-<a class="jxr_linenumber" name="L817" href="#L817">817</a>             <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> ii=0; ii&lt;typeNameBits.length; ii++) {
-<a class="jxr_linenumber" name="L818" href="#L818">818</a>                 <strong class="jxr_keyword">int</strong> tb = typeNameBits[ii];
-<a class="jxr_linenumber" name="L819" href="#L819">819</a>                 <strong class="jxr_keyword">if</strong> (tb == possible_names) {
-<a class="jxr_linenumber" name="L820" href="#L820">820</a>                     <strong class="jxr_keyword">if</strong> (typeNameNames[ii].length() == length) {
-<a class="jxr_linenumber" name="L821" href="#L821">821</a>                         kw = typeNameKeyWordIds[ii];
-<a class="jxr_linenumber" name="L822" href="#L822">822</a>                     }
-<a class="jxr_linenumber" name="L823" href="#L823">823</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L824" href="#L824">824</a>                 }
-<a class="jxr_linenumber" name="L825" href="#L825">825</a>             }
-<a class="jxr_linenumber" name="L826" href="#L826">826</a>         }
-<a class="jxr_linenumber" name="L827" href="#L827">827</a>         <strong class="jxr_keyword">return</strong> kw;
-<a class="jxr_linenumber" name="L828" href="#L828">828</a>     }
-<a class="jxr_linenumber" name="L829" href="#L829">829</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String getNullImage(<a name="IonType" href="../../../../com/amazon/ion/IonType.html#IonType">IonType</a> type)
-<a class="jxr_linenumber" name="L830" href="#L830">830</a>     {
-<a class="jxr_linenumber" name="L831" href="#L831">831</a>         String nullimage = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L832" href="#L832">832</a> 
-<a class="jxr_linenumber" name="L833" href="#L833">833</a>         <strong class="jxr_keyword">switch</strong> (type) {
-<a class="jxr_linenumber" name="L834" href="#L834">834</a>         <strong class="jxr_keyword">case</strong> NULL:      nullimage = <span class="jxr_string">"null"</span>;           <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L835" href="#L835">835</a>         <strong class="jxr_keyword">case</strong> BOOL:      nullimage = <span class="jxr_string">"null.bool"</span>;      <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L836" href="#L836">836</a>         <strong class="jxr_keyword">case</strong> INT:       nullimage = <span class="jxr_string">"null.int"</span>;       <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L837" href="#L837">837</a>         <strong class="jxr_keyword">case</strong> FLOAT:     nullimage = <span class="jxr_string">"null.float"</span>;     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L838" href="#L838">838</a>         <strong class="jxr_keyword">case</strong> DECIMAL:   nullimage = <span class="jxr_string">"null.decimal"</span>;   <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L839" href="#L839">839</a>         <strong class="jxr_keyword">case</strong> TIMESTAMP: nullimage = <span class="jxr_string">"null.timestamp"</span>; <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L840" href="#L840">840</a>         <strong class="jxr_keyword">case</strong> SYMBOL:    nullimage = <span class="jxr_string">"null.symbol"</span>;    <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L841" href="#L841">841</a>         <strong class="jxr_keyword">case</strong> STRING:    nullimage = <span class="jxr_string">"null.string"</span>;    <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L842" href="#L842">842</a>         <strong class="jxr_keyword">case</strong> BLOB:      nullimage = <span class="jxr_string">"null.blob"</span>;      <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L843" href="#L843">843</a>         <strong class="jxr_keyword">case</strong> CLOB:      nullimage = <span class="jxr_string">"null.clob"</span>;      <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L844" href="#L844">844</a>         <strong class="jxr_keyword">case</strong> SEXP:      nullimage = <span class="jxr_string">"null.sexp"</span>;      <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L845" href="#L845">845</a>         <strong class="jxr_keyword">case</strong> LIST:      nullimage = <span class="jxr_string">"null.list"</span>;      <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L846" href="#L846">846</a>         <strong class="jxr_keyword">case</strong> STRUCT:    nullimage = <span class="jxr_string">"null.struct"</span>;    <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L847" href="#L847">847</a> 
-<a class="jxr_linenumber" name="L848" href="#L848">848</a>         <strong class="jxr_keyword">default</strong>: <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"unexpected type "</span> + type);
-<a class="jxr_linenumber" name="L849" href="#L849">849</a>         }
-<a class="jxr_linenumber" name="L850" href="#L850">850</a> 
-<a class="jxr_linenumber" name="L851" href="#L851">851</a>         <strong class="jxr_keyword">return</strong> nullimage;
-<a class="jxr_linenumber" name="L852" href="#L852">852</a>     }
-<a class="jxr_linenumber" name="L853" href="#L853">853</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="IonType" href="../../../../com/amazon/ion/IonType.html#IonType">IonType</a> getNullType(CharSequence s)
-<a class="jxr_linenumber" name="L854" href="#L854">854</a>     {
-<a class="jxr_linenumber" name="L855" href="#L855">855</a>         <a name="IonType" href="../../../../com/amazon/ion/IonType.html#IonType">IonType</a> type = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L856" href="#L856">856</a>         <strong class="jxr_keyword">int</strong>     c, ii = 0;
-<a class="jxr_linenumber" name="L857" href="#L857">857</a>         <strong class="jxr_keyword">boolean</strong> stop = false;
-<a class="jxr_linenumber" name="L858" href="#L858">858</a>         <strong class="jxr_keyword">while</strong> (!stop &amp;&amp; ii&lt;s.length()) {
-<a class="jxr_linenumber" name="L859" href="#L859">859</a>             c = s.charAt(ii++);
-<a class="jxr_linenumber" name="L860" href="#L860">860</a>             <strong class="jxr_keyword">switch</strong> (c) {
-<a class="jxr_linenumber" name="L861" href="#L861">861</a>             <strong class="jxr_keyword">case</strong> ' ': <strong class="jxr_keyword">case</strong> '\t': <strong class="jxr_keyword">case</strong> '\r': <strong class="jxr_keyword">case</strong> '\n':
-<a class="jxr_linenumber" name="L862" href="#L862">862</a>                 <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L863" href="#L863">863</a>             <strong class="jxr_keyword">case</strong> 'n':
-<a class="jxr_linenumber" name="L864" href="#L864">864</a>                 stop = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L865" href="#L865">865</a>                 <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L866" href="#L866">866</a>             <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L867" href="#L867">867</a>                 invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L868" href="#L868">868</a>             }
-<a class="jxr_linenumber" name="L869" href="#L869">869</a>         }
-<a class="jxr_linenumber" name="L870" href="#L870">870</a>         <strong class="jxr_keyword">if</strong> (ii&gt;=s.length() || s.charAt(ii++) != 'u') invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L871" href="#L871">871</a>         <strong class="jxr_keyword">if</strong> (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L872" href="#L872">872</a>         <strong class="jxr_keyword">if</strong> (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L873" href="#L873">873</a>         <strong class="jxr_keyword">boolean</strong> dot = false;
-<a class="jxr_linenumber" name="L874" href="#L874">874</a>         <strong class="jxr_keyword">while</strong> (!dot &amp;&amp; ii&lt;s.length()) {
-<a class="jxr_linenumber" name="L875" href="#L875">875</a>             c = s.charAt(ii++);
-<a class="jxr_linenumber" name="L876" href="#L876">876</a>             <strong class="jxr_keyword">switch</strong> (c) {
-<a class="jxr_linenumber" name="L877" href="#L877">877</a>             <strong class="jxr_keyword">case</strong> ' ': <strong class="jxr_keyword">case</strong> '\t': <strong class="jxr_keyword">case</strong> '\r': <strong class="jxr_keyword">case</strong> '\n':
-<a class="jxr_linenumber" name="L878" href="#L878">878</a>                 <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L879" href="#L879">879</a>             <strong class="jxr_keyword">case</strong> '.':
-<a class="jxr_linenumber" name="L880" href="#L880">880</a>                 dot = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L881" href="#L881">881</a>                 <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L882" href="#L882">882</a>             <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L883" href="#L883">883</a>                 invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L884" href="#L884">884</a>             }
-<a class="jxr_linenumber" name="L885" href="#L885">885</a>         }
-<a class="jxr_linenumber" name="L886" href="#L886">886</a>         <strong class="jxr_keyword">if</strong> (dot) {
-<a class="jxr_linenumber" name="L887" href="#L887">887</a>             <strong class="jxr_keyword">int</strong> kw = IonTokenConstsX.keyword(s, ii, s.length());
-<a class="jxr_linenumber" name="L888" href="#L888">888</a>             <strong class="jxr_keyword">switch</strong> (kw) {
-<a class="jxr_linenumber" name="L889" href="#L889">889</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_NULL:
-<a class="jxr_linenumber" name="L890" href="#L890">890</a>                     type = IonType.NULL;
-<a class="jxr_linenumber" name="L891" href="#L891">891</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L892" href="#L892">892</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_BOOL:
-<a class="jxr_linenumber" name="L893" href="#L893">893</a>                     type = IonType.BOOL;
-<a class="jxr_linenumber" name="L894" href="#L894">894</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L895" href="#L895">895</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_INT:
-<a class="jxr_linenumber" name="L896" href="#L896">896</a>                     type = IonType.INT;
-<a class="jxr_linenumber" name="L897" href="#L897">897</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L898" href="#L898">898</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_FLOAT:
-<a class="jxr_linenumber" name="L899" href="#L899">899</a>                     type = IonType.FLOAT;
-<a class="jxr_linenumber" name="L900" href="#L900">900</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L901" href="#L901">901</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_DECIMAL:
-<a class="jxr_linenumber" name="L902" href="#L902">902</a>                     type = IonType.DECIMAL;
-<a class="jxr_linenumber" name="L903" href="#L903">903</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L904" href="#L904">904</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_TIMESTAMP:
-<a class="jxr_linenumber" name="L905" href="#L905">905</a>                     type = IonType.TIMESTAMP;
-<a class="jxr_linenumber" name="L906" href="#L906">906</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L907" href="#L907">907</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_SYMBOL:
-<a class="jxr_linenumber" name="L908" href="#L908">908</a>                     type = IonType.SYMBOL;
-<a class="jxr_linenumber" name="L909" href="#L909">909</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L910" href="#L910">910</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_STRING:
-<a class="jxr_linenumber" name="L911" href="#L911">911</a>                     type = IonType.STRING;
-<a class="jxr_linenumber" name="L912" href="#L912">912</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L913" href="#L913">913</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_CLOB:
-<a class="jxr_linenumber" name="L914" href="#L914">914</a>                     type = IonType.CLOB;
-<a class="jxr_linenumber" name="L915" href="#L915">915</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L916" href="#L916">916</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_BLOB:
-<a class="jxr_linenumber" name="L917" href="#L917">917</a>                     type = IonType.BLOB;
-<a class="jxr_linenumber" name="L918" href="#L918">918</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L919" href="#L919">919</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_STRUCT:
-<a class="jxr_linenumber" name="L920" href="#L920">920</a>                     type = IonType.STRUCT;
-<a class="jxr_linenumber" name="L921" href="#L921">921</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L922" href="#L922">922</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_LIST:
-<a class="jxr_linenumber" name="L923" href="#L923">923</a>                     type = IonType.LIST;
-<a class="jxr_linenumber" name="L924" href="#L924">924</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L925" href="#L925">925</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_SEXP:
-<a class="jxr_linenumber" name="L926" href="#L926">926</a>                     type = IonType.SEXP;
-<a class="jxr_linenumber" name="L927" href="#L927">927</a>                     <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L928" href="#L928">928</a>                 <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L929" href="#L929">929</a>                     invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L930" href="#L930">930</a>             }
-<a class="jxr_linenumber" name="L931" href="#L931">931</a>         }
-<a class="jxr_linenumber" name="L932" href="#L932">932</a> 
-<a class="jxr_linenumber" name="L933" href="#L933">933</a>         <strong class="jxr_keyword">while</strong> (ii&lt;s.length()) {
-<a class="jxr_linenumber" name="L934" href="#L934">934</a>             c = s.charAt(ii++);
-<a class="jxr_linenumber" name="L935" href="#L935">935</a>             <strong class="jxr_keyword">switch</strong> (c) {
-<a class="jxr_linenumber" name="L936" href="#L936">936</a>             <strong class="jxr_keyword">case</strong> ' ': <strong class="jxr_keyword">case</strong> '\t': <strong class="jxr_keyword">case</strong> '\r': <strong class="jxr_keyword">case</strong> '\n':
-<a class="jxr_linenumber" name="L937" href="#L937">937</a>                 <strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L938" href="#L938">938</a>             <strong class="jxr_keyword">default</strong>:
-<a class="jxr_linenumber" name="L939" href="#L939">939</a>                 invalid_<strong class="jxr_keyword">null</strong>_image(s);
-<a class="jxr_linenumber" name="L940" href="#L940">940</a>             }
-<a class="jxr_linenumber" name="L941" href="#L941">941</a>         }
-<a class="jxr_linenumber" name="L942" href="#L942">942</a> 
-<a class="jxr_linenumber" name="L943" href="#L943">943</a>         <strong class="jxr_keyword">return</strong> type;
-<a class="jxr_linenumber" name="L944" href="#L944">944</a>     }
-<a class="jxr_linenumber" name="L945" href="#L945">945</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> invalid_<strong class="jxr_keyword">null</strong>_image(CharSequence s) {
-<a class="jxr_linenumber" name="L946" href="#L946">946</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> CantConvertException(<span class="jxr_string">"invalid image "</span>+s.toString());
-<a class="jxr_linenumber" name="L947" href="#L947">947</a>     }
-<a class="jxr_linenumber" name="L948" href="#L948">948</a> 
-<a class="jxr_linenumber" name="L949" href="#L949">949</a> }
+<a class="jxr_linenumber" name="L813" href="#L813">813</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">int</strong> typeNamePossibilityMask(<strong class="jxr_keyword">int</strong> pos, <strong class="jxr_keyword">int</strong> letter_idx) {
+<a class="jxr_linenumber" name="L814" href="#L814">814</a>         <strong class="jxr_keyword">int</strong> idx = (pos * TN_LETTER_MAX_IDX) + letter_idx - 1;
+<a class="jxr_linenumber" name="L815" href="#L815">815</a>         <strong class="jxr_keyword">int</strong> mask = TypeNameBitIndex[idx];
+<a class="jxr_linenumber" name="L816" href="#L816">816</a>         <strong class="jxr_keyword">return</strong> mask;
+<a class="jxr_linenumber" name="L817" href="#L817">817</a>     }
+<a class="jxr_linenumber" name="L818" href="#L818">818</a>     <em class="jxr_comment">// this can be faster but it's pretty unusual to be called.</em>
+<a class="jxr_linenumber" name="L819" href="#L819">819</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">int</strong> typeNameKeyWordFromMask(<strong class="jxr_keyword">int</strong> possible_names, <strong class="jxr_keyword">int</strong> length) {
+<a class="jxr_linenumber" name="L820" href="#L820">820</a>         <strong class="jxr_keyword">int</strong> kw = KEYWORD_unrecognized;
+<a class="jxr_linenumber" name="L821" href="#L821">821</a>         <strong class="jxr_keyword">if</strong> (possible_names != IonTokenConstsX.KW_ALL_BITS) {
+<a class="jxr_linenumber" name="L822" href="#L822">822</a>             <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> ii=0; ii&lt;typeNameBits.length; ii++) {
+<a class="jxr_linenumber" name="L823" href="#L823">823</a>                 <strong class="jxr_keyword">int</strong> tb = typeNameBits[ii];
+<a class="jxr_linenumber" name="L824" href="#L824">824</a>                 <strong class="jxr_keyword">if</strong> (tb == possible_names) {
+<a class="jxr_linenumber" name="L825" href="#L825">825</a>                     <strong class="jxr_keyword">if</strong> (typeNameNames[ii].length() == length) {
+<a class="jxr_linenumber" name="L826" href="#L826">826</a>                         kw = typeNameKeyWordIds[ii];
+<a class="jxr_linenumber" name="L827" href="#L827">827</a>                     }
+<a class="jxr_linenumber" name="L828" href="#L828">828</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L829" href="#L829">829</a>                 }
+<a class="jxr_linenumber" name="L830" href="#L830">830</a>             }
+<a class="jxr_linenumber" name="L831" href="#L831">831</a>         }
+<a class="jxr_linenumber" name="L832" href="#L832">832</a>         <strong class="jxr_keyword">return</strong> kw;
+<a class="jxr_linenumber" name="L833" href="#L833">833</a>     }
+<a class="jxr_linenumber" name="L834" href="#L834">834</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String getNullImage(<a name="IonType" href="../../../../com/amazon/ion/IonType.html#IonType">IonType</a> type)
+<a class="jxr_linenumber" name="L835" href="#L835">835</a>     {
+<a class="jxr_linenumber" name="L836" href="#L836">836</a>         String nullimage = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L837" href="#L837">837</a> 
+<a class="jxr_linenumber" name="L838" href="#L838">838</a>         <strong class="jxr_keyword">switch</strong> (type) {
+<a class="jxr_linenumber" name="L839" href="#L839">839</a>         <strong class="jxr_keyword">case</strong> NULL:      nullimage = <span class="jxr_string">"null"</span>;           <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L840" href="#L840">840</a>         <strong class="jxr_keyword">case</strong> BOOL:      nullimage = <span class="jxr_string">"null.bool"</span>;      <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L841" href="#L841">841</a>         <strong class="jxr_keyword">case</strong> INT:       nullimage = <span class="jxr_string">"null.int"</span>;       <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L842" href="#L842">842</a>         <strong class="jxr_keyword">case</strong> FLOAT:     nullimage = <span class="jxr_string">"null.float"</span>;     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L843" href="#L843">843</a>         <strong class="jxr_keyword">case</strong> DECIMAL:   nullimage = <span class="jxr_string">"null.decimal"</span>;   <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L844" href="#L844">844</a>         <strong class="jxr_keyword">case</strong> TIMESTAMP: nullimage = <span class="jxr_string">"null.timestamp"</span>; <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L845" href="#L845">845</a>         <strong class="jxr_keyword">case</strong> SYMBOL:    nullimage = <span class="jxr_string">"null.symbol"</span>;    <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L846" href="#L846">846</a>         <strong class="jxr_keyword">case</strong> STRING:    nullimage = <span class="jxr_string">"null.string"</span>;    <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L847" href="#L847">847</a>         <strong class="jxr_keyword">case</strong> BLOB:      nullimage = <span class="jxr_string">"null.blob"</span>;      <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L848" href="#L848">848</a>         <strong class="jxr_keyword">case</strong> CLOB:      nullimage = <span class="jxr_string">"null.clob"</span>;      <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L849" href="#L849">849</a>         <strong class="jxr_keyword">case</strong> SEXP:      nullimage = <span class="jxr_string">"null.sexp"</span>;      <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L850" href="#L850">850</a>         <strong class="jxr_keyword">case</strong> LIST:      nullimage = <span class="jxr_string">"null.list"</span>;      <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L851" href="#L851">851</a>         <strong class="jxr_keyword">case</strong> STRUCT:    nullimage = <span class="jxr_string">"null.struct"</span>;    <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L852" href="#L852">852</a> 
+<a class="jxr_linenumber" name="L853" href="#L853">853</a>         <strong class="jxr_keyword">default</strong>: <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> IllegalStateException(<span class="jxr_string">"unexpected type "</span> + type);
+<a class="jxr_linenumber" name="L854" href="#L854">854</a>         }
+<a class="jxr_linenumber" name="L855" href="#L855">855</a> 
+<a class="jxr_linenumber" name="L856" href="#L856">856</a>         <strong class="jxr_keyword">return</strong> nullimage;
+<a class="jxr_linenumber" name="L857" href="#L857">857</a>     }
+<a class="jxr_linenumber" name="L858" href="#L858">858</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <a name="IonType" href="../../../../com/amazon/ion/IonType.html#IonType">IonType</a> getNullType(CharSequence s)
+<a class="jxr_linenumber" name="L859" href="#L859">859</a>     {
+<a class="jxr_linenumber" name="L860" href="#L860">860</a>         <a name="IonType" href="../../../../com/amazon/ion/IonType.html#IonType">IonType</a> type = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L861" href="#L861">861</a>         <strong class="jxr_keyword">int</strong>     c, ii = 0;
+<a class="jxr_linenumber" name="L862" href="#L862">862</a>         <strong class="jxr_keyword">boolean</strong> stop = false;
+<a class="jxr_linenumber" name="L863" href="#L863">863</a>         <strong class="jxr_keyword">while</strong> (!stop &amp;&amp; ii&lt;s.length()) {
+<a class="jxr_linenumber" name="L864" href="#L864">864</a>             c = s.charAt(ii++);
+<a class="jxr_linenumber" name="L865" href="#L865">865</a>             <strong class="jxr_keyword">switch</strong> (c) {
+<a class="jxr_linenumber" name="L866" href="#L866">866</a>             <strong class="jxr_keyword">case</strong> ' ': <strong class="jxr_keyword">case</strong> '\t': <strong class="jxr_keyword">case</strong> '\r': <strong class="jxr_keyword">case</strong> '\n':
+<a class="jxr_linenumber" name="L867" href="#L867">867</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L868" href="#L868">868</a>             <strong class="jxr_keyword">case</strong> 'n':
+<a class="jxr_linenumber" name="L869" href="#L869">869</a>                 stop = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L870" href="#L870">870</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L871" href="#L871">871</a>             <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L872" href="#L872">872</a>                 invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L873" href="#L873">873</a>             }
+<a class="jxr_linenumber" name="L874" href="#L874">874</a>         }
+<a class="jxr_linenumber" name="L875" href="#L875">875</a>         <strong class="jxr_keyword">if</strong> (ii&gt;=s.length() || s.charAt(ii++) != 'u') invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L876" href="#L876">876</a>         <strong class="jxr_keyword">if</strong> (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L877" href="#L877">877</a>         <strong class="jxr_keyword">if</strong> (ii&gt;=s.length() || s.charAt(ii++) != 'l') invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L878" href="#L878">878</a>         <strong class="jxr_keyword">boolean</strong> dot = false;
+<a class="jxr_linenumber" name="L879" href="#L879">879</a>         <strong class="jxr_keyword">while</strong> (!dot &amp;&amp; ii&lt;s.length()) {
+<a class="jxr_linenumber" name="L880" href="#L880">880</a>             c = s.charAt(ii++);
+<a class="jxr_linenumber" name="L881" href="#L881">881</a>             <strong class="jxr_keyword">switch</strong> (c) {
+<a class="jxr_linenumber" name="L882" href="#L882">882</a>             <strong class="jxr_keyword">case</strong> ' ': <strong class="jxr_keyword">case</strong> '\t': <strong class="jxr_keyword">case</strong> '\r': <strong class="jxr_keyword">case</strong> '\n':
+<a class="jxr_linenumber" name="L883" href="#L883">883</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L884" href="#L884">884</a>             <strong class="jxr_keyword">case</strong> '.':
+<a class="jxr_linenumber" name="L885" href="#L885">885</a>                 dot = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L886" href="#L886">886</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L887" href="#L887">887</a>             <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L888" href="#L888">888</a>                 invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L889" href="#L889">889</a>             }
+<a class="jxr_linenumber" name="L890" href="#L890">890</a>         }
+<a class="jxr_linenumber" name="L891" href="#L891">891</a>         <strong class="jxr_keyword">if</strong> (dot) {
+<a class="jxr_linenumber" name="L892" href="#L892">892</a>             <strong class="jxr_keyword">int</strong> kw = IonTokenConstsX.keyword(s, ii, s.length());
+<a class="jxr_linenumber" name="L893" href="#L893">893</a>             <strong class="jxr_keyword">switch</strong> (kw) {
+<a class="jxr_linenumber" name="L894" href="#L894">894</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_NULL:
+<a class="jxr_linenumber" name="L895" href="#L895">895</a>                     type = IonType.NULL;
+<a class="jxr_linenumber" name="L896" href="#L896">896</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L897" href="#L897">897</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_BOOL:
+<a class="jxr_linenumber" name="L898" href="#L898">898</a>                     type = IonType.BOOL;
+<a class="jxr_linenumber" name="L899" href="#L899">899</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L900" href="#L900">900</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_INT:
+<a class="jxr_linenumber" name="L901" href="#L901">901</a>                     type = IonType.INT;
+<a class="jxr_linenumber" name="L902" href="#L902">902</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L903" href="#L903">903</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_FLOAT:
+<a class="jxr_linenumber" name="L904" href="#L904">904</a>                     type = IonType.FLOAT;
+<a class="jxr_linenumber" name="L905" href="#L905">905</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L906" href="#L906">906</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_DECIMAL:
+<a class="jxr_linenumber" name="L907" href="#L907">907</a>                     type = IonType.DECIMAL;
+<a class="jxr_linenumber" name="L908" href="#L908">908</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L909" href="#L909">909</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_TIMESTAMP:
+<a class="jxr_linenumber" name="L910" href="#L910">910</a>                     type = IonType.TIMESTAMP;
+<a class="jxr_linenumber" name="L911" href="#L911">911</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L912" href="#L912">912</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_SYMBOL:
+<a class="jxr_linenumber" name="L913" href="#L913">913</a>                     type = IonType.SYMBOL;
+<a class="jxr_linenumber" name="L914" href="#L914">914</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L915" href="#L915">915</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_STRING:
+<a class="jxr_linenumber" name="L916" href="#L916">916</a>                     type = IonType.STRING;
+<a class="jxr_linenumber" name="L917" href="#L917">917</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L918" href="#L918">918</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_CLOB:
+<a class="jxr_linenumber" name="L919" href="#L919">919</a>                     type = IonType.CLOB;
+<a class="jxr_linenumber" name="L920" href="#L920">920</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L921" href="#L921">921</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_BLOB:
+<a class="jxr_linenumber" name="L922" href="#L922">922</a>                     type = IonType.BLOB;
+<a class="jxr_linenumber" name="L923" href="#L923">923</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L924" href="#L924">924</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_STRUCT:
+<a class="jxr_linenumber" name="L925" href="#L925">925</a>                     type = IonType.STRUCT;
+<a class="jxr_linenumber" name="L926" href="#L926">926</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L927" href="#L927">927</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_LIST:
+<a class="jxr_linenumber" name="L928" href="#L928">928</a>                     type = IonType.LIST;
+<a class="jxr_linenumber" name="L929" href="#L929">929</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L930" href="#L930">930</a>                 <strong class="jxr_keyword">case</strong> IonTokenConstsX.KEYWORD_SEXP:
+<a class="jxr_linenumber" name="L931" href="#L931">931</a>                     type = IonType.SEXP;
+<a class="jxr_linenumber" name="L932" href="#L932">932</a>                     <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L933" href="#L933">933</a>                 <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L934" href="#L934">934</a>                     invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L935" href="#L935">935</a>             }
+<a class="jxr_linenumber" name="L936" href="#L936">936</a>         }
+<a class="jxr_linenumber" name="L937" href="#L937">937</a> 
+<a class="jxr_linenumber" name="L938" href="#L938">938</a>         <strong class="jxr_keyword">while</strong> (ii&lt;s.length()) {
+<a class="jxr_linenumber" name="L939" href="#L939">939</a>             c = s.charAt(ii++);
+<a class="jxr_linenumber" name="L940" href="#L940">940</a>             <strong class="jxr_keyword">switch</strong> (c) {
+<a class="jxr_linenumber" name="L941" href="#L941">941</a>             <strong class="jxr_keyword">case</strong> ' ': <strong class="jxr_keyword">case</strong> '\t': <strong class="jxr_keyword">case</strong> '\r': <strong class="jxr_keyword">case</strong> '\n':
+<a class="jxr_linenumber" name="L942" href="#L942">942</a>                 <strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L943" href="#L943">943</a>             <strong class="jxr_keyword">default</strong>:
+<a class="jxr_linenumber" name="L944" href="#L944">944</a>                 invalid_<strong class="jxr_keyword">null</strong>_image(s);
+<a class="jxr_linenumber" name="L945" href="#L945">945</a>             }
+<a class="jxr_linenumber" name="L946" href="#L946">946</a>         }
+<a class="jxr_linenumber" name="L947" href="#L947">947</a> 
+<a class="jxr_linenumber" name="L948" href="#L948">948</a>         <strong class="jxr_keyword">return</strong> type;
+<a class="jxr_linenumber" name="L949" href="#L949">949</a>     }
+<a class="jxr_linenumber" name="L950" href="#L950">950</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> invalid_<strong class="jxr_keyword">null</strong>_image(CharSequence s) {
+<a class="jxr_linenumber" name="L951" href="#L951">951</a>         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> CantConvertException(<span class="jxr_string">"invalid image "</span>+s.toString());
+<a class="jxr_linenumber" name="L952" href="#L952">952</a>     }
+<a class="jxr_linenumber" name="L953" href="#L953">953</a> 
+<a class="jxr_linenumber" name="L954" href="#L954">954</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2020. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2021. All rights reserved.</div>
 </body>
 </html>

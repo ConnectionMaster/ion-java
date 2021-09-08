@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Utf8StringEncoderPool.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">com.amazon.ion:ion-java</a> &gt; <a href="index.source.html" class="el_package">com.amazon.ion.impl.bin.utf8</a> &gt; <span class="el_source">Utf8StringEncoderPool.java</span></div><h1>Utf8StringEncoderPool.java</h1><pre class="source lang-java linenums">package com.amazon.ion.impl.bin.utf8;
+
+import java.util.concurrent.ArrayBlockingQueue;
+
+/**
+ * A thread-safe shared pool of {@link Utf8StringEncoder}s that can be used for UTF8 encoding and decoding.
+ */
+<span class="fc" id="L8">public enum Utf8StringEncoderPool {</span>
+    // The only enum variant; a singleton instance.
+<span class="fc" id="L10">    INSTANCE;</span>
+
+    // The maximum number of Utf8Encoders that can be waiting in the queue before new ones will be discarded.
+    private static final int MAX_QUEUE_SIZE = 128;
+
+    // A queue of previously initialized encoders that can be loaned out.
+    private final ArrayBlockingQueue&lt;Utf8StringEncoder&gt; bufferQueue;
+
+    // Do not allow instantiation; all classes should share the singleton instance.
+<span class="fc" id="L19">    private Utf8StringEncoderPool() {</span>
+<span class="fc" id="L20">        bufferQueue = new ArrayBlockingQueue&lt;Utf8StringEncoder&gt;(MAX_QUEUE_SIZE);</span>
+<span class="fc" id="L21">    }</span>
+
+    /**
+     * @return a threadsafe shared instance of {@link Utf8StringEncoderPool}.
+     */
+    public static Utf8StringEncoderPool getInstance() {
+<span class="fc" id="L27">        return INSTANCE;</span>
+    }
+
+    /**
+     * If the pool is not empty, removes an instance of {@link Utf8StringEncoder} from the pool and returns it;
+     * otherwise, constructs a new instance.
+     *
+     * @return An instance of {@link Utf8StringEncoder}.
+     */
+    public Utf8StringEncoder getOrCreateUtf8Encoder() {
+        // The `poll` method does not block. If the queue is empty it returns `null` immediately.
+<span class="fc" id="L38">        Utf8StringEncoder encoder = bufferQueue.poll();</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (encoder == null) {</span>
+            // No buffers were available in the pool. Create a new one.
+<span class="fc" id="L41">            encoder = new Utf8StringEncoder(this);</span>
+        }
+<span class="fc" id="L43">        return encoder;</span>
+    }
+
+    /**
+     * Adds the provided instance of {@link Utf8StringEncoder} to the pool. If the pool is full, the instance will
+     * be discarded.
+     *
+     * Callers MUST NOT use an encoder after returning it to the pool.
+     *
+     * @param encoder   A {@link Utf8StringEncoder} to add to the pool.
+     */
+    public void returnEncoderToPool(Utf8StringEncoder encoder) {
+        // The `offer` method does not block. If the queue is full, it returns `false` immediately.
+        // If the provided instance cannot be added to the pool, we discard it silently.
+<span class="fc" id="L57">        bufferQueue.offer(encoder);</span>
+<span class="fc" id="L58">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

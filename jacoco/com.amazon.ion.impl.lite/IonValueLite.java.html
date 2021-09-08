@@ -633,7 +633,7 @@ import java.io.PrintWriter;
 <span class="fc bfc" id="L633" title="All 2 branches covered.">        if (symbols != null) {</span>
 <span class="fc" id="L634">            return symbols;</span>
         }
-<span class="fc" id="L636">        return _context.getSystem().getSystemSymbolTable();</span>
+<span class="fc" id="L636">        return getSystem().getSystemSymbolTable();</span>
     }
 
     public SymbolTable getAssignedSymbolTable()
@@ -651,7 +651,7 @@ import java.io.PrintWriter;
 
     public IonType getType()
     {
-<span class="nc" id="L654">        throw new UnsupportedOperationException(&quot;this type &quot;+this.getClass().getSimpleName()+&quot; should not be instanciated, there is not IonType associated with it&quot;);</span>
+<span class="nc" id="L654">        throw new UnsupportedOperationException(&quot;this type &quot;+this.getClass().getSimpleName()+&quot; should not be instantiated, there is not IonType associated with it&quot;);</span>
     }
 
     public SymbolToken[] getTypeAnnotationSymbols()

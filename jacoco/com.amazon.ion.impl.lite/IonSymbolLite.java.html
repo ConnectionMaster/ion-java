@@ -308,7 +308,7 @@ import java.io.IOException;
 <span class="fc" id="L308">            return null;</span>
         }
 <span class="fc" id="L310">        String name = _stringValue(symbolTableProvider);</span>
-<span class="pc bpc" id="L311" title="1 of 4 branches missed.">        if (name == null &amp;&amp; _sid != 0) {</span>
+<span class="fc bfc" id="L311" title="All 4 branches covered.">        if (name == null &amp;&amp; _sid != 0) {</span>
 <span class="pc bpc" id="L312" title="2 of 4 branches missed.">            assert(_sid &gt; 0);</span>
 <span class="fc" id="L313">            throw new UnknownSymbolException(_sid);</span>
         }

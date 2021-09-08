@@ -798,7 +798,7 @@ import java.nio.charset.Charset;
 <span class="fc" id="L798">    }</span>
 
 
-    public void printFloat(double value)
+    public void printFloat(_Private_IonTextWriterBuilder _options, double value)
         throws IOException
     {
         // shortcut zero cases
@@ -815,49 +815,61 @@ import java.nio.charset.Charset;
         }
 <span class="fc bfc" id="L816" title="All 2 branches covered.">        else if (Double.isNaN(value))</span>
         {
-<span class="fc" id="L818">            appendAscii(&quot;nan&quot;);</span>
+<span class="fc bfc" id="L818" title="All 2 branches covered.">            if (_options._float_nan_and_inf_as_null) {</span>
+<span class="fc" id="L819">                appendAscii(&quot;null&quot;);</span>
+            } else {
+<span class="fc" id="L821">                appendAscii(&quot;nan&quot;);</span>
+            }
         }
-<span class="fc bfc" id="L820" title="All 2 branches covered.">        else if (value == Double.POSITIVE_INFINITY)</span>
+<span class="fc bfc" id="L824" title="All 2 branches covered.">        else if (value == Double.POSITIVE_INFINITY)</span>
         {
-<span class="fc" id="L822">            appendAscii(&quot;+inf&quot;);</span>
+<span class="fc bfc" id="L826" title="All 2 branches covered.">            if (_options._float_nan_and_inf_as_null) {</span>
+<span class="fc" id="L827">                appendAscii(&quot;null&quot;);</span>
+            } else {
+<span class="fc" id="L829">                appendAscii(&quot;+inf&quot;);</span>
+            }
         }
-<span class="fc bfc" id="L824" title="All 2 branches covered.">        else if (value == Double.NEGATIVE_INFINITY)</span>
+<span class="fc bfc" id="L832" title="All 2 branches covered.">        else if (value == Double.NEGATIVE_INFINITY)</span>
         {
-<span class="fc" id="L826">            appendAscii(&quot;-inf&quot;);</span>
+<span class="fc bfc" id="L834" title="All 2 branches covered.">            if (_options._float_nan_and_inf_as_null) {</span>
+<span class="fc" id="L835">                appendAscii(&quot;null&quot;);</span>
+            } else {
+<span class="fc" id="L837">                appendAscii(&quot;-inf&quot;);</span>
+            }
         }
         else
         {
             // Double.toString() forces a digit after the decimal point.
             // Remove it when it's not meaningful.
-<span class="fc" id="L832">            String str = Double.toString(value);</span>
-<span class="fc bfc" id="L833" title="All 2 branches covered.">            if (str.endsWith(&quot;.0&quot;))</span>
+<span class="fc" id="L844">            String str = Double.toString(value);</span>
+<span class="fc bfc" id="L845" title="All 2 branches covered.">            if (str.endsWith(&quot;.0&quot;))</span>
             {
-<span class="fc" id="L835">                appendAscii(str, 0, str.length() - 2);</span>
-<span class="fc" id="L836">                appendAscii(&quot;e0&quot;);</span>
+<span class="fc" id="L847">                appendAscii(str, 0, str.length() - 2);</span>
+<span class="fc" id="L848">                appendAscii(&quot;e0&quot;);</span>
             }
             else
             {
-<span class="fc" id="L840">                appendAscii(str);</span>
-<span class="fc bfc" id="L841" title="All 2 branches covered.">                if (str.indexOf('E') == -1)</span>
+<span class="fc" id="L852">                appendAscii(str);</span>
+<span class="fc bfc" id="L853" title="All 2 branches covered.">                if (str.indexOf('E') == -1)</span>
                 {
-<span class="fc" id="L843">                    appendAscii(&quot;e0&quot;);</span>
+<span class="fc" id="L855">                    appendAscii(&quot;e0&quot;);</span>
                 }
             }
         }
-<span class="fc" id="L847">    }</span>
+<span class="fc" id="L859">    }</span>
 
-    public void printFloat(Double value)
+    public void printFloat(_Private_IonTextWriterBuilder _options, Double value)
         throws IOException
     {
-<span class="fc bfc" id="L852" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc bfc" id="L864" title="All 2 branches covered.">        if (value == null)</span>
         {
-<span class="fc" id="L854">            appendAscii(&quot;null.float&quot;);</span>
+<span class="fc" id="L866">            appendAscii(&quot;null.float&quot;);</span>
         }
         else
         {
-<span class="fc" id="L858">            printFloat(value.doubleValue());</span>
+<span class="fc" id="L870">            printFloat(_options, value.doubleValue());</span>
         }
-<span class="fc" id="L860">    }</span>
+<span class="fc" id="L872">    }</span>
 
 
     //=========================================================================
@@ -868,131 +880,131 @@ import java.nio.charset.Charset;
                           byte[] value, int start, int len)
         throws IOException
     {
-<span class="pc bpc" id="L871" title="1 of 2 branches missed.">        if (value == null)</span>
+<span class="pc bpc" id="L883" title="1 of 2 branches missed.">        if (value == null)</span>
         {
-<span class="nc" id="L873">            appendAscii(&quot;null.blob&quot;);</span>
-<span class="nc" id="L874">            return;</span>
+<span class="nc" id="L885">            appendAscii(&quot;null.blob&quot;);</span>
+<span class="nc" id="L886">            return;</span>
         }
 
         @SuppressWarnings(&quot;resource&quot;)
-<span class="fc" id="L878">        TextStream ts =</span>
+<span class="fc" id="L890">        TextStream ts =</span>
             new TextStream(new ByteArrayInputStream(value, start, len));
 
         // base64 encoding is 6 bits per char so
         // it evens out at 3 bytes in 4 characters
-<span class="fc bfc" id="L883" title="All 2 branches covered.">        char[] buf = new char[_options.isPrettyPrintOn() ? 80 : 400];</span>
-<span class="fc" id="L884">        CharBuffer cb = CharBuffer.wrap(buf);</span>
+<span class="fc bfc" id="L895" title="All 2 branches covered.">        char[] buf = new char[_options.isPrettyPrintOn() ? 80 : 400];</span>
+<span class="fc" id="L896">        CharBuffer cb = CharBuffer.wrap(buf);</span>
 
-<span class="pc bpc" id="L886" title="1 of 2 branches missed.">        if (_options._blob_as_string)</span>
+<span class="pc bpc" id="L898" title="1 of 2 branches missed.">        if (_options._blob_as_string)</span>
         {
-<span class="nc" id="L888">            appendAscii('&quot;');</span>
+<span class="nc" id="L900">            appendAscii('&quot;');</span>
         }
         else
         {
-<span class="fc" id="L892">            appendAscii(&quot;{{&quot;);</span>
-<span class="fc bfc" id="L893" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
+<span class="fc" id="L904">            appendAscii(&quot;{{&quot;);</span>
+<span class="fc bfc" id="L905" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
             {
-<span class="fc" id="L895">                appendAscii(' ');</span>
+<span class="fc" id="L907">                appendAscii(' ');</span>
             }
         }
 
         for (;;)
         {
             // TODO is it better to fill up the CharBuffer before outputting?
-<span class="fc" id="L902">            int clen = ts.read(buf, 0, buf.length);</span>
-<span class="fc bfc" id="L903" title="All 2 branches covered.">            if (clen &lt; 1) break;</span>
-<span class="fc" id="L904">            appendAscii(cb, 0, clen);</span>
-<span class="fc" id="L905">        }</span>
+<span class="fc" id="L914">            int clen = ts.read(buf, 0, buf.length);</span>
+<span class="fc bfc" id="L915" title="All 2 branches covered.">            if (clen &lt; 1) break;</span>
+<span class="fc" id="L916">            appendAscii(cb, 0, clen);</span>
+<span class="fc" id="L917">        }</span>
 
-<span class="pc bpc" id="L907" title="1 of 2 branches missed.">        if (_options._blob_as_string)</span>
+<span class="pc bpc" id="L919" title="1 of 2 branches missed.">        if (_options._blob_as_string)</span>
         {
-<span class="nc" id="L909">            appendAscii('&quot;');</span>
+<span class="nc" id="L921">            appendAscii('&quot;');</span>
         }
         else
         {
-<span class="fc bfc" id="L913" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
+<span class="fc bfc" id="L925" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
             {
-<span class="fc" id="L915">                appendAscii(' ');</span>
+<span class="fc" id="L927">                appendAscii(' ');</span>
             }
-<span class="fc" id="L917">            appendAscii(&quot;}}&quot;);</span>
+<span class="fc" id="L929">            appendAscii(&quot;}}&quot;);</span>
         }
-<span class="fc" id="L919">    }</span>
+<span class="fc" id="L931">    }</span>
 
 
     private void printClobBytes(byte[] value, int start, int end,
                                 String[] escapes)
         throws IOException
     {
-<span class="fc bfc" id="L926" title="All 2 branches covered.">        for (int i = start; i &lt; end; i++) {</span>
-<span class="fc" id="L927">            char c = (char)(value[i] &amp; 0xff);</span>
-<span class="fc" id="L928">            String escapedByte = escapes[c];</span>
-<span class="fc bfc" id="L929" title="All 2 branches covered.">            if (escapedByte != null) {</span>
-<span class="fc" id="L930">                appendAscii(escapedByte);</span>
+<span class="fc bfc" id="L938" title="All 2 branches covered.">        for (int i = start; i &lt; end; i++) {</span>
+<span class="fc" id="L939">            char c = (char)(value[i] &amp; 0xff);</span>
+<span class="fc" id="L940">            String escapedByte = escapes[c];</span>
+<span class="fc bfc" id="L941" title="All 2 branches covered.">            if (escapedByte != null) {</span>
+<span class="fc" id="L942">                appendAscii(escapedByte);</span>
             } else {
-<span class="fc" id="L932">                appendAscii(c);</span>
+<span class="fc" id="L944">                appendAscii(c);</span>
             }
         }
-<span class="fc" id="L935">    }</span>
+<span class="fc" id="L947">    }</span>
 
 
     public void printClob(_Private_IonTextWriterBuilder _options,
                           byte[] value, int start, int len)
         throws IOException
     {
-<span class="pc bpc" id="L942" title="1 of 2 branches missed.">        if (value == null)</span>
+<span class="pc bpc" id="L954" title="1 of 2 branches missed.">        if (value == null)</span>
         {
-<span class="nc" id="L944">            appendAscii(&quot;null.clob&quot;);</span>
-<span class="nc" id="L945">            return;</span>
+<span class="nc" id="L956">            appendAscii(&quot;null.clob&quot;);</span>
+<span class="nc" id="L957">            return;</span>
         }
 
 
-<span class="pc bpc" id="L949" title="1 of 4 branches missed.">        final boolean json =</span>
+<span class="pc bpc" id="L961" title="1 of 4 branches missed.">        final boolean json =</span>
             _options._clob_as_string &amp;&amp; _options._string_as_json;
 
-<span class="fc" id="L952">        final int threshold = _options.getLongStringThreshold();</span>
-<span class="fc bfc" id="L953" title="All 4 branches covered.">        final boolean longString = (0 &lt; threshold &amp;&amp; threshold &lt; value.length);</span>
+<span class="fc" id="L964">        final int threshold = _options.getLongStringThreshold();</span>
+<span class="fc bfc" id="L965" title="All 4 branches covered.">        final boolean longString = (0 &lt; threshold &amp;&amp; threshold &lt; value.length);</span>
 
-<span class="fc bfc" id="L955" title="All 2 branches covered.">        if (!_options._clob_as_string)</span>
+<span class="fc bfc" id="L967" title="All 2 branches covered.">        if (!_options._clob_as_string)</span>
         {
-<span class="fc" id="L957">            appendAscii(&quot;{{&quot;);</span>
-<span class="fc bfc" id="L958" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
+<span class="fc" id="L969">            appendAscii(&quot;{{&quot;);</span>
+<span class="fc bfc" id="L970" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
             {
-<span class="fc" id="L960">                appendAscii(' ');</span>
+<span class="fc" id="L972">                appendAscii(' ');</span>
             }
         }
 
-<span class="fc bfc" id="L964" title="All 2 branches covered.">        if (json)</span>
+<span class="fc bfc" id="L976" title="All 2 branches covered.">        if (json)</span>
         {
-<span class="fc" id="L966">            appendAscii('&quot;');</span>
-<span class="fc" id="L967">            printClobBytes(value, start, start + len, JSON_ESCAPE_CODES);</span>
-<span class="fc" id="L968">            appendAscii('&quot;');</span>
+<span class="fc" id="L978">            appendAscii('&quot;');</span>
+<span class="fc" id="L979">            printClobBytes(value, start, start + len, JSON_ESCAPE_CODES);</span>
+<span class="fc" id="L980">            appendAscii('&quot;');</span>
         }
-<span class="fc bfc" id="L970" title="All 2 branches covered.">        else if (longString)</span>
+<span class="fc bfc" id="L982" title="All 2 branches covered.">        else if (longString)</span>
         {
             // This may escape more often than is necessary, but doing it
             // minimally is very tricky. Must be sure to account for
             // quotes at the end of the content.
 
             // TODO Account for NL versus CR+NL streams
-<span class="fc" id="L977">            appendAscii(TRIPLE_QUOTES);</span>
-<span class="fc" id="L978">            printClobBytes(value, start, start + len, LONG_STRING_ESCAPE_CODES);</span>
-<span class="fc" id="L979">            appendAscii(TRIPLE_QUOTES);</span>
+<span class="fc" id="L989">            appendAscii(TRIPLE_QUOTES);</span>
+<span class="fc" id="L990">            printClobBytes(value, start, start + len, LONG_STRING_ESCAPE_CODES);</span>
+<span class="fc" id="L991">            appendAscii(TRIPLE_QUOTES);</span>
         }
         else
         {
-<span class="fc" id="L983">            appendAscii('&quot;');</span>
-<span class="fc" id="L984">            printClobBytes(value, start, start + len, STRING_ESCAPE_CODES);</span>
-<span class="fc" id="L985">            appendAscii('&quot;');</span>
+<span class="fc" id="L995">            appendAscii('&quot;');</span>
+<span class="fc" id="L996">            printClobBytes(value, start, start + len, STRING_ESCAPE_CODES);</span>
+<span class="fc" id="L997">            appendAscii('&quot;');</span>
         }
 
-<span class="fc bfc" id="L988" title="All 2 branches covered.">        if (! _options._clob_as_string)</span>
+<span class="fc bfc" id="L1000" title="All 2 branches covered.">        if (! _options._clob_as_string)</span>
         {
-<span class="fc bfc" id="L990" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
+<span class="fc bfc" id="L1002" title="All 2 branches covered.">            if (_options.isPrettyPrintOn())</span>
             {
-<span class="fc" id="L992">                appendAscii(' ');</span>
+<span class="fc" id="L1004">                appendAscii(' ');</span>
             }
-<span class="fc" id="L994">            appendAscii(&quot;}}&quot;);</span>
+<span class="fc" id="L1006">            appendAscii(&quot;}}&quot;);</span>
         }
-<span class="fc" id="L996">    }</span>
+<span class="fc" id="L1008">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
