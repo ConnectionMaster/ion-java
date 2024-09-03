@@ -82,13 +82,13 @@ jobs:
           mkdir -p testData
 
       - name: Download test Ion Data from artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: test Ion Data
           path: testData
 
       - name: Download benchmark results of ion-java from the new commit from artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Benchmark result
           path: benchmarkResults
